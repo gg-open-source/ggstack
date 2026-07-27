@@ -2,4 +2,3 @@ node_modules
 dist
 .turbo
 cache
-pnpm-lock.yaml
