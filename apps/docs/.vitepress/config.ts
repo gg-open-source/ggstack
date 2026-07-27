@@ -11,13 +11,9 @@ export default defineConfig({
     sidebar: [
       {
         text: "Guide",
-        items: [
-          { text: "Getting Started", link: "/guide" },
-        ],
+        items: [{ text: "Getting Started", link: "/guide" }],
       },
     ],
-    socialLinks: [
-      { icon: "github", link: "https://github.com" },
-    ],
+    socialLinks: [{ icon: "github", link: "https://github.com" }],
   },
 });

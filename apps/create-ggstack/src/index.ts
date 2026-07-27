@@ -1,7 +1,11 @@
 #!/usr/bin/env node
+import { fileURLToPath } from "node:url";
 
-const main = async () => {
+export const main = async () => {
   console.log("ggstack — coming soon");
 };
 
-main().catch(console.error);
+const scriptPath = fileURLToPath(import.meta.url);
+if (process.argv[1] === scriptPath) {
+  main().catch(console.error);
+}
