@@ -24,7 +24,7 @@ jobs:
 
       - run: pnpm run build --filter=@ggstack/docs
 
-      - run: npx vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+      - run: npx vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --yes
         working-directory: apps/docs
         env:
           VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
