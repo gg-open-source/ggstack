@@ -1,0 +1,23 @@
+{
+  "name": "create-ggstack",
+  "version": "0.0.0",
+  "type": "module",
+  "author": "Gaurav Ghosh",
+  "license": "MIT",
+  "repository": "https://github.com/gg-open-source/ggstack.git",
+  "bin": {
+    "create-ggstack": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "lint": "oxlint --config ../../tooling/oxc-config/oxlint.json src",
+    "format": "oxfmt --config ../../tooling/oxc-config/oxfmt.json src",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@ggstack/tsconfig": "workspace:*",
+    "@types/node": "catalog:tooling",
+    "typescript": "catalog:tooling"
+  }
+}

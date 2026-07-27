@@ -1,0 +1,28 @@
+{
+  "name": "ggstack",
+  "private": true,
+  "type": "module",
+  "author": "Gaurav Ghosh",
+  "license": "MIT",
+  "repository": "https://github.com/gg-open-source/ggstack.git",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev",
+    "lint": "oxlint --config tooling/oxc-config/oxlint.json .",
+    "format": "oxfmt --config tooling/oxc-config/oxfmt.json .",
+    "check-types": "turbo run check-types"
+  },
+  "devEngines": {
+    "packageManager": {
+      "name": "pnpm",
+      "version": "^11.2.2",
+      "onFail": "download"
+    }
+  },
+  "devDependencies": {
+    "oxfmt": "^0.9.0",
+    "oxlint": "^0.9.0",
+    "turbo": "^2.6.0",
+    "typescript": "^5.8.0"
+  }
+}

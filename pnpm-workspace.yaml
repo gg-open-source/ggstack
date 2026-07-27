@@ -1,0 +1,14 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tooling/*"
+
+allowBuilds:
+  esbuild: true
+
+catalogs:
+  tooling:
+    "@types/node": ^22.0.0
+    typescript: ^5.8.0
+  app:
+    vitepress: ^1.6.0

@@ -1,0 +1,9 @@
+{
+  "name": "@ggstack/oxc-config",
+  "version": "0.0.0",
+  "private": true,
+  "files": ["oxlint.json", "oxfmt.json"],
+  "scripts": {
+    "build": ":"
+  }
+}

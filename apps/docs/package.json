@@ -1,0 +1,19 @@
+{
+  "name": "@ggstack/docs",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview",
+    "lint": "oxlint --config ../../tooling/oxc-config/oxlint.json .vitepress",
+    "format": "oxfmt --config ../../tooling/oxc-config/oxfmt.json .vitepress",
+    "check-types": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@ggstack/tsconfig": "workspace:*",
+    "typescript": "catalog:tooling",
+    "vitepress": "catalog:app"
+  }
+}
