@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - apps/docs/**
+      - .github/workflows/deploy-docs.yml
+      - vercel.json
   workflow_dispatch:
 
 jobs:
@@ -20,9 +22,10 @@ jobs:
           node-version: 22
           cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
-
-      - run: pnpm run build --filter=@ggstack/docs
+      - run: pnpm dlx vercel build --prod --token=${{ secrets.VERCEL_TOKEN }} --yes
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - run: pnpm dlx vercel deploy --prod --prebuilt --token=${{ secrets.VERCEL_TOKEN }} --yes
         env:
