@@ -7,8 +7,8 @@
     "dev": "vitepress dev",
     "build": "vitepress build",
     "preview": "vitepress preview",
-    "lint": "oxlint --config ../../tooling/oxc-config/oxlint.json .vitepress",
-    "format": "oxfmt --config ../../tooling/oxc-config/oxfmt.json .vitepress",
+    "lint": "oxlint --config ../../tooling/oxc/oxlint.json .vitepress",
+    "format": "oxfmt --config ../../tooling/oxc/oxfmt.json .vitepress",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {

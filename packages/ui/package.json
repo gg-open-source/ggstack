@@ -7,8 +7,8 @@
   "types": "./src/index.ts",
   "scripts": {
     "build": ":",
-    "lint": "oxlint --config ../../tooling/oxc-config/oxlint.json src",
-    "format": "oxfmt --config ../../tooling/oxc-config/oxfmt.json src",
+    "lint": "oxlint --config ../../tooling/oxc/oxlint.json src",
+    "format": "oxfmt --config ../../tooling/oxc/oxfmt.json src",
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {

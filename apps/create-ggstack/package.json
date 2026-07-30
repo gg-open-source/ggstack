@@ -1,20 +1,37 @@
 {
   "name": "create-ggstack",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "type": "module",
   "author": "Gaurav Ghosh",
   "license": "MIT",
   "repository": "https://github.com/gg-open-source/ggstack.git",
+  "keywords": [
+    "create",
+    "cli",
+    "monorepo",
+    "pnpm",
+    "turbo",
+    "vite",
+    "nextjs",
+    "shadcn",
+    "tailwindcss"
+  ],
   "bin": {
     "create-ggstack": "./dist/index.js"
   },
+  "files": ["dist"],
   "scripts": {
-    "build": "tsc",
+    "build": "rm -rf dist && tsc",
     "dev": "tsc --watch",
-    "lint": "oxlint --config ../../tooling/oxc-config/oxlint.json src",
-    "format": "oxfmt --config ../../tooling/oxc-config/oxfmt.json src",
+    "lint": "oxlint --config ../../tooling/oxc/oxlint.json src",
+    "format": "oxfmt --config ../../tooling/oxc/oxfmt.json src",
     "check-types": "tsc --noEmit",
     "test": "vitest run"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.10.0",
+    "execa": "^9.5.0",
+    "picocolors": "^1.1.0"
   },
   "devDependencies": {
     "@ggstack/tsconfig": "workspace:*",

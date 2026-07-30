@@ -8,8 +8,8 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "oxlint --config tooling/oxc-config/oxlint.json .",
-    "format": "oxfmt --config tooling/oxc-config/oxfmt.json .",
+    "lint": "oxlint --config tooling/oxc/oxlint.json .",
+    "format": "oxfmt --config tooling/oxc/oxfmt.json .",
     "check-types": "turbo run check-types",
     "test": "turbo run test"
   },
