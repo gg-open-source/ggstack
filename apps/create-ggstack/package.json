@@ -13,13 +13,15 @@
     "turbo",
     "vite",
     "nextjs",
+    "expo",
+    "electron",
     "shadcn",
     "tailwindcss"
   ],
   "bin": {
     "create-ggstack": "./dist/index.js"
   },
-  "files": ["dist"],
+  "files": ["dist", "templates"],
   "scripts": {
     "build": "rm -rf dist && tsc",
     "dev": "tsc --watch",

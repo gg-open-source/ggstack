@@ -15,11 +15,11 @@ function createTestConfig(overrides: Partial<StackConfig> = {}): StackConfig {
 }
 
 describe("buildProject", () => {
-  it("generates root files", () => {
+  it("generates root files", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig();
 
-    buildProject(config, builder);
+    await buildProject(config, builder);
 
     expect(builder.files["pnpm-workspace.yaml"]).toContain("apps/*");
     expect(builder.files["turbo.json"]).toContain("build");
@@ -27,11 +27,11 @@ describe("buildProject", () => {
     expect(builder.rootPackageJson.name).toBe("test-project");
   });
 
-  it("always generates tsconfig tooling", () => {
+  it("always generates tsconfig tooling", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig();
 
-    buildProject(config, builder);
+    await buildProject(config, builder);
 
     expect(builder.files["tooling/tsconfig/package.json"]).toContain(
       "@test-project/tsconfig",
@@ -39,38 +39,103 @@ describe("buildProject", () => {
     expect(builder.files["tooling/tsconfig/base.json"]).toContain("ES2022");
   });
 
-  it("adds vite command when a vite app is selected", () => {
+  it("copies the vite template when a vite app is selected", async () => {
     const builder = new ProjectBuilder();
-    const config = createTestConfig({ apps: [{ type: "vite", name: "web" }] });
+    const config = createTestConfig({ apps: [{ type: "vite", name: "vite" }] });
 
-    buildProject(config, builder);
+    await buildProject(config, builder);
 
-    const viteCommand = builder.commands.find(
-      (cmd) => cmd.args.includes("create") && cmd.args.includes("vite@latest"),
+    expect(builder.files["apps/vite/package.json"]).toContain(
+      "@test-project/vite",
     );
-    expect(viteCommand).toBeDefined();
-    expect(viteCommand?.args).toContain("apps/web");
+    expect(builder.files["apps/vite/index.html"]).toContain("vite");
+    expect(builder.files["apps/vite/src/main.ts"]).toBeDefined();
+    expect(builder.files["apps/vite/package.json"]).toContain(
+      '"vite": "^8.2.0"',
+    );
   });
 
-  it("adds next command when a next app is selected", () => {
+  it("copies the next template when a next app is selected", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({ apps: [{ type: "next", name: "next" }] });
 
-    buildProject(config, builder);
+    await buildProject(config, builder);
 
-    const nextCommand = builder.commands.find(
-      (cmd) =>
-        cmd.args.includes("create") && cmd.args.includes("next-app@latest"),
+    expect(builder.files["apps/next/package.json"]).toContain(
+      "@test-project/next",
     );
-    expect(nextCommand).toBeDefined();
-    expect(nextCommand?.args).toContain("apps/next");
+    expect(builder.files["apps/next/app/page.tsx"]).toContain("next");
+    expect(builder.files["apps/next/package.json"]).toContain(
+      '"next": "^16.2.12"',
+    );
   });
 
-  it("generates shadcn package files", () => {
+  it("copies the expo router template when an expo app is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "expo", name: "expo" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/expo/package.json"]).toContain(
+      "@test-project/expo",
+    );
+    expect(builder.files["apps/expo/app.json"]).toContain("expo");
+    expect(builder.files["apps/expo/app/_layout.tsx"]).toBeDefined();
+    expect(builder.files["apps/expo/package.json"]).toContain(
+      '"expo": "^57.0.9"',
+    );
+  });
+
+  it("copies the electron template when an electron app is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "electron", name: "electron" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/electron/package.json"]).toContain(
+      "@test-project/electron",
+    );
+    expect(builder.files["apps/electron/electron/main.ts"]).toContain(
+      "electron",
+    );
+    expect(builder.files["apps/electron/src/index.html"]).toContain("electron");
+    expect(builder.files["apps/electron/package.json"]).toContain(
+      '"electron": "^43.2.0"',
+    );
+  });
+
+  it("does not add external CLI commands for app scaffolding", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [
+        { type: "vite", name: "vite" },
+        { type: "next", name: "next" },
+        { type: "expo", name: "expo" },
+        { type: "electron", name: "electron" },
+      ],
+    });
+
+    await buildProject(config, builder);
+
+    expect(
+      builder.commands.some(
+        (cmd) =>
+          cmd.args.includes("create") &&
+          (cmd.args.includes("vite@latest") ||
+            cmd.args.includes("next-app@latest")),
+      ),
+    ).toBe(false);
+  });
+
+  it("generates shadcn package files", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({ packages: [{ type: "shadcn" }] });
 
-    buildProject(config, builder);
+    await buildProject(config, builder);
 
     expect(builder.files["packages/ui/package.json"]).toContain(
       "@test-project/ui",
@@ -80,14 +145,14 @@ describe("buildProject", () => {
     );
   });
 
-  it("generates tailwind tooling with shadcn colors when shadcn is selected", () => {
+  it("generates tailwind tooling with shadcn colors when shadcn is selected", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({
       packages: [{ type: "shadcn" }],
       tooling: [{ type: "tailwind" }],
     });
 
-    buildProject(config, builder);
+    await buildProject(config, builder);
 
     expect(builder.files["tooling/tailwind/src/index.ts"]).toContain(
       "--background",
@@ -97,11 +162,11 @@ describe("buildProject", () => {
     );
   });
 
-  it("generates oxc tooling and updates root scripts", () => {
+  it("generates oxc tooling and updates root scripts", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({ tooling: [{ type: "oxc" }] });
 
-    buildProject(config, builder);
+    await buildProject(config, builder);
 
     expect(builder.files["tooling/oxc/oxlint.json"]).toContain(
       "no-explicit-any",
@@ -126,7 +191,7 @@ describe("helpers", () => {
   });
 
   it("hasApp returns true when app type exists", () => {
-    const config = createTestConfig({ apps: [{ type: "vite", name: "web" }] });
+    const config = createTestConfig({ apps: [{ type: "vite", name: "vite" }] });
     expect(hasApp(config, "vite")).toBe(true);
   });
 });

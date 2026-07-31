@@ -1,18 +1,17 @@
 import type { AppConfig, ProjectBuilder, StackConfig } from "../../types.js";
+import { copyTemplate } from "../../utils/templates.js";
 
-export function generateViteApp(
+export async function generateViteApp(
   config: StackConfig,
   builder: ProjectBuilder,
   app: AppConfig,
-): void {
-  const appPath = `apps/${app.name}`;
-
-  builder.addCommand({
-    command: config.packageManager,
-    args: ["create", "vite@latest", appPath, "--", "--template", "vanilla-ts"],
-    cwd: config.targetDir,
-    description: `Scaffold Vanilla Vite app at ${appPath}`,
-  });
+): Promise<void> {
+  await copyTemplate(
+    "vite",
+    `apps/${app.name}`,
+    { projectName: config.projectName, appName: app.name },
+    builder,
+  );
 }
 
 export function isViteApp(app: AppConfig): boolean {

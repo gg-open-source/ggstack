@@ -147,7 +147,7 @@ describe("collectConfig", () => {
 
     mockedText.mockResolvedValueOnce("test-project"); // project name
     mockedMultiSelect.mockResolvedValueOnce(["vite", "next"]); // apps
-    mockedText.mockResolvedValueOnce("web"); // vite app name
+    mockedText.mockResolvedValueOnce("vite"); // vite app name
     mockedText.mockResolvedValueOnce("docs"); // next app name
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
@@ -155,8 +155,98 @@ describe("collectConfig", () => {
     const config = await collectConfig([]);
 
     expect(config.apps).toEqual([
-      { type: "vite", name: "web" },
+      { type: "vite", name: "vite" },
       { type: "next", name: "docs" },
     ]);
+  });
+
+  it("uses default app names matching the selected framework", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+
+    mockedText.mockResolvedValueOnce("test-project"); // project name
+    mockedMultiSelect.mockResolvedValueOnce([
+      "vite",
+      "next",
+      "expo",
+      "electron",
+    ]); // apps
+    mockedText.mockResolvedValueOnce(""); // vite default
+    mockedText.mockResolvedValueOnce(""); // next default
+    mockedText.mockResolvedValueOnce(""); // expo default
+    mockedText.mockResolvedValueOnce(""); // electron default
+    mockedMultiSelect.mockResolvedValueOnce([]); // packages
+    mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+
+    await collectConfig([]);
+
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for the vite app?",
+        defaultValue: "vite",
+      }),
+    );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for the next app?",
+        defaultValue: "next",
+      }),
+    );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for the expo app?",
+        defaultValue: "expo",
+      }),
+    );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for the electron app?",
+        defaultValue: "electron",
+      }),
+    );
+  });
+
+  it("supports all four app types", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+
+    mockedText.mockResolvedValueOnce("test-project"); // project name
+    mockedMultiSelect.mockResolvedValueOnce([
+      "vite",
+      "next",
+      "expo",
+      "electron",
+    ]); // apps
+    mockedText.mockResolvedValueOnce("vite"); // vite
+    mockedText.mockResolvedValueOnce("docs"); // next
+    mockedText.mockResolvedValueOnce("expo"); // expo
+    mockedText.mockResolvedValueOnce("desktop"); // electron
+    mockedMultiSelect.mockResolvedValueOnce([]); // packages
+    mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+
+    const config = await collectConfig([]);
+
+    expect(config.apps).toEqual([
+      { type: "vite", name: "vite" },
+      { type: "next", name: "docs" },
+      { type: "expo", name: "expo" },
+      { type: "electron", name: "desktop" },
+    ]);
+  });
+
+  it("uses the positional project name as a fallback", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+
+    mockedMultiSelect.mockResolvedValueOnce([]); // apps
+    mockedMultiSelect.mockResolvedValueOnce([]); // packages
+    mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+
+    const config = await collectConfig(["my-app", "--pnpm"]);
+
+    expect(mockedText).not.toHaveBeenCalledWith(
+      expect.objectContaining({ message: "Project name?" }),
+    );
+    expect(config.projectName).toBe("my-app");
   });
 });

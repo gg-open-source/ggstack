@@ -111,11 +111,18 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     required: false,
   });
 
+  const defaultAppNames: Record<string, string> = {
+    vite: "vite",
+    next: "next",
+    expo: "expo",
+    electron: "electron",
+  };
+
   const apps: AppConfig[] = [];
   for (const appType of selectedApps) {
     const name = await text({
       message: `Name for the ${appType} app?`,
-      defaultValue: appType === "vite" ? "web" : "next",
+      defaultValue: defaultAppNames[appType] ?? appType,
       validate: (value) => {
         if (value.trim().length === 0) return "App name is required";
         if (apps.some((a) => a.name === sanitizeAppName(value)))
@@ -124,7 +131,7 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
       },
     });
     apps.push({
-      type: appType as "vite" | "next",
+      type: appType as AppConfig["type"],
       name: sanitizeAppName(name),
     });
   }
@@ -185,14 +192,14 @@ export async function createProject(config: StackConfig): Promise<void> {
   await mkdir(config.targetDir, { recursive: true });
 
   const builder = new ProjectBuilder();
-  buildProject(config, builder);
+  await buildProject(config, builder);
 
   await writeProjectFiles(config.targetDir, builder);
 
   s.stop("Project files written.");
 
   if (builder.commands.length > 0) {
-    log(pc.blue("Running official app CLIs..."));
+    log(pc.blue("Running post-scaffold commands..."));
     await runCommands(builder.commands);
   }
 

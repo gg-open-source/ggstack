@@ -1,18 +1,17 @@
 import type { AppConfig, ProjectBuilder, StackConfig } from "../../types.js";
+import { copyTemplate } from "../../utils/templates.js";
 
-export function generateNextApp(
+export async function generateNextApp(
   config: StackConfig,
   builder: ProjectBuilder,
   app: AppConfig,
-): void {
-  const appPath = `apps/${app.name}`;
-
-  builder.addCommand({
-    command: config.packageManager,
-    args: ["create", "next-app@latest", appPath],
-    cwd: config.targetDir,
-    description: `Scaffold Next.js app at ${appPath}`,
-  });
+): Promise<void> {
+  await copyTemplate(
+    "next",
+    `apps/${app.name}`,
+    { projectName: config.projectName, appName: app.name },
+    builder,
+  );
 }
 
 export function isNextApp(app: AppConfig): boolean {

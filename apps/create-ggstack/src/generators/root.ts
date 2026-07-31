@@ -45,7 +45,14 @@ export function generateRoot(
         tasks: {
           build: {
             dependsOn: ["^build"],
-            outputs: ["dist/**", ".next/**", "!.next/cache/**"],
+            outputs: [
+              "dist/**",
+              ".next/**",
+              "!.next/cache/**",
+              "web-build/**",
+              "out/**",
+              "release/**",
+            ],
           },
           lint: {},
           format: {},
@@ -74,6 +81,11 @@ dist
 *.log
 .env
 .env.local
+.expo
+expo-env.d.ts
+web-build
+out
+release
 `,
   );
 

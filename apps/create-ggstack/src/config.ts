@@ -4,8 +4,10 @@ export const DEFAULT_PROJECT_NAME = "my-ggstack";
 export const DEFAULT_PACKAGE_MANAGER: PackageManager = "pnpm";
 
 export const APP_CHOICES = [
-  { value: "vite", label: "Vanilla Vite", hint: "official create-vite" },
-  { value: "next", label: "Next.js", hint: "official create-next-app" },
+  { value: "vite", label: "Vanilla Vite", hint: "custom template" },
+  { value: "next", label: "Next.js", hint: "custom template" },
+  { value: "expo", label: "Expo Router", hint: "custom template" },
+  { value: "electron", label: "Electron + Vite", hint: "custom template" },
 ] as const;
 
 export const PACKAGE_CHOICES = [

@@ -1,5 +1,5 @@
 export interface AppConfig {
-  type: "vite" | "next";
+  type: "vite" | "next" | "expo" | "electron";
   name: string;
 }
 

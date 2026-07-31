@@ -5,15 +5,15 @@ import { generateRoot } from "./generators/root.js";
 import { generateTooling } from "./generators/tooling/index.js";
 import { generateTsconfigTooling } from "./generators/tooling/tsconfig.js";
 
-export function buildProject(
+export async function buildProject(
   config: StackConfig,
   builder: ProjectBuilder,
-): void {
+): Promise<void> {
   generateRoot(config, builder);
   generateTsconfigTooling(config, builder);
 
   for (const app of config.apps) {
-    generateApp(config, builder, app);
+    await generateApp(config, builder, app);
   }
 
   for (const pkg of config.packages) {

@@ -1,0 +1,26 @@
+{
+  "name": "@{{PROJECT_NAME}}/{{APP_NAME}}",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev",
+    "start": "next start",
+    "lint": "oxlint --config ../../tooling/oxc/oxlint.json src",
+    "format": "oxfmt --config ../../tooling/oxc/oxfmt.json src",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "next": "^16.2.12",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "^5.8.0"
+  }
+}

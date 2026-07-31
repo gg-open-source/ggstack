@@ -13,17 +13,18 @@ function getPackageJsonVersion(): string {
 
 function printHelp(): void {
   console.log(`
-create-ggstack <project-name> [options]
+create-ggstack [project-name] [options]
 
 Scaffold a pnpm monorepo in the T3/Turbo style.
 
 Options:
-  --pnpm, --npm, --yarn, --bun   Package manager to use for running official CLIs
+  --pnpm, --npm, --yarn, --bun   Package manager to use for running external CLIs
   -h, --help                     Show this help message
   -v, --version                  Show version
 
 Examples:
   pnpm create ggstack
+  pnpm create ggstack my-app
   npx create-ggstack my-app --pnpm
   pnpm dlx create-ggstack my-app
 `);
