@@ -1,5 +1,6 @@
 import type { ProjectBuilder, StackConfig } from "./types.js";
 import { generateApp } from "./generators/apps/index.js";
+import { generateAuthPackage } from "./generators/packages/auth.js";
 import { generatePackage } from "./generators/packages/index.js";
 import { generateRoot } from "./generators/root.js";
 import { generateTooling } from "./generators/tooling/index.js";
@@ -20,6 +21,10 @@ export async function buildProject(
     generatePackage(config, builder, pkg);
   }
 
+  if (config.auth.provider !== "none") {
+    generateAuthPackage(config, builder);
+  }
+
   for (const tooling of config.tooling) {
     generateTooling(config, builder, tooling);
   }
@@ -35,4 +40,8 @@ export function hasPackage(config: StackConfig, type: string): boolean {
 
 export function hasApp(config: StackConfig, type: string): boolean {
   return config.apps.some((app) => app.type === type);
+}
+
+export function hasAuth(config: StackConfig): boolean {
+  return config.auth.provider !== "none";
 }

@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { buildProject, hasApp, hasPackage, hasTooling } from "./runner.js";
+import {
+  buildProject,
+  hasApp,
+  hasAuth,
+  hasPackage,
+  hasTooling,
+} from "./runner.js";
 import { ProjectBuilder, type StackConfig } from "./types.js";
 
 function createTestConfig(overrides: Partial<StackConfig> = {}): StackConfig {
@@ -9,6 +15,7 @@ function createTestConfig(overrides: Partial<StackConfig> = {}): StackConfig {
     packageManager: "pnpm",
     apps: [],
     packages: [],
+    auth: { provider: "none" },
     tooling: [],
     ...overrides,
   };
@@ -193,5 +200,80 @@ describe("helpers", () => {
   it("hasApp returns true when app type exists", () => {
     const config = createTestConfig({ apps: [{ type: "vite", name: "vite" }] });
     expect(hasApp(config, "vite")).toBe(true);
+  });
+
+  it("hasAuth returns true when an auth provider is selected", () => {
+    const config = createTestConfig({ auth: { provider: "clerk" } });
+    expect(hasAuth(config)).toBe(true);
+  });
+
+  it("hasAuth returns false when auth provider is none", () => {
+    const config = createTestConfig({ auth: { provider: "none" } });
+    expect(hasAuth(config)).toBe(false);
+  });
+});
+
+describe("auth package generation", () => {
+  it("does not generate auth package when auth provider is none", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig();
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/auth/package.json"]).toBeUndefined();
+  });
+
+  it("generates clerk auth package when clerk is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ auth: { provider: "clerk" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/auth/package.json"]).toContain(
+      "@clerk/clerk-react",
+    );
+    expect(builder.files["packages/auth/src/index.ts"]).toContain(
+      "AuthProvider",
+    );
+    expect(builder.files["packages/auth/src/provider.tsx"]).toContain(
+      "ClerkProvider",
+    );
+    expect(builder.files["packages/auth/src/use-auth.ts"]).toContain(
+      "useClerk",
+    );
+  });
+
+  it("generates better-auth auth package when better-auth is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ auth: { provider: "better-auth" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/auth/package.json"]).toContain(
+      "better-auth",
+    );
+    expect(builder.files["packages/auth/src/client.ts"]).toContain(
+      "createAuthClient",
+    );
+    expect(builder.files["packages/auth/src/use-auth.ts"]).toContain(
+      "useSession",
+    );
+  });
+
+  it("generates workos auth package when workos is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ auth: { provider: "workos" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/auth/package.json"]).toContain(
+      "@workos-inc/authkit-react",
+    );
+    expect(builder.files["packages/auth/src/provider.tsx"]).toContain(
+      "WorkOSAuthProvider",
+    );
+    expect(builder.files["packages/auth/src/use-auth.ts"]).toContain(
+      "useWorkOSAuth",
+    );
   });
 });

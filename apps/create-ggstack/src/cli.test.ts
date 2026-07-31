@@ -14,6 +14,7 @@ vi.mock("./utils/prompts.js", async (importOriginal) => {
   return {
     ...mod,
     text: vi.fn(),
+    select: vi.fn(),
     multiSelect: vi.fn(),
     intro: vi.fn(),
     outro: vi.fn(),
@@ -114,11 +115,13 @@ describe("collectConfig", () => {
   it("auto-selects tailwind when shadcn is chosen", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
 
     mockedText.mockResolvedValueOnce("test-project"); // project name
     mockedMultiSelect.mockResolvedValueOnce([]); // apps
     mockedMultiSelect.mockResolvedValueOnce(["shadcn"]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+    mockedSelect.mockResolvedValueOnce("none"); // auth
 
     const config = await collectConfig([]);
 
@@ -129,11 +132,13 @@ describe("collectConfig", () => {
   it("does not auto-select tailwind when shadcn is not chosen", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
 
     mockedText.mockResolvedValueOnce("test-project"); // project name
     mockedMultiSelect.mockResolvedValueOnce([]); // apps
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce(["oxc"]); // tooling
+    mockedSelect.mockResolvedValueOnce("none"); // auth
 
     const config = await collectConfig([]);
 
@@ -144,6 +149,7 @@ describe("collectConfig", () => {
   it("collects app names from prompts", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
 
     mockedText.mockResolvedValueOnce("test-project"); // project name
     mockedMultiSelect.mockResolvedValueOnce(["vite", "next"]); // apps
@@ -151,6 +157,7 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce("docs"); // next app name
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+    mockedSelect.mockResolvedValueOnce("none"); // auth
 
     const config = await collectConfig([]);
 
@@ -163,6 +170,7 @@ describe("collectConfig", () => {
   it("uses default app names matching the selected framework", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
 
     mockedText.mockResolvedValueOnce("test-project"); // project name
     mockedMultiSelect.mockResolvedValueOnce([
@@ -177,6 +185,7 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce(""); // electron default
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+    mockedSelect.mockResolvedValueOnce("none"); // auth
 
     await collectConfig([]);
 
@@ -209,6 +218,7 @@ describe("collectConfig", () => {
   it("supports all four app types", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
 
     mockedText.mockResolvedValueOnce("test-project"); // project name
     mockedMultiSelect.mockResolvedValueOnce([
@@ -223,6 +233,7 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce("desktop"); // electron
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+    mockedSelect.mockResolvedValueOnce("none"); // auth
 
     const config = await collectConfig([]);
 
@@ -237,10 +248,12 @@ describe("collectConfig", () => {
   it("uses the positional project name as a fallback", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
 
     mockedMultiSelect.mockResolvedValueOnce([]); // apps
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+    mockedSelect.mockResolvedValueOnce("none"); // auth
 
     const config = await collectConfig(["my-app", "--pnpm"]);
 
@@ -248,5 +261,21 @@ describe("collectConfig", () => {
       expect.objectContaining({ message: "Project name?" }),
     );
     expect(config.projectName).toBe("my-app");
+  });
+
+  it("collects the selected auth provider", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project"); // project name
+    mockedMultiSelect.mockResolvedValueOnce([]); // apps
+    mockedMultiSelect.mockResolvedValueOnce([]); // packages
+    mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+    mockedSelect.mockResolvedValueOnce("clerk"); // auth
+
+    const config = await collectConfig([]);
+
+    expect(config.auth).toEqual({ provider: "clerk" });
   });
 });

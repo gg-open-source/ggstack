@@ -4,14 +4,18 @@ import path from "node:path";
 import pc from "picocolors";
 import {
   APP_CHOICES,
+  AUTH_CHOICES,
+  DEFAULT_AUTH_PROVIDER,
   DEFAULT_PACKAGE_MANAGER,
   DEFAULT_PROJECT_NAME,
+  isAuthProvider,
   PACKAGE_CHOICES,
   TOOLING_CHOICES,
 } from "./config.js";
 import { buildProject } from "./runner.js";
 import type {
   AppConfig,
+  AuthConfig,
   PackageConfig,
   PackageManager,
   StackConfig,
@@ -26,6 +30,7 @@ import {
   log,
   multiSelect,
   outro,
+  select,
   spinner,
   text,
 } from "./utils/prompts.js";
@@ -170,12 +175,25 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     type: type as "tailwind" | "oxc" | "prettier" | "eslint",
   }));
 
+  const selectedAuth = await select({
+    message: "Which authentication provider do you want to use?",
+    options: AUTH_CHOICES.map((choice) => ({ ...choice })),
+    initialValue: DEFAULT_AUTH_PROVIDER,
+  });
+
+  const auth: AuthConfig = {
+    provider: isAuthProvider(selectedAuth)
+      ? selectedAuth
+      : DEFAULT_AUTH_PROVIDER,
+  };
+
   return {
     projectName: sanitizeAppName(projectName),
     targetDir: path.resolve(process.cwd(), projectName),
     packageManager,
     apps,
     packages,
+    auth,
     tooling,
   };
 }

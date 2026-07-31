@@ -3,6 +3,7 @@ import type {
   ProjectBuilder,
   StackConfig,
 } from "../../types.js";
+import { generateAuthPackage } from "./auth.js";
 import { generateShadcnPackage } from "./shadcn.js";
 
 export function generatePackage(
@@ -13,6 +14,10 @@ export function generatePackage(
   if (pkg.type === "shadcn") {
     generateShadcnPackage(config, builder);
   }
+
+  if (pkg.type === "auth") {
+    generateAuthPackage(config, builder);
+  }
 }
 
-export { generateShadcnPackage };
+export { generateAuthPackage, generateShadcnPackage };

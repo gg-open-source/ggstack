@@ -1,10 +1,20 @@
+export type AppType = "vite" | "next" | "expo" | "electron";
+
 export interface AppConfig {
-  type: "vite" | "next" | "expo" | "electron";
+  type: AppType;
   name: string;
 }
 
+export type PackageType = "shadcn" | "auth";
+
 export interface PackageConfig {
-  type: "shadcn";
+  type: PackageType;
+}
+
+export type AuthProvider = "none" | "better-auth" | "clerk" | "workos";
+
+export interface AuthConfig {
+  provider: AuthProvider;
 }
 
 export type ToolingType = "tailwind" | "oxc" | "prettier" | "eslint";
@@ -19,6 +29,7 @@ export interface StackConfig {
   packageManager: PackageManager;
   apps: AppConfig[];
   packages: PackageConfig[];
+  auth: AuthConfig;
   tooling: ToolingConfig[];
 }
 

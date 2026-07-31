@@ -33,7 +33,8 @@ my-app/
 │   ├── mobile/       # optional Expo Router app
 │   └── desktop/      # optional Electron + Vite app
 ├── packages/
-│   └── ui/           # optional shadcn/ui package
+│   ├── ui/           # optional shadcn/ui package
+│   └── auth/         # optional shared auth package
 ├── tooling/
 │   ├── oxc/          # lint + format config
 │   ├── tailwind/     # shared Tailwind config
@@ -65,6 +66,7 @@ my-app/
 4. Select packages (shadcn/ui)
 5. Select tooling (Tailwind CSS, Oxc, Prettier, ESLint)
    - Tailwind is auto-selected if shadcn/ui is chosen
+6. Select authentication provider (Better Auth, Clerk, WorkOS, or none)
 
 ## Templates
 
