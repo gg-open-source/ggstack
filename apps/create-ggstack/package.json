@@ -16,7 +16,10 @@
     "expo",
     "electron",
     "shadcn",
-    "tailwindcss"
+    "tailwindcss",
+    "drizzle",
+    "prisma",
+    "database"
   ],
   "bin": {
     "create-ggstack": "./dist/index.js"

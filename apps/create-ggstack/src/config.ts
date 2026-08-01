@@ -1,8 +1,9 @@
-import type { AuthProvider, PackageManager } from "./types.js";
+import type { AuthProvider, DbOrm, PackageManager } from "./types.js";
 
 export const DEFAULT_PROJECT_NAME = "my-ggstack";
 export const DEFAULT_PACKAGE_MANAGER: PackageManager = "pnpm";
 export const DEFAULT_AUTH_PROVIDER: AuthProvider = "none";
+export const DEFAULT_DB_ORM: DbOrm = "none";
 
 export const APP_CHOICES = [
   { value: "vite", label: "Vanilla Vite", hint: "custom template" },
@@ -13,6 +14,12 @@ export const APP_CHOICES = [
 
 export const PACKAGE_CHOICES = [
   { value: "shadcn", label: "shadcn/ui", hint: "shared UI package" },
+] as const;
+
+export const DB_ORM_CHOICES = [
+  { value: "none", label: "None", hint: "no database package" },
+  { value: "drizzle", label: "Drizzle ORM", hint: "PostgreSQL driver" },
+  { value: "prisma", label: "Prisma ORM", hint: "PostgreSQL provider" },
 ] as const;
 
 export const AUTH_CHOICES = [
@@ -37,4 +44,8 @@ export function isToolingType(
 
 export function isAuthProvider(value: string): value is AuthProvider {
   return ["none", "better-auth", "clerk", "workos"].includes(value);
+}
+
+export function isDbOrm(value: string): value is DbOrm {
+  return ["none", "drizzle", "prisma"].includes(value);
 }

@@ -5,7 +5,7 @@ export interface AppConfig {
   name: string;
 }
 
-export type PackageType = "shadcn" | "auth";
+export type PackageType = "shadcn" | "auth" | "db";
 
 export interface PackageConfig {
   type: PackageType;
@@ -15,6 +15,12 @@ export type AuthProvider = "none" | "better-auth" | "clerk" | "workos";
 
 export interface AuthConfig {
   provider: AuthProvider;
+}
+
+export type DbOrm = "none" | "drizzle" | "prisma";
+
+export interface DbConfig {
+  orm: DbOrm;
 }
 
 export type ToolingType = "tailwind" | "oxc" | "prettier" | "eslint";
@@ -30,6 +36,7 @@ export interface StackConfig {
   apps: AppConfig[];
   packages: PackageConfig[];
   auth: AuthConfig;
+  db: DbConfig;
   tooling: ToolingConfig[];
 }
 

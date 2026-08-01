@@ -122,6 +122,7 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce(["shadcn"]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
+    mockedSelect.mockResolvedValueOnce("none"); // db orm
 
     const config = await collectConfig([]);
 
@@ -139,6 +140,7 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce(["oxc"]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
+    mockedSelect.mockResolvedValueOnce("none"); // db orm
 
     const config = await collectConfig([]);
 
@@ -158,6 +160,7 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
+    mockedSelect.mockResolvedValueOnce("none"); // db orm
 
     const config = await collectConfig([]);
 
@@ -186,6 +189,7 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
+    mockedSelect.mockResolvedValueOnce("none"); // db orm
 
     await collectConfig([]);
 
@@ -234,6 +238,7 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
+    mockedSelect.mockResolvedValueOnce("none"); // db orm
 
     const config = await collectConfig([]);
 
@@ -254,6 +259,7 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
+    mockedSelect.mockResolvedValueOnce("none"); // db orm
 
     const config = await collectConfig(["my-app", "--pnpm"]);
 
@@ -273,9 +279,46 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("clerk"); // auth
+    mockedSelect.mockResolvedValueOnce("none"); // db orm
 
     const config = await collectConfig([]);
 
     expect(config.auth).toEqual({ provider: "clerk" });
+  });
+
+  it("does not add db package when db orm is none", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project"); // project name
+    mockedMultiSelect.mockResolvedValueOnce([]); // apps
+    mockedMultiSelect.mockResolvedValueOnce([]); // packages
+    mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+    mockedSelect.mockResolvedValueOnce("none"); // auth
+    mockedSelect.mockResolvedValueOnce("none"); // db orm
+
+    const config = await collectConfig([]);
+
+    expect(config.db).toEqual({ orm: "none" });
+    expect(config.packages).not.toContainEqual({ type: "db" });
+  });
+
+  it("adds db package when drizzle is selected", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project"); // project name
+    mockedMultiSelect.mockResolvedValueOnce([]); // apps
+    mockedMultiSelect.mockResolvedValueOnce([]); // packages
+    mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+    mockedSelect.mockResolvedValueOnce("none"); // auth
+    mockedSelect.mockResolvedValueOnce("drizzle"); // db orm
+
+    const config = await collectConfig([]);
+
+    expect(config.db).toEqual({ orm: "drizzle" });
+    expect(config.packages).toContainEqual({ type: "db" });
   });
 });

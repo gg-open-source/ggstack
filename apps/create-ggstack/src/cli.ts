@@ -5,10 +5,13 @@ import pc from "picocolors";
 import {
   APP_CHOICES,
   AUTH_CHOICES,
+  DB_ORM_CHOICES,
   DEFAULT_AUTH_PROVIDER,
+  DEFAULT_DB_ORM,
   DEFAULT_PACKAGE_MANAGER,
   DEFAULT_PROJECT_NAME,
   isAuthProvider,
+  isDbOrm,
   PACKAGE_CHOICES,
   TOOLING_CHOICES,
 } from "./config.js";
@@ -16,6 +19,7 @@ import { buildProject } from "./runner.js";
 import type {
   AppConfig,
   AuthConfig,
+  DbConfig,
   PackageConfig,
   PackageManager,
   StackConfig,
@@ -187,6 +191,20 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
       : DEFAULT_AUTH_PROVIDER,
   };
 
+  const selectedDbOrm = await select({
+    message: "Which database ORM do you want to use?",
+    options: DB_ORM_CHOICES.map((choice) => ({ ...choice })),
+    initialValue: DEFAULT_DB_ORM,
+  });
+
+  const db: DbConfig = {
+    orm: isDbOrm(selectedDbOrm) ? selectedDbOrm : DEFAULT_DB_ORM,
+  };
+
+  if (db.orm !== "none") {
+    packages.push({ type: "db" });
+  }
+
   return {
     projectName: sanitizeAppName(projectName),
     targetDir: path.resolve(process.cwd(), projectName),
@@ -194,6 +212,7 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     apps,
     packages,
     auth,
+    db,
     tooling,
   };
 }

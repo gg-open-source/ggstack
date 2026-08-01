@@ -34,7 +34,8 @@ my-app/
 │   └── desktop/      # optional Electron + Vite app
 ├── packages/
 │   ├── ui/           # optional shadcn/ui package
-│   └── auth/         # optional shared auth package
+│   ├── auth/         # optional shared auth package
+│   └── db/           # optional Drizzle or Prisma database package
 ├── tooling/
 │   ├── oxc/          # lint + format config
 │   ├── tailwind/     # shared Tailwind config
@@ -64,9 +65,10 @@ my-app/
 2. Select apps (Vanilla Vite, Next.js, Expo Router, Electron + Vite)
 3. Name each app
 4. Select packages (shadcn/ui)
-5. Select tooling (Tailwind CSS, Oxc, Prettier, ESLint)
+5. Select database ORM (None, Drizzle, Prisma)
+6. Select tooling (Tailwind CSS, Oxc, Prettier, ESLint)
    - Tailwind is auto-selected if shadcn/ui is chosen
-6. Select authentication provider (Better Auth, Clerk, WorkOS, or none)
+7. Select authentication provider (Better Auth, Clerk, WorkOS, or none)
 
 ## Templates
 

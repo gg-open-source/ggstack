@@ -4,6 +4,7 @@ import type {
   StackConfig,
 } from "../../types.js";
 import { generateAuthPackage } from "./auth.js";
+import { generateDbPackage } from "./db.js";
 import { generateShadcnPackage } from "./shadcn.js";
 
 export function generatePackage(
@@ -18,6 +19,10 @@ export function generatePackage(
   if (pkg.type === "auth") {
     generateAuthPackage(config, builder);
   }
+
+  if (pkg.type === "db") {
+    generateDbPackage(config, builder);
+  }
 }
 
-export { generateAuthPackage, generateShadcnPackage };
+export { generateAuthPackage, generateDbPackage, generateShadcnPackage };

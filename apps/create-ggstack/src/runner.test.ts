@@ -16,6 +16,7 @@ function createTestConfig(overrides: Partial<StackConfig> = {}): StackConfig {
     apps: [],
     packages: [],
     auth: { provider: "none" },
+    db: { orm: "none" },
     tooling: [],
     ...overrides,
   };
@@ -275,5 +276,53 @@ describe("auth package generation", () => {
     expect(builder.files["packages/auth/src/use-auth.ts"]).toContain(
       "useWorkOSAuth",
     );
+  });
+});
+
+describe("db package generation", () => {
+  it("does not generate db package when db orm is none", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig();
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/db/package.json"]).toBeUndefined();
+  });
+
+  it("generates drizzle db package when drizzle is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "db" }],
+      db: { orm: "drizzle" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/db/package.json"]).toContain("drizzle-orm");
+    expect(builder.files["packages/db/package.json"]).toContain("drizzle-kit");
+    expect(builder.files["packages/db/drizzle.config.ts"]).toContain(
+      "postgresql",
+    );
+    expect(builder.files["packages/db/src/schema.ts"]).toContain("pgTable");
+    expect(builder.files["packages/db/src/index.ts"]).toContain("drizzle");
+  });
+
+  it("generates prisma db package when prisma is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "db" }],
+      db: { orm: "prisma" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/db/package.json"]).toContain(
+      "@prisma/client",
+    );
+    expect(builder.files["packages/db/package.json"]).toContain("prisma");
+    expect(builder.files["packages/db/prisma/schema.prisma"]).toContain(
+      "postgresql",
+    );
+    expect(builder.files["packages/db/src/index.ts"]).toContain("PrismaClient");
   });
 });
