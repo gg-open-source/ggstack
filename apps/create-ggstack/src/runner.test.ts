@@ -108,7 +108,9 @@ describe("buildProject", () => {
     expect(builder.files["apps/next/package.json"]).toContain(
       "@test-project/next",
     );
-    expect(builder.files["apps/next/app/page.tsx"]).toContain("next");
+    expect(builder.files["apps/next/app/page.tsx"]).toContain("Next.js");
+    expect(builder.files["apps/next/app/page.tsx"]).toContain('{"next"}');
+    expect(builder.files["apps/next/app/page.tsx"]).not.toContain("APP_NAME");
     expect(builder.files["apps/next/package.json"]).toContain(
       '"next": "^16.2.12"',
     );

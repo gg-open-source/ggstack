@@ -14,7 +14,9 @@ const createWindow = () => {
   if (serverEnv.VITE_DEV_SERVER_URL) {
     mainWindow.loadURL(serverEnv.VITE_DEV_SERVER_URL);
   } else {
-    mainWindow.loadFile(path.join(import.meta.dirname, "../renderer/index.html"));
+    mainWindow.loadFile(
+      path.join(import.meta.dirname, "../renderer/index.html"),
+    );
   }
 };
 

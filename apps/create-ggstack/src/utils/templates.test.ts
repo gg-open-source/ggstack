@@ -10,6 +10,14 @@ describe("replacePlaceholders", () => {
     });
     expect(result).toBe("acme/web");
   });
+
+  it("replaces placeholders that include whitespace", () => {
+    const result = replacePlaceholders("{{ PROJECT_NAME }}/{{ APP_NAME }}", {
+      projectName: "acme",
+      appName: "web",
+    });
+    expect(result).toBe("acme/web");
+  });
 });
 
 describe("copyTemplate", () => {

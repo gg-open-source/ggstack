@@ -37,8 +37,8 @@ export function replacePlaceholders(
   context: TemplateContext,
 ): string {
   return content
-    .replace(/\{\{PROJECT_NAME\}\}/g, context.projectName)
-    .replace(/\{\{APP_NAME\}\}/g, context.appName);
+    .replace(/\{\{\s*PROJECT_NAME\s*\}\}/g, context.projectName)
+    .replace(/\{\{\s*APP_NAME\s*\}\}/g, context.appName);
 }
 
 export async function copyTemplate(
