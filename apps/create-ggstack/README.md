@@ -27,12 +27,14 @@ pnpm dlx create-ggstack my-app
 
 ```
 my-app/
+├── .env.example      # always generated; copy to .env
 ├── apps/
 │   ├── web/          # optional Vanilla Vite app
 │   ├── next/         # optional Next.js app
 │   ├── mobile/       # optional Expo Router app
 │   └── desktop/      # optional Electron + Vite app
 ├── packages/
+│   ├── env/          # always generated t3-env package
 │   ├── ui/           # optional shadcn/ui package
 │   ├── auth/         # optional shared auth package
 │   └── db/           # optional Drizzle or Prisma database package
@@ -69,6 +71,8 @@ my-app/
 6. Select tooling (Tailwind CSS, Oxc, Prettier, ESLint)
    - Tailwind is auto-selected if shadcn/ui is chosen
 7. Select authentication provider (Better Auth, Clerk, WorkOS, or none)
+
+`packages/env` and a root `.env.example` are always generated. The schema is filled from the selected auth provider, database ORM, and app types.
 
 ## Templates
 

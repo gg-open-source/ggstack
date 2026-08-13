@@ -1,5 +1,8 @@
+import { createViteEnv } from "@{{PROJECT_NAME}}/env/client";
 import { defineConfig } from "vite";
 import path from "node:path";
+
+createViteEnv(import.meta.env);
 
 export default defineConfig({
   root: path.resolve(import.meta.dirname, "src"),

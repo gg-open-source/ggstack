@@ -5,6 +5,7 @@ import type {
 } from "../../types.js";
 import { generateAuthPackage } from "./auth.js";
 import { generateDbPackage } from "./db.js";
+import { generateEnvPackage } from "./env.js";
 import { generateShadcnPackage } from "./shadcn.js";
 
 export function generatePackage(
@@ -25,4 +26,9 @@ export function generatePackage(
   }
 }
 
-export { generateAuthPackage, generateDbPackage, generateShadcnPackage };
+export {
+  generateAuthPackage,
+  generateDbPackage,
+  generateEnvPackage,
+  generateShadcnPackage,
+};

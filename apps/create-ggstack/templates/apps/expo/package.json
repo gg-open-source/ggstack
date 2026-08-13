@@ -13,6 +13,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
+    "@{{PROJECT_NAME}}/env": "workspace:*",
     "expo": "^57.0.9",
     "expo-constants": "~57.0.8",
     "expo-linking": "~57.0.4",

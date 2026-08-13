@@ -33,6 +33,10 @@ describe("buildProject", () => {
     expect(builder.files["turbo.json"]).toContain("build");
     expect(builder.files[".gitignore"]).toContain("node_modules");
     expect(builder.rootPackageJson.name).toBe("test-project");
+    expect(builder.files[".env.example"]).toContain("NODE_ENV=development");
+    expect(builder.files["packages/env/package.json"]).toContain(
+      "@test-project/env",
+    );
   });
 
   it("always generates tsconfig tooling", async () => {
@@ -239,6 +243,9 @@ describe("auth package generation", () => {
     expect(builder.files["packages/auth/src/provider.tsx"]).toContain(
       "ClerkProvider",
     );
+    expect(builder.files["packages/auth/src/provider.tsx"]).toContain(
+      "getPublicAuthConfig",
+    );
     expect(builder.files["packages/auth/src/use-auth.ts"]).toContain(
       "useClerk",
     );
@@ -276,6 +283,12 @@ describe("auth package generation", () => {
     expect(builder.files["packages/auth/src/use-auth.ts"]).toContain(
       "useWorkOSAuth",
     );
+    expect(builder.files["packages/auth/src/provider.tsx"]).toContain(
+      'from "@test-project/env/client"',
+    );
+    expect(builder.files["packages/auth/src/provider.tsx"]).toContain(
+      "getPublicAuthConfig",
+    );
   });
 });
 
@@ -305,6 +318,10 @@ describe("db package generation", () => {
     );
     expect(builder.files["packages/db/src/schema.ts"]).toContain("pgTable");
     expect(builder.files["packages/db/src/index.ts"]).toContain("drizzle");
+    expect(builder.files["packages/db/src/index.ts"]).toContain(
+      "serverEnv.DATABASE_URL",
+    );
+    expect(builder.files["packages/db/.env.example"]).toBeUndefined();
   });
 
   it("generates prisma db package when prisma is selected", async () => {
@@ -324,5 +341,192 @@ describe("db package generation", () => {
       "postgresql",
     );
     expect(builder.files["packages/db/src/index.ts"]).toContain("PrismaClient");
+    expect(builder.files["packages/db/src/index.ts"]).toContain(
+      "serverEnv.DATABASE_URL",
+    );
+    expect(builder.files["packages/db/.env.example"]).toBeUndefined();
+  });
+});
+
+describe("env package generation", () => {
+  it("always generates packages/env and a root .env.example", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig();
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/package.json"]).toContain(
+      "@t3-oss/env-core",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain("serverEnv");
+    expect(builder.files["packages/env/src/client.ts"]).toBeDefined();
+    expect(builder.files[".env.example"]).toContain("Copy this file to `.env`");
+    expect(builder.files[".env.example"]).toContain("NODE_ENV=development");
+  });
+
+  it("adds DATABASE_URL when a database orm is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "db" }],
+      db: { orm: "drizzle" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "DATABASE_URL",
+    );
+    expect(builder.files[".env.example"]).toContain("DATABASE_URL=");
+    expect(builder.files["turbo.json"]).toContain("DATABASE_URL");
+  });
+
+  it("does not add provider keys when auth and db are none", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig();
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "DATABASE_URL",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "CLERK_SECRET_KEY",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "BETTER_AUTH_SECRET",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "WORKOS_API_KEY",
+    );
+    expect(builder.files[".env.example"]).not.toContain("DATABASE_URL");
+  });
+
+  it("adds better-auth server keys only for better-auth", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ auth: { provider: "better-auth" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "BETTER_AUTH_SECRET",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "BETTER_AUTH_URL",
+    );
+    expect(builder.files[".env.example"]).toContain("BETTER_AUTH_SECRET=");
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "CLERK_SECRET_KEY",
+    );
+  });
+
+  it("adds clerk keys and next/vite client prefixes when those apps are selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [
+        { type: "next", name: "next" },
+        { type: "vite", name: "vite" },
+      ],
+      auth: { provider: "clerk" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "CLERK_SECRET_KEY",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      "VITE_CLERK_PUBLISHABLE_KEY",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).not.toContain(
+      'clientPrefix: "EXPO_PUBLIC_"',
+    );
+    expect(builder.files["packages/env/src/client.ts"]).not.toContain(
+      "export const expoEnv",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      "getPublicAuthConfig",
+    );
+    expect(builder.files["apps/next/next.config.ts"]).toContain(
+      "@test-project/env/server",
+    );
+    expect(builder.files["apps/vite/vite.config.ts"]).toContain(
+      "createViteEnv",
+    );
+  });
+
+  it("adds workos keys and expo client prefix when expo is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "expo", name: "expo" }],
+      auth: { provider: "workos" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "WORKOS_API_KEY",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "WORKOS_COOKIE_PASSWORD",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      "EXPO_PUBLIC_WORKOS_CLIENT_ID",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).not.toContain(
+      'clientPrefix: "NEXT_PUBLIC_"',
+    );
+    expect(builder.files["packages/env/src/client.ts"]).not.toContain(
+      "export const nextEnv",
+    );
+    expect(builder.files["apps/expo/app/_layout.tsx"]).toContain("expoEnv");
+  });
+
+  it("adds optional VITE_DEV_SERVER_URL when electron is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "electron", name: "electron" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "VITE_DEV_SERVER_URL",
+    );
+    expect(builder.files[".env.example"]).toContain("VITE_DEV_SERVER_URL=");
+    expect(builder.files["apps/electron/electron/main.ts"]).toContain(
+      "serverEnv.VITE_DEV_SERVER_URL",
+    );
+  });
+
+  it("lists generated keys on turbo globalEnv", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "db" }],
+      db: { orm: "prisma" },
+      auth: { provider: "clerk" },
+      apps: [{ type: "next", name: "next" }],
+    });
+
+    await buildProject(config, builder);
+
+    const turbo = JSON.parse(builder.files["turbo.json"] ?? "{}") as {
+      globalEnv?: string[];
+      globalPassThroughEnv?: string[];
+    };
+
+    expect(turbo.globalEnv).toEqual(
+      expect.arrayContaining([
+        "DATABASE_URL",
+        "CLERK_SECRET_KEY",
+        "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY",
+      ]),
+    );
+    expect(turbo.globalEnv).not.toContain("NODE_ENV");
+    expect(turbo.globalPassThroughEnv).toEqual(
+      expect.arrayContaining(["NODE_ENV", "SKIP_ENV_VALIDATION"]),
+    );
   });
 });

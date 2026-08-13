@@ -38,7 +38,10 @@ export function generateAuthPackage(
         peerDependencies: {
           react: "^19.2.8",
         },
-        dependencies: getSdkDependencies(provider),
+        dependencies: {
+          [`@${projectName}/env`]: "workspace:*",
+          ...getSdkDependencies(provider),
+        },
         devDependencies: {
           [`@${projectName}/tsconfig`]: "workspace:*",
           "@types/react": "^19.2.18",
@@ -68,7 +71,10 @@ export function generateAuthPackage(
   );
 
   builder.addFile("packages/auth/src/index.ts", generateIndex(provider));
-  builder.addFile("packages/auth/src/provider.tsx", generateProvider(provider));
+  builder.addFile(
+    "packages/auth/src/provider.tsx",
+    generateProvider(projectName, provider),
+  );
   builder.addFile("packages/auth/src/client.ts", generateClient(provider));
   builder.addFile("packages/auth/src/use-auth.ts", generateUseAuth(provider));
   builder.addFile("packages/auth/src/demo.tsx", generateDemo());
@@ -109,6 +115,7 @@ ${sdkExports[provider]}
 }
 
 function generateProvider(
+  projectName: string,
   provider: "better-auth" | "clerk" | "workos",
 ): string {
   const header = 'import type { ReactNode } from "react";\n';
@@ -121,19 +128,26 @@ function generateProvider(
 `;
     case "clerk": {
       return `${header}import { ClerkProvider } from "@clerk/clerk-react";
+import { getPublicAuthConfig } from "@${projectName}/env/client";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  return <ClerkProvider>{children}</ClerkProvider>;
+  const { clerkPublishableKey } = getPublicAuthConfig();
+  return (
+    <ClerkProvider publishableKey={clerkPublishableKey}>{children}</ClerkProvider>
+  );
 }
 `;
     }
     case "workos": {
       return `${header}import { AuthProvider as WorkOSAuthProvider } from "@workos-inc/authkit-react";
+import { getPublicAuthConfig } from "@${projectName}/env/client";
 
-const clientId = process.env.NEXT_PUBLIC_WORKOS_CLIENT_ID ?? "";
+const { workosClientId } = getPublicAuthConfig();
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  return <WorkOSAuthProvider clientId={clientId}>{children}</WorkOSAuthProvider>;
+  return (
+    <WorkOSAuthProvider clientId={workosClientId}>{children}</WorkOSAuthProvider>
+  );
 }
 `;
     }
@@ -271,7 +285,7 @@ This package wraps \`better-auth\` with a unified client-only API.
 ### Setup
 
 1. Add a server route to your Next.js app (e.g. \`app/api/auth/[...all]/route.ts\`).
-2. Configure your \`AUTH_SECRET\`, \`DATABASE_URL\`, and any OAuth provider env vars.
+2. Copy the repo-root \`.env.example\` to \`.env\` and fill in the Better Auth values.
 3. Import \`AuthProvider\` from \`@${projectName}/auth\` and wrap your app root.
 4. Use \`useAuth()\` in components to access session state.
 
@@ -286,7 +300,7 @@ This package wraps \`@clerk/clerk-react\` with a unified API.
 
 ### Setup
 
-1. Set \`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY\` (or \`VITE_CLERK_PUBLISHABLE_KEY\`).
+1. Copy the repo-root \`.env.example\` to \`.env\` and set \`CLERK_SECRET_KEY\` plus the publishable key for your app (\`NEXT_PUBLIC_\`, \`VITE_\`, or \`EXPO_PUBLIC_\`).
 2. Import \`AuthProvider\` from \`@${projectName}/auth\` and wrap your app root.
 3. Use \`useAuth()\` in components to access session state.
 
@@ -300,7 +314,7 @@ This package wraps \`@workos-inc/authkit-react\` with a unified API.
 
 ### Setup
 
-1. Set \`NEXT_PUBLIC_WORKOS_CLIENT_ID\`.
+1. Copy the repo-root \`.env.example\` to \`.env\` and set the WorkOS server and client vars.
 2. Import \`AuthProvider\` from \`@${projectName}/auth\` and wrap your app root.
 3. Use \`useAuth()\` in components to access session state.
 

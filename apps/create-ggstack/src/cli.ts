@@ -243,6 +243,7 @@ export async function createProject(config: StackConfig): Promise<void> {
   log(pc.green(`\nCreated ${config.projectName} at ${config.targetDir}`));
   log(pc.gray("Next steps:"));
   log(pc.gray(`  cd ${config.projectName}`));
+  log(pc.gray("  cp .env.example .env"));
   log(pc.gray(`  ${config.packageManager} install`));
   if (config.apps.length > 0) {
     log(pc.gray(`  ${config.packageManager} dev`));

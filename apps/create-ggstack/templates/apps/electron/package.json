@@ -12,6 +12,9 @@
     "format": "oxfmt --config ../../tooling/oxc/oxfmt.json src electron",
     "check-types": "tsc --noEmit"
   },
+  "dependencies": {
+    "@{{PROJECT_NAME}}/env": "workspace:*"
+  },
   "devDependencies": {
     "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
     "@types/node": "^26.1.2",

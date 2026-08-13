@@ -1,6 +1,7 @@
 import type { ProjectBuilder, StackConfig } from "./types.js";
 import { generateApp } from "./generators/apps/index.js";
 import { generateAuthPackage } from "./generators/packages/auth.js";
+import { generateEnvPackage } from "./generators/packages/env.js";
 import { generatePackage } from "./generators/packages/index.js";
 import { generateRoot } from "./generators/root.js";
 import { generateTooling } from "./generators/tooling/index.js";
@@ -12,6 +13,7 @@ export async function buildProject(
 ): Promise<void> {
   generateRoot(config, builder);
   generateTsconfigTooling(config, builder);
+  generateEnvPackage(config, builder);
 
   for (const app of config.apps) {
     await generateApp(config, builder, app);

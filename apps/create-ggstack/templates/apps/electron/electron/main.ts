@@ -1,3 +1,4 @@
+import { serverEnv } from "@{{PROJECT_NAME}}/env/server";
 import { app, BrowserWindow } from "electron";
 import path from "node:path";
 
@@ -10,8 +11,8 @@ const createWindow = () => {
     },
   });
 
-  if (process.env.VITE_DEV_SERVER_URL) {
-    mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL);
+  if (serverEnv.VITE_DEV_SERVER_URL) {
+    mainWindow.loadURL(serverEnv.VITE_DEV_SERVER_URL);
   } else {
     mainWindow.loadFile(path.join(import.meta.dirname, "../renderer/index.html"));
   }

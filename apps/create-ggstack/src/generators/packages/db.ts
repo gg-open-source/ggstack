@@ -38,11 +38,6 @@ export function generateDbPackage(
     ),
   );
 
-  builder.addFile(
-    "packages/db/.env.example",
-    "DATABASE_URL=postgresql://user:password@localhost:5432/mydb\n",
-  );
-
   if (orm === "drizzle") {
     generateDrizzleFiles(projectName, builder);
   } else {
@@ -84,6 +79,7 @@ function getPackageJson(
         "db:studio": "drizzle-kit studio",
       },
       dependencies: {
+        [`@${projectName}/env`]: "workspace:*",
         "drizzle-orm": "^0.40.0",
         pg: "^8.14.0",
       },
@@ -105,6 +101,7 @@ function getPackageJson(
       "db:studio": "prisma studio",
     },
     dependencies: {
+      [`@${projectName}/env`]: "workspace:*",
       "@prisma/client": "^6.5.0",
     },
     devDependencies: {
@@ -121,13 +118,14 @@ function generateDrizzleFiles(
   builder.addFile(
     "packages/db/drizzle.config.ts",
     `import { defineConfig } from "drizzle-kit";
+import { serverEnv } from "@${projectName}/env/server";
 
 export default defineConfig({
   dialect: "postgresql",
   schema: "./src/schema.ts",
   out: "./drizzle",
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? "",
+    url: serverEnv.DATABASE_URL,
   },
 });
 `,
@@ -152,9 +150,10 @@ export type NewUser = typeof users.$inferInsert;
   builder.addFile(
     "packages/db/src/index.ts",
     `import { drizzle } from "drizzle-orm/node-postgres";
+import { serverEnv } from "@${projectName}/env/server";
 import * as schema from "./schema";
 
-export const db = drizzle(process.env.DATABASE_URL ?? "", { schema });
+export const db = drizzle(serverEnv.DATABASE_URL, { schema });
 export { schema };
 export type { User, NewUser } from "./schema";
 `,
@@ -170,7 +169,7 @@ Shared database package using **Drizzle ORM** with PostgreSQL.
 
 ## Setup
 
-1. Copy \`.env.example\` to \`.env\` and fill in \`DATABASE_URL\`.
+1. Copy the repo-root \`.env.example\` to \`.env\` and fill in \`DATABASE_URL\`.
 2. Run migrations: \`pnpm db:migrate\`
 3. Use the exported \`db\` client in your apps:
 
@@ -216,6 +215,9 @@ model User {
   builder.addFile(
     "packages/db/src/index.ts",
     `import { PrismaClient } from "@prisma/client";
+import { serverEnv } from "@${projectName}/env/server";
+
+void serverEnv.DATABASE_URL;
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
@@ -223,7 +225,7 @@ const globalForPrisma = globalThis as unknown as {
 
 export const prisma = globalForPrisma.prisma ?? new PrismaClient();
 
-if (process.env.NODE_ENV !== "production") {
+if (serverEnv.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
 
@@ -241,7 +243,7 @@ Shared database package using **Prisma ORM** with PostgreSQL.
 
 ## Setup
 
-1. Copy \`.env.example\` to \`.env\` and fill in \`DATABASE_URL\`.
+1. Copy the repo-root \`.env.example\` to \`.env\` and fill in \`DATABASE_URL\`.
 2. Generate the Prisma client: \`pnpm db:generate\`
 3. Push schema changes: \`pnpm db:push\`
 4. Use the exported \`prisma\` client in your apps:
