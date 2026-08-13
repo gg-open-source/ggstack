@@ -1,6 +1,6 @@
 import type { AuthProvider, DbOrm, PackageManager } from "./types.js";
 
-export const DEFAULT_PROJECT_NAME = "my-ggstack";
+export const DEFAULT_PROJECT_NAME = "project";
 export const DEFAULT_PACKAGE_MANAGER: PackageManager = "pnpm";
 export const DEFAULT_AUTH_PROVIDER: AuthProvider = "none";
 export const DEFAULT_DB_ORM: DbOrm = "none";
@@ -11,6 +11,13 @@ export const APP_CHOICES = [
   { value: "expo", label: "Expo Router", hint: "custom template" },
   { value: "electron", label: "Electron + Vite", hint: "custom template" },
 ] as const;
+
+export const DEFAULT_APP_NAMES = {
+  vite: "vite",
+  next: "next",
+  expo: "expo",
+  electron: "electron",
+} as const;
 
 export const PACKAGE_CHOICES = [
   { value: "shadcn", label: "shadcn/ui", hint: "shared UI package" },

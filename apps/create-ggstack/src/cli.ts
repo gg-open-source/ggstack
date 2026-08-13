@@ -6,6 +6,7 @@ import {
   APP_CHOICES,
   AUTH_CHOICES,
   DB_ORM_CHOICES,
+  DEFAULT_APP_NAMES,
   DEFAULT_AUTH_PROVIDER,
   DEFAULT_DB_ORM,
   DEFAULT_PACKAGE_MANAGER,
@@ -93,6 +94,7 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     projectNameArg ??
     (await text({
       message: "Project name?",
+      placeholder: DEFAULT_PROJECT_NAME,
       defaultValue: DEFAULT_PROJECT_NAME,
       validate: (value) => {
         if (value.trim().length === 0) return "Project name is required";
@@ -120,18 +122,14 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     required: false,
   });
 
-  const defaultAppNames: Record<string, string> = {
-    vite: "vite",
-    next: "next",
-    expo: "expo",
-    electron: "electron",
-  };
-
   const apps: AppConfig[] = [];
   for (const appType of selectedApps) {
+    const defaultName =
+      DEFAULT_APP_NAMES[appType as keyof typeof DEFAULT_APP_NAMES] ?? appType;
     const name = await text({
       message: `Name for the ${appType} app?`,
-      defaultValue: defaultAppNames[appType] ?? appType,
+      placeholder: defaultName,
+      defaultValue: defaultName,
       validate: (value) => {
         if (value.trim().length === 0) return "App name is required";
         if (apps.some((a) => a.name === sanitizeAppName(value)))

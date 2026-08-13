@@ -196,25 +196,52 @@ describe("collectConfig", () => {
     expect(mockedText).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "Name for the vite app?",
+        placeholder: "vite",
         defaultValue: "vite",
       }),
     );
     expect(mockedText).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "Name for the next app?",
+        placeholder: "next",
         defaultValue: "next",
       }),
     );
     expect(mockedText).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "Name for the expo app?",
+        placeholder: "expo",
         defaultValue: "expo",
       }),
     );
     expect(mockedText).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "Name for the electron app?",
+        placeholder: "electron",
         defaultValue: "electron",
+      }),
+    );
+  });
+
+  it("shows the project name default as a placeholder", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("project");
+    mockedMultiSelect.mockResolvedValueOnce([]); // apps
+    mockedMultiSelect.mockResolvedValueOnce([]); // packages
+    mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+    mockedSelect.mockResolvedValueOnce("none"); // auth
+    mockedSelect.mockResolvedValueOnce("none"); // db orm
+
+    await collectConfig([]);
+
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Project name?",
+        placeholder: "project",
+        defaultValue: "project",
       }),
     );
   });
