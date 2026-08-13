@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 # id-token: write is required for npm trusted publishing (OIDC).
-# Without it, pnpm skips OIDC and falls back to NODE_AUTH_TOKEN.
+# Do not set NODE_AUTH_TOKEN or registry-url: either overrides OIDC.
 permissions:
   contents: read
   id-token: write
@@ -18,7 +18,6 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    environment: Production
     steps:
       - uses: actions/checkout@v4
 
@@ -27,7 +26,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -36,16 +34,10 @@ jobs:
 
       - name: Publish if version is new
         working-directory: apps/create-ggstack
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           VERSION=$(node -p "require('./package.json').version")
           if npm view "create-ggstack@$VERSION" version >/dev/null 2>&1; then
             echo "create-ggstack@$VERSION already on npm — skipping"
             exit 0
-          fi
-          # An empty token overrides OIDC and npm returns 404 instead of 401.
-          if [ -z "$NODE_AUTH_TOKEN" ]; then
-            unset NODE_AUTH_TOKEN
           fi
           pnpm publish --no-git-checks --access public

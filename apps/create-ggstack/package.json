@@ -4,7 +4,10 @@
   "type": "module",
   "author": "Gaurav Ghosh",
   "license": "MIT",
-  "repository": "https://github.com/gg-open-source/ggstack.git",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/gg-open-source/ggstack.git"
+  },
   "keywords": [
     "create",
     "cli",
