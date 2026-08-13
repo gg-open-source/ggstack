@@ -37,6 +37,38 @@ describe("buildProject", () => {
     expect(builder.files["packages/env/package.json"]).toContain(
       "@test-project/env",
     );
+    expect(builder.files["README.md"]).toContain("# test-project");
+    expect(builder.files["README.md"]).toContain("cp .env.example .env");
+    expect(builder.files["README.md"]).toContain("@test-project/env");
+  });
+
+  it("generates a root README with selected stack details", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [
+        { type: "next", name: "web" },
+        { type: "expo", name: "mobile" },
+      ],
+      packages: [{ type: "shadcn" }, { type: "db" }],
+      auth: { provider: "clerk" },
+      db: { orm: "drizzle" },
+      tooling: [{ type: "oxc" }, { type: "tailwind" }],
+    });
+
+    await buildProject(config, builder);
+
+    const readme = builder.files["README.md"];
+    expect(readme).toContain("# test-project");
+    expect(readme).toContain("apps/web");
+    expect(readme).toContain("Next.js");
+    expect(readme).toContain("apps/mobile");
+    expect(readme).toContain("Expo Router");
+    expect(readme).toContain("pnpm --filter @test-project/mobile start");
+    expect(readme).toContain("Clerk");
+    expect(readme).toContain("Drizzle ORM");
+    expect(readme).toContain("@test-project/ui");
+    expect(readme).toContain("not mounted automatically");
+    expect(readme).toContain("Oxc");
   });
 
   it("always generates tsconfig tooling", async () => {

@@ -94,4 +94,150 @@ release
     `engine-strict=true
 `,
   );
+
+  builder.addFile("README.md", generateRootReadme(config));
+}
+
+const APP_LABELS: Record<string, string> = {
+  vite: "Vanilla Vite",
+  next: "Next.js",
+  expo: "Expo Router",
+  electron: "Electron + Vite",
+};
+
+const AUTH_LABELS: Record<string, string> = {
+  "better-auth": "Better Auth",
+  clerk: "Clerk",
+  workos: "WorkOS",
+};
+
+const ORM_LABELS: Record<string, string> = {
+  drizzle: "Drizzle ORM",
+  prisma: "Prisma",
+};
+
+const TOOLING_LABELS: Record<string, string> = {
+  tailwind: "Tailwind CSS",
+  oxc: "Oxc (lint + format)",
+  prettier: "Prettier (stub — wire it up yourself)",
+  eslint: "ESLint (stub — wire it up yourself)",
+};
+
+export function generateRootReadme(config: StackConfig): string {
+  const name = config.projectName;
+  const hasApps = config.apps.length > 0;
+  const hasExpo = config.apps.some((app) => app.type === "expo");
+  const hasDevApps = config.apps.some((app) => app.type !== "expo");
+  const hasShadcn = config.packages.some((pkg) => pkg.type === "shadcn");
+  const hasAuth = config.auth.provider !== "none";
+  const hasDb = config.db.orm !== "none";
+
+  const lines: string[] = [
+    `# ${name}`,
+    "",
+    "Monorepo scaffolded with [create-ggstack](https://github.com/gg-open-source/ggstack).",
+    "",
+    "## Setup",
+    "",
+    "```bash",
+    "cp .env.example .env",
+    "pnpm install",
+  ];
+
+  if (hasDevApps) {
+    lines.push("pnpm dev");
+  }
+
+  lines.push("```", "");
+  lines.push(
+    "The generated workspace uses **pnpm** even if you passed `--npm`, `--yarn`, or `--bun` to the CLI.",
+    "",
+    `Fill in \`.env\` before running anything that imports \`@${name}/env\`. Required values cannot be empty.`,
+  );
+
+  if (hasExpo) {
+    const expoApps = config.apps.filter((app) => app.type === "expo");
+    lines.push(
+      "",
+      "Expo apps do not define a `dev` script, so they are not started by `pnpm dev`. From the repo root:",
+      "",
+    );
+    for (const app of expoApps) {
+      lines.push("```bash", `pnpm --filter @${name}/${app.name} start`, "```");
+    }
+  }
+
+  lines.push(
+    "",
+    "## Scripts",
+    "",
+    "| Script | Description |",
+    "| --- | --- |",
+    "| `pnpm dev` | Turbo `dev` for apps that define it (Vite, Next.js, Electron) |",
+    "| `pnpm build` | Turbo `build` |",
+    "| `pnpm lint` | Lint |",
+    "| `pnpm format` | Format |",
+    "| `pnpm check-types` | Typecheck |",
+    "| `pnpm test` | Test |",
+  );
+
+  if (hasApps) {
+    lines.push("", "## Apps", "");
+    for (const app of config.apps) {
+      const label = APP_LABELS[app.type] ?? app.type;
+      lines.push(
+        `- \`apps/${app.name}\` — ${label} (\`@${name}/${app.name}\`)`,
+      );
+    }
+  }
+
+  lines.push("", "## Packages", "");
+  lines.push(
+    `- \`packages/env\` — typed environment variables (\`@${name}/env\`). See that package's README.`,
+  );
+
+  if (hasShadcn) {
+    lines.push(
+      `- \`packages/ui\` — shadcn/ui starter (\`@${name}/ui\`). \`cn()\` and CSS variables are included; add components yourself.`,
+    );
+  }
+
+  if (hasAuth) {
+    const label = AUTH_LABELS[config.auth.provider] ?? config.auth.provider;
+    lines.push(
+      `- \`packages/auth\` — ${label} (\`@${name}/auth\`). See that package's README.`,
+    );
+  }
+
+  if (hasDb) {
+    const label = ORM_LABELS[config.db.orm] ?? config.db.orm;
+    lines.push(
+      `- \`packages/db\` — ${label} + PostgreSQL (\`@${name}/db\`). See that package's README.`,
+    );
+  }
+
+  if (hasAuth || hasDb) {
+    lines.push(
+      "",
+      "## Auth and database are not mounted automatically",
+      "",
+      `App templates do not wrap \`AuthProvider\` or import \`@${name}/db\`. Import those packages in your apps after scaffold.`,
+    );
+  }
+
+  if (config.tooling.length > 0) {
+    lines.push("", "## Tooling", "");
+    for (const tool of config.tooling) {
+      const label = TOOLING_LABELS[tool.type] ?? tool.type;
+      lines.push(`- ${label}`);
+    }
+  }
+
+  lines.push(
+    "",
+    `\`tooling/tsconfig\` is always present. Shared TypeScript packages extend \`@${name}/tsconfig/base.json\`.`,
+    "",
+  );
+
+  return `${lines.join("\n")}\n`;
 }
