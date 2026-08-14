@@ -184,6 +184,7 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce([
       "vite",
       "next",
+      "astro",
       "expo",
       "electron",
       "express",
@@ -194,6 +195,7 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce(""); // vite default
     mockedSelect.mockResolvedValueOnce("vanilla"); // vite framework
     mockedText.mockResolvedValueOnce(""); // next default
+    mockedText.mockResolvedValueOnce(""); // astro default
     mockedText.mockResolvedValueOnce(""); // expo default
     mockedText.mockResolvedValueOnce(""); // electron default
     mockedText.mockResolvedValueOnce(""); // express default
@@ -219,6 +221,13 @@ describe("collectConfig", () => {
         message: "Name for the next app?",
         placeholder: "next",
         defaultValue: "next",
+      }),
+    );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for the astro app?",
+        placeholder: "astro",
+        defaultValue: "astro",
       }),
     );
     expect(mockedText).toHaveBeenCalledWith(
@@ -288,7 +297,7 @@ describe("collectConfig", () => {
     );
   });
 
-  it("supports all eight app types", async () => {
+  it("supports all nine app types", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
     const mockedSelect = vi.mocked(prompts.select);
@@ -297,6 +306,7 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce([
       "vite",
       "next",
+      "astro",
       "expo",
       "electron",
       "express",
@@ -307,6 +317,7 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce("vite"); // vite
     mockedSelect.mockResolvedValueOnce("vanilla"); // vite framework
     mockedText.mockResolvedValueOnce("docs"); // next
+    mockedText.mockResolvedValueOnce("site"); // astro
     mockedText.mockResolvedValueOnce("expo"); // expo
     mockedText.mockResolvedValueOnce("desktop"); // electron
     mockedText.mockResolvedValueOnce("api"); // express
@@ -327,6 +338,7 @@ describe("collectConfig", () => {
         vite: { framework: "vanilla", variant: "ts" },
       },
       { type: "next", name: "docs" },
+      { type: "astro", name: "site" },
       { type: "expo", name: "expo" },
       { type: "electron", name: "desktop" },
       { type: "express", name: "api" },
@@ -521,5 +533,28 @@ describe("collectConfig", () => {
       }),
     );
     expect(config.apps).toEqual([{ type: "next", name: "docs" }]);
+  });
+
+  it("does not add vite options to astro apps", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce(["astro"]);
+    mockedText.mockResolvedValueOnce("site");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(mockedSelect).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Select a Vite framework?",
+      }),
+    );
+    expect(config.apps).toEqual([{ type: "astro", name: "site" }]);
   });
 });

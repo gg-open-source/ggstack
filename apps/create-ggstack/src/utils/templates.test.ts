@@ -62,6 +62,21 @@ describe("copyTemplate", () => {
     },
   );
 
+  it("copies the astro template with placeholders replaced", async () => {
+    const builder = new ProjectBuilder();
+
+    await copyTemplate(
+      "astro",
+      "apps/site",
+      { projectName: "acme", appName: "site" },
+      builder,
+    );
+
+    expect(builder.files["apps/site/package.json"]).toContain("@acme/site");
+    expect(builder.files["apps/site/src/pages/index.astro"]).toContain("site");
+    expect(builder.files["apps/site/astro.config.ts"]).toBeDefined();
+  });
+
   it("copies the tanstack-start template with placeholders replaced", async () => {
     const builder = new ProjectBuilder();
 

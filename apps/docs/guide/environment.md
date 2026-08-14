@@ -16,6 +16,7 @@ The Zod schema is generated from the apps, auth provider, and ORM you selected. 
 | App type | Client prefix | Client export |
 | --- | --- | --- |
 | Next.js | `NEXT_PUBLIC_` | `nextEnv` |
+| Astro | `PUBLIC_` | `astroEnv` |
 | Expo | `EXPO_PUBLIC_` | `expoEnv` |
 | Vite, Electron, TanStack Start, or React Router | `VITE_` | `createViteEnv(runtimeEnv)` — pass `import.meta.env` |
 | Express or Fastify | — | no client export; they import `@<project>/env/server` on boot |
@@ -32,11 +33,13 @@ Clerk and WorkOS also generate `getPublicAuthConfig()`, which reads the publisha
 | Better Auth | `BETTER_AUTH_URL` | server | yes (URL) |
 | Clerk | `CLERK_SECRET_KEY` | server | yes |
 | Clerk + Next | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | client | yes |
+| Clerk + Astro | `PUBLIC_CLERK_PUBLISHABLE_KEY` | client | yes |
 | Clerk + Vite/Electron/TanStack Start/React Router | `VITE_CLERK_PUBLISHABLE_KEY` | client | yes |
 | Clerk + Expo | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | client | yes |
 | WorkOS | `WORKOS_API_KEY` | server | yes |
 | WorkOS | `WORKOS_COOKIE_PASSWORD` | server | yes |
 | WorkOS + Next | `NEXT_PUBLIC_WORKOS_CLIENT_ID` | client | yes |
+| WorkOS + Astro | `PUBLIC_WORKOS_CLIENT_ID` | client | yes |
 | WorkOS + Vite/Electron/TanStack Start/React Router | `VITE_WORKOS_CLIENT_ID` | client | yes |
 | WorkOS + Expo | `EXPO_PUBLIC_WORKOS_CLIENT_ID` | client | yes |
 | Electron | `VITE_DEV_SERVER_URL` | server | no (URL; injected in Electron dev) |

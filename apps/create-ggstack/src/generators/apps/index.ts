@@ -1,4 +1,5 @@
 import type { AppConfig, ProjectBuilder, StackConfig } from "../../types.js";
+import { generateAstroApp } from "./astro.js";
 import { generateElectronApp } from "./electron.js";
 import { generateExpoApp } from "./expo.js";
 import { generateExpressApp } from "./express.js";
@@ -19,6 +20,9 @@ export async function generateApp(
       break;
     case "next":
       await generateNextApp(config, builder, app);
+      break;
+    case "astro":
+      await generateAstroApp(config, builder, app);
       break;
     case "expo":
       await generateExpoApp(config, builder, app);
@@ -42,6 +46,7 @@ export async function generateApp(
 }
 
 export {
+  generateAstroApp,
   generateElectronApp,
   generateExpoApp,
   generateExpressApp,

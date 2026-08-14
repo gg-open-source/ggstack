@@ -23,6 +23,10 @@ const APP_SECTIONS: Partial<Record<AppType, GitignoreSection>> = {
     title: "Next.js",
     entries: [".next", "out"],
   },
+  astro: {
+    title: "Astro",
+    entries: [".astro"],
+  },
   expo: {
     title: "Expo",
     entries: [".expo", "expo-env.d.ts", "web-build"],

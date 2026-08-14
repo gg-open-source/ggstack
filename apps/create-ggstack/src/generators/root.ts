@@ -87,6 +87,7 @@ export function generateRoot(
 
 const APP_LABELS: Record<string, string> = {
   next: "Next.js",
+  astro: "Astro",
   expo: "Expo Router",
   electron: "Electron + Vite",
   express: "Express",
@@ -189,7 +190,7 @@ export function generateRootReadme(config: StackConfig): string {
     "",
     "| Script | Description |",
     "| --- | --- |",
-    "| `pnpm dev` | Turbo `dev` for apps that define it (Vite, Next.js, Electron, Express, Fastify, TanStack Start, React Router) |",
+    "| `pnpm dev` | Turbo `dev` for apps that define it (Vite, Next.js, Astro, Electron, Express, Fastify, TanStack Start, React Router) |",
     "| `pnpm build` | Turbo `build` |",
     "| `pnpm lint` | Lint |",
     "| `pnpm format` | Format |",

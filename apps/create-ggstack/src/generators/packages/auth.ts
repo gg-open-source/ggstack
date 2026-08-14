@@ -300,13 +300,13 @@ This package wraps \`@clerk/clerk-react\` with a unified API.
 
 ### Setup
 
-1. Copy the repo-root \`.env.example\` to \`.env\` and set \`CLERK_SECRET_KEY\` plus the publishable key for your app (\`NEXT_PUBLIC_\`, \`VITE_\`, or \`EXPO_PUBLIC_\`).
+1. Copy the repo-root \`.env.example\` to \`.env\` and set \`CLERK_SECRET_KEY\` plus the publishable key for your app (\`NEXT_PUBLIC_\`, \`VITE_\`, \`EXPO_PUBLIC_\`, or \`PUBLIC_\`).
 2. Import \`AuthProvider\` from \`@${projectName}/auth\` and wrap your app root.
 3. Use \`useAuth()\` in components to access session state.
 
 ### Env vars
 
-- \`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY\` / \`VITE_CLERK_PUBLISHABLE_KEY\`
+- \`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY\` / \`VITE_CLERK_PUBLISHABLE_KEY\` / \`PUBLIC_CLERK_PUBLISHABLE_KEY\`
 - \`CLERK_SECRET_KEY\` (server-only)`,
     workos: `## WorkOS AuthKit
 
@@ -320,7 +320,7 @@ This package wraps \`@workos-inc/authkit-react\` with a unified API.
 
 ### Env vars
 
-- \`NEXT_PUBLIC_WORKOS_CLIENT_ID\`
+- \`NEXT_PUBLIC_WORKOS_CLIENT_ID\` / \`PUBLIC_WORKOS_CLIENT_ID\`
 - \`WORKOS_API_KEY\` (server-only)
 - \`WORKOS_COOKIE_PASSWORD\` (server-only)`,
   };

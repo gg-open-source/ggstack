@@ -16,6 +16,7 @@ export const DEFAULT_VITE_VARIANT: ViteVariant = "ts";
 export const APP_CHOICES = [
   { value: "vite", label: "Vite", hint: "custom template" },
   { value: "next", label: "Next.js", hint: "custom template" },
+  { value: "astro", label: "Astro", hint: "custom template" },
   { value: "expo", label: "Expo Router", hint: "custom template" },
   { value: "electron", label: "Electron + Vite", hint: "custom template" },
   { value: "express", label: "Express", hint: "custom template" },
@@ -27,6 +28,7 @@ export const APP_CHOICES = [
 export const DEFAULT_APP_NAMES = {
   vite: "vite",
   next: "next",
+  astro: "astro",
   expo: "expo",
   electron: "electron",
   express: "express",

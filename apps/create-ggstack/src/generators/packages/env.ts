@@ -1,6 +1,10 @@
 import type { ProjectBuilder, StackConfig } from "../../types.js";
 
-export type ClientPrefix = "NEXT_PUBLIC_" | "EXPO_PUBLIC_" | "VITE_";
+export type ClientPrefix =
+  | "NEXT_PUBLIC_"
+  | "EXPO_PUBLIC_"
+  | "VITE_"
+  | "PUBLIC_";
 
 export type EnvVarGroup = "core" | "database" | "auth" | "electron";
 
@@ -45,6 +49,9 @@ export function getClientPrefixes(config: StackConfig): ClientPrefix[] {
     )
   ) {
     prefixes.push("VITE_");
+  }
+  if (config.apps.some((app) => app.type === "astro")) {
+    prefixes.push("PUBLIC_");
   }
   return prefixes;
 }
@@ -307,7 +314,12 @@ ${schemaEntries("      ")}    },
   });
 `);
       } else {
-        const exportName = prefix === "NEXT_PUBLIC_" ? "nextEnv" : "expoEnv";
+        const exportName =
+          prefix === "NEXT_PUBLIC_"
+            ? "nextEnv"
+            : prefix === "EXPO_PUBLIC_"
+              ? "expoEnv"
+              : "astroEnv";
         parts.push(`export const ${exportName} = createEnv({
   clientPrefix: "${prefix}",
   client: {
@@ -336,6 +348,7 @@ function generatePublicAuthConfig(provider: "clerk" | "workos"): string {
       process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ??
       process.env.VITE_CLERK_PUBLISHABLE_KEY ??
       process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ??
+      process.env.PUBLIC_CLERK_PUBLISHABLE_KEY ??
       "",
   };
 }
@@ -348,6 +361,7 @@ function generatePublicAuthConfig(provider: "clerk" | "workos"): string {
       process.env.NEXT_PUBLIC_WORKOS_CLIENT_ID ??
       process.env.VITE_WORKOS_CLIENT_ID ??
       process.env.EXPO_PUBLIC_WORKOS_CLIENT_ID ??
+      process.env.PUBLIC_WORKOS_CLIENT_ID ??
       "",
   };
 }

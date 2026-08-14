@@ -31,6 +31,18 @@ pnpm --filter @my-app/vite dev
 
 Default port: `5173`. Default folder name is still `vite`; the framework only changes the files inside that app.
 
+## Astro
+
+Astro 7 + TypeScript. Scripts: `dev` (`astro dev`), `build` (`astro build`), `preview`, `check-types` (`astro check`).
+
+`astro.config.ts` imports `@<project>/env/server` so server env is validated when Astro starts. Client vars use the `PUBLIC_` prefix (`astroEnv`).
+
+```bash
+pnpm --filter @my-app/astro dev
+```
+
+Default port: `4321`.
+
 ## Next.js
 
 Next.js 16 + React 19 App Router. Scripts: `dev`, `build`, `start`.

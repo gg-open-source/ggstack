@@ -1,0 +1,23 @@
+{
+  "name": "@{{PROJECT_NAME}}/{{APP_NAME}}",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "astro build",
+    "dev": "astro dev",
+    "preview": "astro preview",
+    "lint": "oxlint --config ../../tooling/oxc/oxlint.json src",
+    "format": "oxfmt --config ../../tooling/oxc/oxfmt.json src",
+    "check-types": "astro check"
+  },
+  "dependencies": {
+    "@{{PROJECT_NAME}}/env": "workspace:*",
+    "astro": "^7.2.2"
+  },
+  "devDependencies": {
+    "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
+    "@astrojs/check": "^0.9.10",
+    "typescript": "^5.8.0"
+  }
+}

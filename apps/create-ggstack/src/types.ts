@@ -1,6 +1,7 @@
 export type AppType =
   | "vite"
   | "next"
+  | "astro"
   | "expo"
   | "electron"
   | "express"

@@ -7,7 +7,7 @@ Typed env via `@t3-oss/env-core` and Zod. Exports:
 | Import | Use |
 | --- | --- |
 | `@<project>/env/server` | `serverEnv` — Node/server variables |
-| `@<project>/env/client` | `nextEnv`, `expoEnv`, and/or `createViteEnv`, plus `getPublicAuthConfig()` for Clerk/WorkOS |
+| `@<project>/env/client` | `nextEnv`, `astroEnv`, `expoEnv`, and/or `createViteEnv`, plus `getPublicAuthConfig()` for Clerk/WorkOS |
 | `@<project>/env` | Re-exports server and client |
 
 Add new variables in the Zod schemas **and** in the root `.env.example`. Full matrix: [Environment](./environment.md).

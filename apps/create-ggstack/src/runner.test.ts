@@ -54,6 +54,7 @@ describe("buildProject", () => {
           vite: { framework: "react", variant: "react-compiler" },
         },
         { type: "next", name: "web" },
+        { type: "astro", name: "site" },
         { type: "expo", name: "mobile" },
         { type: "express", name: "api" },
         { type: "fastify", name: "gateway" },
@@ -74,6 +75,8 @@ describe("buildProject", () => {
     expect(readme).toContain("Vite (React + Compiler)");
     expect(readme).toContain("apps/web");
     expect(readme).toContain("Next.js");
+    expect(readme).toContain("apps/site");
+    expect(readme).toContain("Astro");
     expect(readme).toContain("apps/mobile");
     expect(readme).toContain("Expo Router");
     expect(readme).toContain("apps/api");
@@ -229,6 +232,29 @@ describe("buildProject", () => {
     );
   });
 
+  it("copies the astro template when an astro app is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "astro", name: "astro" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/astro/package.json"]).toContain(
+      "@test-project/astro",
+    );
+    expect(builder.files["apps/astro/src/pages/index.astro"]).toContain("astro");
+    expect(builder.files["apps/astro/src/pages/index.astro"]).not.toContain(
+      "APP_NAME",
+    );
+    expect(builder.files["apps/astro/astro.config.ts"]).toContain(
+      "@test-project/env/server",
+    );
+    expect(builder.files["apps/astro/package.json"]).toContain(
+      '"astro": "^7.2.2"',
+    );
+  });
+
   it("copies the expo router template when an expo app is selected", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({
@@ -381,6 +407,7 @@ describe("buildProject", () => {
       apps: [
         { type: "vite", name: "vite" },
         { type: "next", name: "next" },
+        { type: "astro", name: "astro" },
         { type: "expo", name: "expo" },
         { type: "electron", name: "electron" },
         { type: "express", name: "express" },
@@ -743,6 +770,39 @@ describe("env package generation", () => {
       "createViteEnv",
     );
     expect(builder.files["apps/web/vite.config.ts"]).toContain("createViteEnv");
+  });
+
+  it("adds clerk keys and PUBLIC_ client prefix when astro is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "astro", name: "site" }],
+      auth: { provider: "clerk" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      "PUBLIC_CLERK_PUBLISHABLE_KEY",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      'clientPrefix: "PUBLIC_"',
+    );
+    expect(builder.files["packages/env/src/client.ts"]).toContain("astroEnv");
+    expect(builder.files["packages/env/src/client.ts"]).not.toContain(
+      'clientPrefix: "NEXT_PUBLIC_"',
+    );
+    expect(builder.files["packages/env/src/client.ts"]).not.toContain(
+      "export const nextEnv",
+    );
+    expect(builder.files["apps/site/astro.config.ts"]).toContain(
+      "@test-project/env/server",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      "PUBLIC_CLERK_PUBLISHABLE_KEY",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      "getPublicAuthConfig",
+    );
   });
 
   it("adds workos keys and expo client prefix when expo is selected", async () => {

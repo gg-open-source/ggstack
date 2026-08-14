@@ -92,6 +92,7 @@ dist
 
     expect(gitignore).not.toContain(".next");
     expect(gitignore).not.toContain("out");
+    expect(gitignore).not.toContain(".astro");
     expect(gitignore).not.toContain(".expo");
     expect(gitignore).not.toContain("web-build");
     expect(gitignore).not.toContain("release");
@@ -103,11 +104,12 @@ dist
     expect(gitignore).not.toContain(".prettiercache");
   });
 
-  it("adds next, expo, electron, tanstack start, and react router entries only for those apps", () => {
+  it("adds next, astro, expo, electron, tanstack start, and react router entries only for those apps", () => {
     const gitignore = generateGitignore(
       createTestConfig({
         apps: [
           { type: "next", name: "web" },
+          { type: "astro", name: "site" },
           { type: "expo", name: "mobile" },
           { type: "electron", name: "desktop" },
           { type: "tanstack-start", name: "start" },
@@ -128,6 +130,9 @@ dist
 # Next.js
 .next
 out
+
+# Astro
+.astro
 
 # Expo
 .expo
