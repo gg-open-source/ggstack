@@ -243,7 +243,9 @@ describe("buildProject", () => {
     expect(builder.files["apps/astro/package.json"]).toContain(
       "@test-project/astro",
     );
-    expect(builder.files["apps/astro/src/pages/index.astro"]).toContain("astro");
+    expect(builder.files["apps/astro/src/pages/index.astro"]).toContain(
+      "astro",
+    );
     expect(builder.files["apps/astro/src/pages/index.astro"]).not.toContain(
       "APP_NAME",
     );
@@ -631,6 +633,104 @@ describe("db package generation", () => {
       "serverEnv.DATABASE_URL",
     );
     expect(builder.files["packages/db/.env.example"]).toBeUndefined();
+  });
+});
+
+describe("trpc package generation", () => {
+  it("does not generate api package when trpc is not selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig();
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/api/package.json"]).toBeUndefined();
+  });
+
+  it("generates api package when trpc is selected without a database", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ packages: [{ type: "trpc" }] });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/api/package.json"]).toContain(
+      "@test-project/api",
+    );
+    expect(builder.files["packages/api/package.json"]).toContain(
+      "@trpc/server",
+    );
+    expect(builder.files["packages/api/package.json"]).toContain(
+      "@trpc/client",
+    );
+    expect(builder.files["packages/api/package.json"]).not.toContain(
+      "@test-project/db",
+    );
+    expect(builder.files["packages/api/src/root.ts"]).toContain("hello");
+    expect(builder.files["packages/api/src/root.ts"]).not.toContain("users");
+    expect(builder.files["packages/api/src/trpc.ts"]).toContain("return {};");
+    expect(builder.files["packages/api/src/trpc.ts"]).not.toContain(
+      "@test-project/db",
+    );
+    expect(builder.files["packages/api/src/client.ts"]).toContain(
+      "createApiClient",
+    );
+    expect(builder.files["packages/api/src/index.ts"]).toContain("appRouter");
+    expect(builder.files["packages/api/src/router/users.ts"]).toBeUndefined();
+  });
+
+  it("includes drizzle db in tRPC context when drizzle is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "trpc" }, { type: "db" }],
+      db: { orm: "drizzle" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/api/package.json"]).toContain(
+      "@test-project/db",
+    );
+    expect(builder.files["packages/api/src/trpc.ts"]).toContain(
+      'from "@test-project/db"',
+    );
+    expect(builder.files["packages/api/src/trpc.ts"]).toContain(
+      "return { db };",
+    );
+    expect(builder.files["packages/api/src/root.ts"]).toContain("users");
+    expect(builder.files["packages/api/src/router/users.ts"]).toContain(
+      "ctx.db.select()",
+    );
+  });
+
+  it("includes prisma in tRPC context when prisma is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "trpc" }, { type: "db" }],
+      db: { orm: "prisma" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/api/package.json"]).toContain(
+      "@test-project/db",
+    );
+    expect(builder.files["packages/api/src/trpc.ts"]).toContain(
+      "return { prisma };",
+    );
+    expect(builder.files["packages/api/src/router/users.ts"]).toContain(
+      "ctx.prisma.user.findMany()",
+    );
+  });
+
+  it("lists the api package in the generated root README", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ packages: [{ type: "trpc" }] });
+
+    await buildProject(config, builder);
+
+    const readme = builder.files["README.md"];
+    expect(readme).toContain("@test-project/api");
+    expect(readme).toContain("not mounted automatically");
+    expect(readme).toContain("mount `@test-project/api`");
   });
 });
 

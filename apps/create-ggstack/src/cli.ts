@@ -29,6 +29,7 @@ import type {
   DbConfig,
   PackageConfig,
   PackageManager,
+  PackageType,
   StackConfig,
   ToolingConfig,
   ViteVariant,
@@ -184,7 +185,7 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
   });
 
   const packages: PackageConfig[] = selectedPackages.map((type) => ({
-    type: type as "shadcn",
+    type: type as PackageType,
   }));
 
   const shadcnSelected = packages.some((pkg) => pkg.type === "shadcn");

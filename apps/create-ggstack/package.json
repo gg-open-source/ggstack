@@ -23,6 +23,7 @@
     "tanstack-start",
     "react-router",
     "shadcn",
+    "trpc",
     "tailwindcss",
     "drizzle",
     "prisma",

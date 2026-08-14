@@ -39,6 +39,7 @@ export const DEFAULT_APP_NAMES = {
 
 export const PACKAGE_CHOICES = [
   { value: "shadcn", label: "shadcn/ui", hint: "shared UI package" },
+  { value: "trpc", label: "tRPC", hint: "shared API package" },
 ] as const;
 
 export const DB_ORM_CHOICES = [

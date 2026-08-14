@@ -32,7 +32,7 @@ export interface AppConfig {
   vite?: ViteAppOptions;
 }
 
-export type PackageType = "shadcn" | "auth" | "db";
+export type PackageType = "shadcn" | "auth" | "db" | "trpc";
 
 export interface PackageConfig {
   type: PackageType;

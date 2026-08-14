@@ -26,7 +26,7 @@ There are no flags for apps, packages, auth, database, or tooling. Those choices
 3. **App names** — one prompt per selected app. Defaults: `vite`, `next`, `astro`, `expo`, `electron`, `express`, `fastify`, `tanstack-start`, `react-router`. Same grey placeholder as the project name.
 4. **Vite framework** — if you selected Vite: Vanilla, Vue, React, Preact, Lit, Svelte, Solid, or Qwik. TypeScript only; JavaScript variants are not offered.
 5. **Vite variant** — if the Vite framework is React: TypeScript, or TypeScript + React Compiler. Other frameworks skip this prompt.
-6. **Packages** — multi-select, optional: shadcn/ui.
+6. **Packages** — multi-select, optional: shadcn/ui, tRPC.
 7. **Tooling** — multi-select: Tailwind CSS, Oxc, Prettier, ESLint. Tailwind is pre-selected (and always kept) if shadcn/ui is on.
 8. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).
 9. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.

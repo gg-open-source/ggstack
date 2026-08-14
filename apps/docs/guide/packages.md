@@ -31,6 +31,44 @@ What you get:
 
 Add components with the shadcn CLI from `packages/ui`, then export them from `src/index.ts`.
 
+## `packages/api` (tRPC)
+
+Created when you select tRPC. Exports:
+
+| Import | Use |
+| --- | --- |
+| `@<project>/api` | `appRouter`, `AppRouter`, `createTRPCContext`, `createCaller` |
+| `@<project>/api/client` | `createApiClient(url)` — vanilla HTTP client |
+
+Starter procedure: `hello.greet({ name?: string })` → `{ greeting }`.
+
+If you also picked Drizzle or Prisma, context includes `db` / `prisma` and `users.list` queries the starter `User` table.
+
+```ts
+import { createCaller, createTRPCContext } from "@my-app/api";
+
+const caller = createCaller(await createTRPCContext());
+const { greeting } = await caller.hello.greet({ name: "Ada" });
+```
+
+```ts
+import { createApiClient } from "@my-app/api/client";
+
+const api = createApiClient("http://localhost:3000/api/trpc");
+const { greeting } = await api.hello.greet.query({ name: "Ada" });
+```
+
+React Query is not included. Type-only import `AppRouter` and create the React client in the app:
+
+```ts
+import type { AppRouter } from "@my-app/api";
+import { createTRPCReact } from "@trpc/react-query";
+
+export const api = createTRPCReact<AppRouter>();
+```
+
+**Not auto-wired.** Mount the router on a host after scaffold. Next.js App Router uses `@trpc/server/adapters/fetch` at `app/api/trpc/[trpc]/route.ts`. Express uses `createExpressMiddleware`. Fastify uses `fastifyTRPCPlugin`. See the generated `packages/api/README.md` for the snippets.
+
 ## `packages/auth` (optional)
 
 Created when the auth provider is not `none`. Unified surface:

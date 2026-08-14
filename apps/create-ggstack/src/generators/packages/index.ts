@@ -7,6 +7,7 @@ import { generateAuthPackage } from "./auth.js";
 import { generateDbPackage } from "./db.js";
 import { generateEnvPackage } from "./env.js";
 import { generateShadcnPackage } from "./shadcn.js";
+import { generateTrpcPackage } from "./trpc.js";
 
 export function generatePackage(
   config: StackConfig,
@@ -24,6 +25,10 @@ export function generatePackage(
   if (pkg.type === "db") {
     generateDbPackage(config, builder);
   }
+
+  if (pkg.type === "trpc") {
+    generateTrpcPackage(config, builder);
+  }
 }
 
 export {
@@ -31,4 +36,5 @@ export {
   generateDbPackage,
   generateEnvPackage,
   generateShadcnPackage,
+  generateTrpcPackage,
 };

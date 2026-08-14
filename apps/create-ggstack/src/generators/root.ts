@@ -140,12 +140,23 @@ const TOOLING_LABELS: Record<string, string> = {
   eslint: "ESLint (stub — wire it up yourself)",
 };
 
+function joinNatural(items: string[], conjunction: "and" | "or"): string {
+  if (items.length <= 1) {
+    return items[0] ?? "";
+  }
+  if (items.length === 2) {
+    return `${items[0]} ${conjunction} ${items[1]}`;
+  }
+  return `${items.slice(0, -1).join(", ")}, ${conjunction} ${items[items.length - 1] ?? ""}`;
+}
+
 export function generateRootReadme(config: StackConfig): string {
   const name = config.projectName;
   const hasApps = config.apps.length > 0;
   const hasExpo = config.apps.some((app) => app.type === "expo");
   const hasDevApps = config.apps.some((app) => app.type !== "expo");
   const hasShadcn = config.packages.some((pkg) => pkg.type === "shadcn");
+  const hasTrpc = config.packages.some((pkg) => pkg.type === "trpc");
   const hasAuth = config.auth.provider !== "none";
   const hasDb = config.db.orm !== "none";
 
@@ -219,6 +230,12 @@ export function generateRootReadme(config: StackConfig): string {
     );
   }
 
+  if (hasTrpc) {
+    lines.push(
+      `- \`packages/api\` — tRPC router and client (\`@${name}/api\`). See that package's README.`,
+    );
+  }
+
   if (hasAuth) {
     const label = AUTH_LABELS[config.auth.provider] ?? config.auth.provider;
     lines.push(
@@ -233,12 +250,27 @@ export function generateRootReadme(config: StackConfig): string {
     );
   }
 
-  if (hasAuth || hasDb) {
+  if (hasAuth || hasDb || hasTrpc) {
+    const subjects = [
+      hasAuth ? "Auth" : null,
+      hasDb ? "database" : null,
+      hasTrpc ? "API" : null,
+    ].filter((value): value is string => value !== null);
+    const heading =
+      subjects.length === 1
+        ? `${subjects[0]} is not mounted automatically`
+        : `${joinNatural(subjects, "and")} are not mounted automatically`;
+    const actions = [
+      hasAuth ? "wrap `AuthProvider`" : null,
+      hasDb ? `import \`@${name}/db\`` : null,
+      hasTrpc ? `mount \`@${name}/api\`` : null,
+    ].filter((value): value is string => value !== null);
+
     lines.push(
       "",
-      "## Auth and database are not mounted automatically",
+      `## ${heading}`,
       "",
-      `App templates do not wrap \`AuthProvider\` or import \`@${name}/db\`. Import those packages in your apps after scaffold.`,
+      `App templates do not ${joinNatural(actions, "or")}. Import those packages in your apps after scaffold.`,
     );
   }
 

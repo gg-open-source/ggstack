@@ -26,6 +26,7 @@ my-app/
 ├── packages/
 │   ├── env/              # always
 │   ├── ui/               # optional shadcn/ui
+│   ├── api/              # optional tRPC
 │   ├── auth/             # optional, when an auth provider is selected
 │   └── db/               # optional, when Drizzle or Prisma is selected
 └── tooling/
@@ -55,7 +56,7 @@ Stack-specific paths are added only when that choice is on:
 | ESLint | `.eslintcache` |
 | Prettier | `.prettiercache` |
 
-Vite, Express, Fastify, shadcn/ui, auth, Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section. Astro build output is `dist`; only the generated `.astro` types directory is extra.
+Vite, Express, Fastify, shadcn/ui, tRPC, auth, Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section. Astro build output is `dist`; only the generated `.astro` types directory is extra.
 
 ## Root scripts
 
