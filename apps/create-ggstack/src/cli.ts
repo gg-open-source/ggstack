@@ -11,8 +11,14 @@ import {
   DEFAULT_DB_ORM,
   DEFAULT_PACKAGE_MANAGER,
   DEFAULT_PROJECT_NAME,
+  DEFAULT_VITE_FRAMEWORK,
+  DEFAULT_VITE_VARIANT,
   isAuthProvider,
   isDbOrm,
+  isViteFramework,
+  isViteVariant,
+  VITE_FRAMEWORK_CHOICES,
+  VITE_REACT_VARIANT_CHOICES,
   PACKAGE_CHOICES,
   TOOLING_CHOICES,
 } from "./config.js";
@@ -25,6 +31,7 @@ import type {
   PackageManager,
   StackConfig,
   ToolingConfig,
+  ViteVariant,
 } from "./types.js";
 import { ProjectBuilder } from "./types.js";
 import { execa } from "execa";
@@ -137,10 +144,37 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
         return undefined;
       },
     });
-    apps.push({
+    const app: AppConfig = {
       type: appType as AppConfig["type"],
       name: sanitizeAppName(name),
-    });
+    };
+
+    if (app.type === "vite") {
+      const selectedFramework = await select({
+        message: "Select a Vite framework?",
+        options: VITE_FRAMEWORK_CHOICES.map((choice) => ({ ...choice })),
+        initialValue: DEFAULT_VITE_FRAMEWORK,
+      });
+      const framework = isViteFramework(selectedFramework)
+        ? selectedFramework
+        : DEFAULT_VITE_FRAMEWORK;
+
+      let variant: ViteVariant = DEFAULT_VITE_VARIANT;
+      if (framework === "react") {
+        const selectedVariant = await select({
+          message: "Select a variant?",
+          options: VITE_REACT_VARIANT_CHOICES.map((choice) => ({ ...choice })),
+          initialValue: DEFAULT_VITE_VARIANT,
+        });
+        variant = isViteVariant(selectedVariant)
+          ? selectedVariant
+          : DEFAULT_VITE_VARIANT;
+      }
+
+      app.vite = { framework, variant };
+    }
+
+    apps.push(app);
   }
 
   const selectedPackages = await multiSelect({

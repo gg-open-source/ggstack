@@ -22,12 +22,14 @@ There are no flags for apps, packages, auth, database, or tooling. Those choices
 ## Interactive flow
 
 1. **Project name** — positional argument, or a prompt (default `project`). The default is shown as grey placeholder text and is used if you press Enter without typing.
-2. **Apps** — multi-select, optional: Vanilla Vite, Next.js, Expo Router, Electron + Vite, Express, Fastify, TanStack Start, React Router.
+2. **Apps** — multi-select, optional: Vite, Next.js, Expo Router, Electron + Vite, Express, Fastify, TanStack Start, React Router.
 3. **App names** — one prompt per selected app. Defaults: `vite`, `next`, `expo`, `electron`, `express`, `fastify`, `tanstack-start`, `react-router`. Same grey placeholder as the project name.
-4. **Packages** — multi-select, optional: shadcn/ui.
-5. **Tooling** — multi-select: Tailwind CSS, Oxc, Prettier, ESLint. Tailwind is pre-selected (and always kept) if shadcn/ui is on.
-6. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).
-7. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.
+4. **Vite framework** — if you selected Vite: Vanilla, Vue, React, Preact, Lit, Svelte, Solid, or Qwik. TypeScript only; JavaScript variants are not offered.
+5. **Vite variant** — if the Vite framework is React: TypeScript, or TypeScript + React Compiler. Other frameworks skip this prompt.
+6. **Packages** — multi-select, optional: shadcn/ui.
+7. **Tooling** — multi-select: Tailwind CSS, Oxc, Prettier, ESLint. Tailwind is pre-selected (and always kept) if shadcn/ui is on.
+8. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).
+9. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.
 
 `packages/env`, `tooling/tsconfig`, and a root `.env.example` are always written.
 

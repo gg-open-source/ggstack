@@ -36,6 +36,32 @@ describe("copyTemplate", () => {
     expect(builder.files["apps/web/vite.config.ts"]).toBeDefined();
   });
 
+  it.each([
+    ["vite-react", "src/App.tsx"],
+    ["vite-vue", "src/App.vue"],
+    ["vite-preact", "src/App.tsx"],
+    ["vite-lit", "src/my-element.ts"],
+    ["vite-svelte", "src/App.svelte"],
+    ["vite-solid", "src/App.tsx"],
+    ["vite-qwik", "src/App.tsx"],
+  ] as const)(
+    "copies the %s template with placeholders replaced",
+    async (templateName, entry) => {
+      const builder = new ProjectBuilder();
+
+      await copyTemplate(
+        templateName,
+        "apps/web",
+        { projectName: "acme", appName: "web" },
+        builder,
+      );
+
+      expect(builder.files["apps/web/package.json"]).toContain("@acme/web");
+      expect(builder.files[`apps/web/${entry}`]).toContain("web");
+      expect(builder.files["apps/web/vite.config.ts"]).toBeDefined();
+    },
+  );
+
   it("copies the tanstack-start template with placeholders replaced", async () => {
     const builder = new ProjectBuilder();
 

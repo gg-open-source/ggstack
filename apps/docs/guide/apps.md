@@ -4,9 +4,24 @@ Apps are optional. You can scaffold packages and tooling with no apps.
 
 Each selected app is copied from a static template shipped with the CLI. Every app depends on `@<project>/env`.
 
-## Vanilla Vite
+## Vite
 
-TypeScript Vite app (`vite` ^8). Scripts: `dev`, `build`, `preview`.
+TypeScript Vite app (`vite` ^8). After you select Vite, the CLI asks for a framework. JavaScript variants are not offered.
+
+| Framework | Variant prompt | Plugin / extra |
+| --- | --- | --- |
+| Vanilla | none (TypeScript) | none |
+| Vue | none (TypeScript) | `@vitejs/plugin-vue`, `vue-tsc` |
+| React | TypeScript, or TypeScript + React Compiler | `@vitejs/plugin-react` |
+| Preact | none (TypeScript) | `@preact/preset-vite` |
+| Lit | none (TypeScript) | `lit` |
+| Svelte | none (TypeScript) | `@sveltejs/vite-plugin-svelte`, `svelte-check` |
+| Solid | none (TypeScript) | `vite-plugin-solid` |
+| Qwik | none (TypeScript) | `@builder.io/qwik` (`qwikVite({ csr: true })`) |
+
+React Compiler is an overlay on the React template: it adds `@rolldown/plugin-babel`, `babel-plugin-react-compiler`, `@babel/core`, and `@types/babel__core`, and wires `reactCompilerPreset()` in `vite.config.ts`.
+
+Scripts: `dev`, `build`, `preview`. Vue uses `vue-tsc --noEmit` for `check-types`; Svelte uses `svelte-check`.
 
 `vite.config.ts` calls `createViteEnv(import.meta.env)` so client vars with the `VITE_` prefix are validated at config load.
 
@@ -14,7 +29,7 @@ TypeScript Vite app (`vite` ^8). Scripts: `dev`, `build`, `preview`.
 pnpm --filter @my-app/vite dev
 ```
 
-Default port: `5173`.
+Default port: `5173`. Default folder name is still `vite`; the framework only changes the files inside that app.
 
 ## Next.js
 

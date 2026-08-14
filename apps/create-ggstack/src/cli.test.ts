@@ -156,6 +156,7 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce("test-project"); // project name
     mockedMultiSelect.mockResolvedValueOnce(["vite", "next"]); // apps
     mockedText.mockResolvedValueOnce("vite"); // vite app name
+    mockedSelect.mockResolvedValueOnce("vanilla"); // vite framework
     mockedText.mockResolvedValueOnce("docs"); // next app name
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
@@ -165,7 +166,11 @@ describe("collectConfig", () => {
     const config = await collectConfig([]);
 
     expect(config.apps).toEqual([
-      { type: "vite", name: "vite" },
+      {
+        type: "vite",
+        name: "vite",
+        vite: { framework: "vanilla", variant: "ts" },
+      },
       { type: "next", name: "docs" },
     ]);
   });
@@ -187,6 +192,7 @@ describe("collectConfig", () => {
       "react-router",
     ]); // apps
     mockedText.mockResolvedValueOnce(""); // vite default
+    mockedSelect.mockResolvedValueOnce("vanilla"); // vite framework
     mockedText.mockResolvedValueOnce(""); // next default
     mockedText.mockResolvedValueOnce(""); // expo default
     mockedText.mockResolvedValueOnce(""); // electron default
@@ -299,6 +305,7 @@ describe("collectConfig", () => {
       "react-router",
     ]); // apps
     mockedText.mockResolvedValueOnce("vite"); // vite
+    mockedSelect.mockResolvedValueOnce("vanilla"); // vite framework
     mockedText.mockResolvedValueOnce("docs"); // next
     mockedText.mockResolvedValueOnce("expo"); // expo
     mockedText.mockResolvedValueOnce("desktop"); // electron
@@ -314,7 +321,11 @@ describe("collectConfig", () => {
     const config = await collectConfig([]);
 
     expect(config.apps).toEqual([
-      { type: "vite", name: "vite" },
+      {
+        type: "vite",
+        name: "vite",
+        vite: { framework: "vanilla", variant: "ts" },
+      },
       { type: "next", name: "docs" },
       { type: "expo", name: "expo" },
       { type: "electron", name: "desktop" },
@@ -395,5 +406,120 @@ describe("collectConfig", () => {
 
     expect(config.db).toEqual({ orm: "drizzle" });
     expect(config.packages).toContainEqual({ type: "db" });
+  });
+
+  it("prompts for a vite framework and stores it on the app", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce(["vite"]);
+    mockedText.mockResolvedValueOnce("web");
+    mockedSelect.mockResolvedValueOnce("vue");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(mockedSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Select a Vite framework?",
+      }),
+    );
+    expect(mockedSelect).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Select a variant?",
+      }),
+    );
+    expect(config.apps).toEqual([
+      {
+        type: "vite",
+        name: "web",
+        vite: { framework: "vue", variant: "ts" },
+      },
+    ]);
+  });
+
+  it("prompts for a react variant when the vite framework is react", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce(["vite"]);
+    mockedText.mockResolvedValueOnce("web");
+    mockedSelect.mockResolvedValueOnce("react");
+    mockedSelect.mockResolvedValueOnce("react-compiler");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(mockedSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Select a variant?",
+      }),
+    );
+    expect(config.apps).toEqual([
+      {
+        type: "vite",
+        name: "web",
+        vite: { framework: "react", variant: "react-compiler" },
+      },
+    ]);
+  });
+
+  it("stores the typescript react variant without prompting other frameworks", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce(["vite"]);
+    mockedText.mockResolvedValueOnce("web");
+    mockedSelect.mockResolvedValueOnce("react");
+    mockedSelect.mockResolvedValueOnce("ts");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(config.apps).toEqual([
+      {
+        type: "vite",
+        name: "web",
+        vite: { framework: "react", variant: "ts" },
+      },
+    ]);
+  });
+
+  it("does not add vite options to non-vite apps", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce(["next"]);
+    mockedText.mockResolvedValueOnce("docs");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(mockedSelect).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Select a Vite framework?",
+      }),
+    );
+    expect(config.apps).toEqual([{ type: "next", name: "docs" }]);
   });
 });

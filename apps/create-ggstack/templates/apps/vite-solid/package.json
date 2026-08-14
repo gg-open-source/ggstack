@@ -1,0 +1,24 @@
+{
+  "name": "@{{PROJECT_NAME}}/{{APP_NAME}}",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsc && vite build",
+    "dev": "vite",
+    "preview": "vite preview",
+    "lint": "oxlint --config ../../tooling/oxc/oxlint.json src",
+    "format": "oxfmt --config ../../tooling/oxc/oxfmt.json src",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@{{PROJECT_NAME}}/env": "workspace:*",
+    "solid-js": "^1.9.14"
+  },
+  "devDependencies": {
+    "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
+    "typescript": "^5.8.0",
+    "vite": "^8.2.0",
+    "vite-plugin-solid": "^2.11.14"
+  }
+}

@@ -8,9 +8,27 @@ export type AppType =
   | "tanstack-start"
   | "react-router";
 
+export type ViteFramework =
+  | "vanilla"
+  | "vue"
+  | "react"
+  | "preact"
+  | "lit"
+  | "svelte"
+  | "solid"
+  | "qwik";
+
+export type ViteVariant = "ts" | "react-compiler";
+
+export interface ViteAppOptions {
+  framework: ViteFramework;
+  variant: ViteVariant;
+}
+
 export interface AppConfig {
   type: AppType;
   name: string;
+  vite?: ViteAppOptions;
 }
 
 export type PackageType = "shadcn" | "auth" | "db";

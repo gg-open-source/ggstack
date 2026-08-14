@@ -1,0 +1,15 @@
+import { createViteEnv } from "@{{PROJECT_NAME}}/env/client";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
+import { defineConfig } from "vite";
+
+createViteEnv(import.meta.env);
+
+export default defineConfig({
+  build: {
+    outDir: "dist",
+  },
+  plugins: [svelte()],
+  server: {
+    port: 5173,
+  },
+});

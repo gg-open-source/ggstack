@@ -14,7 +14,7 @@ my-app/
 ├── turbo.json
 ├── README.md
 ├── apps/
-│   ├── vite/             # optional Vanilla Vite
+│   ├── vite/             # optional Vite (framework chosen in the CLI)
 │   ├── next/             # optional Next.js
 │   ├── expo/             # optional Expo Router
 │   ├── electron/         # optional Electron + Vite

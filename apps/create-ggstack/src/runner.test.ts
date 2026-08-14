@@ -48,6 +48,11 @@ describe("buildProject", () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({
       apps: [
+        {
+          type: "vite",
+          name: "marketing",
+          vite: { framework: "react", variant: "react-compiler" },
+        },
         { type: "next", name: "web" },
         { type: "expo", name: "mobile" },
         { type: "express", name: "api" },
@@ -65,6 +70,8 @@ describe("buildProject", () => {
 
     const readme = builder.files["README.md"];
     expect(readme).toContain("# test-project");
+    expect(readme).toContain("apps/marketing");
+    expect(readme).toContain("Vite (React + Compiler)");
     expect(readme).toContain("apps/web");
     expect(readme).toContain("Next.js");
     expect(readme).toContain("apps/mobile");
@@ -110,6 +117,98 @@ describe("buildProject", () => {
     expect(builder.files["apps/vite/src/main.ts"]).toBeDefined();
     expect(builder.files["apps/vite/package.json"]).toContain(
       '"vite": "^8.2.0"',
+    );
+    expect(builder.files["apps/vite/src/main.ts"]).toContain("vite");
+    expect(builder.files["apps/vite/src/App.tsx"]).toBeUndefined();
+  });
+
+  it.each([
+    ["vue", "src/App.vue", "@vitejs/plugin-vue"],
+    ["react", "src/App.tsx", "@vitejs/plugin-react"],
+    ["preact", "src/App.tsx", "@preact/preset-vite"],
+    ["lit", "src/my-element.ts", '"lit":'],
+    ["svelte", "src/App.svelte", "@sveltejs/vite-plugin-svelte"],
+    ["solid", "src/App.tsx", "vite-plugin-solid"],
+    ["qwik", "src/App.tsx", "@builder.io/qwik"],
+  ] as const)(
+    "copies the vite %s template when that framework is selected",
+    async (framework, entry, marker) => {
+      const builder = new ProjectBuilder();
+      const config = createTestConfig({
+        apps: [
+          {
+            type: "vite",
+            name: "web",
+            vite: { framework, variant: "ts" },
+          },
+        ],
+      });
+
+      await buildProject(config, builder);
+
+      expect(builder.files[`apps/web/${entry}`]).toBeDefined();
+      expect(builder.files[`apps/web/${entry}`]).toContain("web");
+      expect(builder.files["apps/web/package.json"]).toContain(
+        "@test-project/web",
+      );
+      expect(builder.files["apps/web/package.json"]).toContain(marker);
+      expect(builder.files["apps/web/vite.config.ts"]).toContain(
+        "createViteEnv",
+      );
+    },
+  );
+
+  it("applies the react compiler overlay on the react vite template", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [
+        {
+          type: "vite",
+          name: "web",
+          vite: { framework: "react", variant: "react-compiler" },
+        },
+      ],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/web/src/App.tsx"]).toBeDefined();
+    expect(builder.files["apps/web/package.json"]).toContain(
+      "babel-plugin-react-compiler",
+    );
+    expect(builder.files["apps/web/package.json"]).toContain(
+      "@rolldown/plugin-babel",
+    );
+    expect(builder.files["apps/web/vite.config.ts"]).toContain(
+      "reactCompilerPreset",
+    );
+    expect(builder.files["apps/web/vite.config.ts"]).toContain(
+      'from "@rolldown/plugin-babel"',
+    );
+  });
+
+  it("does not apply the react compiler overlay for the typescript react variant", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [
+        {
+          type: "vite",
+          name: "web",
+          vite: { framework: "react", variant: "ts" },
+        },
+      ],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/web/package.json"]).not.toContain(
+      "babel-plugin-react-compiler",
+    );
+    expect(builder.files["apps/web/vite.config.ts"]).toContain(
+      "plugins: [react()],",
+    );
+    expect(builder.files["apps/web/vite.config.ts"]).not.toContain(
+      "reactCompilerPreset",
     );
   });
 
@@ -262,9 +361,9 @@ describe("buildProject", () => {
     expect(builder.files["apps/react-router/app/routes/home.tsx"]).toContain(
       '{"react-router"}',
     );
-    expect(builder.files["apps/react-router/app/routes/home.tsx"]).not.toContain(
-      "APP_NAME",
-    );
+    expect(
+      builder.files["apps/react-router/app/routes/home.tsx"],
+    ).not.toContain("APP_NAME");
     expect(builder.files["apps/react-router/vite.config.ts"]).toContain(
       "createViteEnv",
     );
@@ -643,9 +742,7 @@ describe("env package generation", () => {
     expect(builder.files["apps/start/vite.config.ts"]).toContain(
       "createViteEnv",
     );
-    expect(builder.files["apps/web/vite.config.ts"]).toContain(
-      "createViteEnv",
-    );
+    expect(builder.files["apps/web/vite.config.ts"]).toContain("createViteEnv");
   });
 
   it("adds workos keys and expo client prefix when expo is selected", async () => {

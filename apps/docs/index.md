@@ -13,7 +13,7 @@ hero:
       link: https://github.com/gg-open-source/ggstack
 features:
   - title: Multi-app workspace
-    details: Pick Vanilla Vite, Next.js, Expo Router, Electron + Vite, Express, Fastify, TanStack Start, and React Router. Name each app. The repo is always a pnpm + Turborepo monorepo.
+    details: Pick Vite (Vanilla, Vue, React, Preact, Lit, Svelte, Solid, or Qwik), Next.js, Expo Router, Electron + Vite, Express, Fastify, TanStack Start, and React Router. Name each app. The repo is always a pnpm + Turborepo monorepo.
   - title: Typed environment
     details: Every project gets packages/env (@t3-oss/env-core + Zod) and a root .env.example filled from the auth, database, and app types you chose.
   - title: Optional auth and Postgres

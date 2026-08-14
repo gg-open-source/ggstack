@@ -1,4 +1,4 @@
-import type { ProjectBuilder, StackConfig } from "../types.js";
+import type { AppConfig, ProjectBuilder, StackConfig } from "../types.js";
 import { generateGitignore } from "./gitignore.js";
 
 export function generateRoot(
@@ -86,7 +86,6 @@ export function generateRoot(
 }
 
 const APP_LABELS: Record<string, string> = {
-  vite: "Vanilla Vite",
   next: "Next.js",
   expo: "Expo Router",
   electron: "Electron + Vite",
@@ -95,6 +94,32 @@ const APP_LABELS: Record<string, string> = {
   "tanstack-start": "TanStack Start",
   "react-router": "React Router",
 };
+
+const VITE_FRAMEWORK_LABELS: Record<string, string> = {
+  vanilla: "Vanilla",
+  vue: "Vue",
+  react: "React",
+  preact: "Preact",
+  lit: "Lit",
+  svelte: "Svelte",
+  solid: "Solid",
+  qwik: "Qwik",
+};
+
+export function getAppLabel(app: AppConfig): string {
+  if (app.type !== "vite") {
+    return APP_LABELS[app.type] ?? app.type;
+  }
+
+  const framework = app.vite?.framework ?? "vanilla";
+  const variant = app.vite?.variant ?? "ts";
+  if (framework === "react" && variant === "react-compiler") {
+    return "Vite (React + Compiler)";
+  }
+
+  const frameworkLabel = VITE_FRAMEWORK_LABELS[framework] ?? framework;
+  return `Vite (${frameworkLabel})`;
+}
 
 const AUTH_LABELS: Record<string, string> = {
   "better-auth": "Better Auth",
@@ -175,7 +200,7 @@ export function generateRootReadme(config: StackConfig): string {
   if (hasApps) {
     lines.push("", "## Apps", "");
     for (const app of config.apps) {
-      const label = APP_LABELS[app.type] ?? app.type;
+      const label = getAppLabel(app);
       lines.push(
         `- \`apps/${app.name}\` — ${label} (\`@${name}/${app.name}\`)`,
       );
