@@ -1,5 +1,6 @@
 import type {
   AuthProvider,
+  DbDialect,
   DbOrm,
   PackageManager,
   ViteFramework,
@@ -10,6 +11,7 @@ export const DEFAULT_PROJECT_NAME = "project";
 export const DEFAULT_PACKAGE_MANAGER: PackageManager = "pnpm";
 export const DEFAULT_AUTH_PROVIDER: AuthProvider = "none";
 export const DEFAULT_DB_ORM: DbOrm = "none";
+export const DEFAULT_DB_DIALECT: DbDialect = "postgresql";
 export const DEFAULT_VITE_FRAMEWORK: ViteFramework = "vanilla";
 export const DEFAULT_VITE_VARIANT: ViteVariant = "ts";
 
@@ -44,8 +46,14 @@ export const PACKAGE_CHOICES = [
 
 export const DB_ORM_CHOICES = [
   { value: "none", label: "None", hint: "no database package" },
-  { value: "drizzle", label: "Drizzle ORM", hint: "PostgreSQL driver" },
+  { value: "drizzle", label: "Drizzle ORM", hint: "SQL ORM" },
   { value: "prisma", label: "Prisma ORM", hint: "PostgreSQL provider" },
+] as const;
+
+export const DB_DIALECT_CHOICES = [
+  { value: "postgresql", label: "PostgreSQL", hint: "node-postgres" },
+  { value: "mysql", label: "MySQL", hint: "mysql2" },
+  { value: "sqlite", label: "SQLite", hint: "libsql" },
 ] as const;
 
 export const AUTH_CHOICES = [
@@ -90,6 +98,16 @@ export function isAuthProvider(value: string): value is AuthProvider {
 
 export function isDbOrm(value: string): value is DbOrm {
   return ["none", "drizzle", "prisma"].includes(value);
+}
+
+export function isDbDialect(value: string): value is DbDialect {
+  return ["postgresql", "mysql", "sqlite"].includes(value);
+}
+
+export function resolveDrizzleDialect(
+  dialect: DbDialect | undefined,
+): DbDialect {
+  return dialect ?? DEFAULT_DB_DIALECT;
 }
 
 export function isViteFramework(value: string): value is ViteFramework {

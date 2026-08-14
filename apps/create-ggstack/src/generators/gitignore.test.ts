@@ -153,6 +153,36 @@ build
 `);
   });
 
+  it("adds sqlite database files when the drizzle dialect is sqlite", () => {
+    const gitignore = generateGitignore(
+      createTestConfig({
+        packages: [{ type: "db" }],
+        db: { orm: "drizzle", dialect: "sqlite" },
+      }),
+    );
+
+    expect(gitignore).toContain(`# SQLite
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+`);
+  });
+
+  it("does not add sqlite ignore entries for postgres or mysql drizzle", () => {
+    for (const dialect of ["postgresql", "mysql"] as const) {
+      const gitignore = generateGitignore(
+        createTestConfig({
+          packages: [{ type: "db" }],
+          db: { orm: "drizzle", dialect },
+        }),
+      );
+
+      expect(gitignore).not.toContain("# SQLite");
+      expect(gitignore).not.toContain("*.db");
+    }
+  });
+
   it("adds tool cache files for eslint and prettier", () => {
     const gitignore = generateGitignore(
       createTestConfig({

@@ -46,8 +46,11 @@ export interface AuthConfig {
 
 export type DbOrm = "none" | "drizzle" | "prisma";
 
+export type DbDialect = "postgresql" | "mysql" | "sqlite";
+
 export interface DbConfig {
   orm: DbOrm;
+  dialect?: DbDialect;
 }
 
 export type ToolingType = "tailwind" | "oxc" | "prettier" | "eslint";

@@ -1,4 +1,5 @@
-import type { ProjectBuilder, StackConfig } from "../../types.js";
+import { resolveDrizzleDialect } from "../../config.js";
+import type { DbDialect, ProjectBuilder, StackConfig } from "../../types.js";
 
 export type ClientPrefix =
   | "NEXT_PUBLIC_"
@@ -68,13 +69,17 @@ export function getEnvVarSpecs(config: StackConfig): EnvVarSpec[] {
   ];
 
   if (config.db.orm !== "none") {
+    const dialect =
+      config.db.orm === "drizzle"
+        ? resolveDrizzleDialect(config.db.dialect)
+        : "postgresql";
     specs.push({
       name: "DATABASE_URL",
       kind: "server",
       required: true,
-      schema: "url",
+      schema: dialect === "sqlite" ? "string" : "url",
       group: "database",
-      comment: "postgresql://user:password@localhost:5432/mydb",
+      comment: getDatabaseUrlComment(dialect),
     });
   }
 
@@ -162,6 +167,17 @@ export function getEnvVarSpecs(config: StackConfig): EnvVarSpec[] {
 
 export function getEnvVarNames(config: StackConfig): string[] {
   return getEnvVarSpecs(config).map((spec) => spec.name);
+}
+
+function getDatabaseUrlComment(dialect: DbDialect): string {
+  switch (dialect) {
+    case "mysql":
+      return "mysql://user:password@localhost:3306/mydb";
+    case "sqlite":
+      return "file:./packages/db/local.db";
+    case "postgresql":
+      return "postgresql://user:password@localhost:5432/mydb";
+  }
 }
 
 export function generateEnvPackage(

@@ -78,6 +78,13 @@ export function getGitignoreSections(config: StackConfig): GitignoreSection[] {
     sections.push(section);
   }
 
+  if (config.db.dialect === "sqlite") {
+    sections.push({
+      title: "SQLite",
+      entries: ["*.db", "*.db-journal", "*.db-wal", "*.db-shm"],
+    });
+  }
+
   return sections.filter((section) => section.entries.length > 0);
 }
 

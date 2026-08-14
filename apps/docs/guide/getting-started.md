@@ -26,7 +26,7 @@ npx create-ggstack my-app --pnpm
 pnpm dlx create-ggstack my-app
 ```
 
-The CLI prompts for apps, package extras, tooling, auth, and a database ORM. Only the project name and the package-manager flag can be set on the command line. See [CLI](./cli.md).
+The CLI prompts for apps, package extras, tooling, auth, a database ORM, and — when you pick Drizzle — which database to use. Only the project name and the package-manager flag can be set on the command line. See [CLI](./cli.md).
 
 ## After the CLI finishes
 

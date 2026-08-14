@@ -1,4 +1,5 @@
-import type { ProjectBuilder, StackConfig } from "../../types.js";
+import { resolveDrizzleDialect } from "../../config.js";
+import type { DbDialect, ProjectBuilder, StackConfig } from "../../types.js";
 
 type SupportedDbOrm = "drizzle" | "prisma";
 
@@ -17,9 +18,12 @@ export function generateDbPackage(
     return;
   }
 
+  const dialect =
+    orm === "drizzle" ? resolveDrizzleDialect(config.db.dialect) : undefined;
+
   builder.addFile(
     "packages/db/package.json",
-    JSON.stringify(getPackageJson(projectName, orm), null, 2),
+    JSON.stringify(getPackageJson(projectName, orm, dialect), null, 2),
   );
 
   builder.addFile(
@@ -38,8 +42,8 @@ export function generateDbPackage(
     ),
   );
 
-  if (orm === "drizzle") {
-    generateDrizzleFiles(projectName, builder);
+  if (orm === "drizzle" && dialect) {
+    generateDrizzleFiles(projectName, dialect, builder);
   } else {
     generatePrismaFiles(projectName, builder);
   }
@@ -48,6 +52,7 @@ export function generateDbPackage(
 function getPackageJson(
   projectName: string,
   orm: SupportedDbOrm,
+  dialect: DbDialect | undefined,
 ): Record<string, unknown> {
   const base = {
     name: `@${projectName}/db`,
@@ -81,11 +86,11 @@ function getPackageJson(
       dependencies: {
         [`@${projectName}/env`]: "workspace:*",
         "drizzle-orm": "^0.40.0",
-        pg: "^8.14.0",
+        ...getDrizzleDriverDependencies(dialect ?? "postgresql"),
       },
       devDependencies: {
         ...base.devDependencies,
-        "@types/pg": "^8.11.0",
+        ...getDrizzleDriverDevDependencies(dialect ?? "postgresql"),
         "drizzle-kit": "^0.30.0",
       },
     };
@@ -111,8 +116,31 @@ function getPackageJson(
   };
 }
 
+function getDrizzleDriverDependencies(
+  dialect: DbDialect,
+): Record<string, string> {
+  switch (dialect) {
+    case "mysql":
+      return { mysql2: "^3.14.0" };
+    case "sqlite":
+      return { "@libsql/client": "^0.15.0" };
+    case "postgresql":
+      return { pg: "^8.14.0" };
+  }
+}
+
+function getDrizzleDriverDevDependencies(
+  dialect: DbDialect,
+): Record<string, string> {
+  if (dialect === "postgresql") {
+    return { "@types/pg": "^8.11.0" };
+  }
+  return {};
+}
+
 function generateDrizzleFiles(
   projectName: string,
+  dialect: DbDialect,
   builder: ProjectBuilder,
 ): void {
   builder.addFile(
@@ -121,7 +149,7 @@ function generateDrizzleFiles(
 import { serverEnv } from "@${projectName}/env/server";
 
 export default defineConfig({
-  dialect: "postgresql",
+  dialect: "${dialect}",
   schema: "./src/schema.ts",
   out: "./drizzle",
   dbCredentials: {
@@ -131,9 +159,53 @@ export default defineConfig({
 `,
   );
 
+  builder.addFile("packages/db/src/schema.ts", getDrizzleSchemaSource(dialect));
+
   builder.addFile(
-    "packages/db/src/schema.ts",
-    `import { pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
+    "packages/db/src/index.ts",
+    getDrizzleClientSource(projectName, dialect),
+  );
+
+  builder.addFile(
+    "packages/db/README.md",
+    generateDrizzleReadme(projectName, dialect),
+  );
+}
+
+function getDrizzleSchemaSource(dialect: DbDialect): string {
+  if (dialect === "mysql") {
+    return `import { int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
+
+export const users = mysqlTable("users", {
+  id: int("id").primaryKey().autoincrement(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  name: varchar("name", { length: 255 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+`;
+  }
+
+  if (dialect === "sqlite") {
+    return `import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+
+export const users = sqliteTable("users", {
+  id: integer("id").primaryKey({ autoIncrement: true }),
+  email: text("email").notNull().unique(),
+  name: text("name"),
+  createdAt: integer("created_at", { mode: "timestamp" })
+    .notNull()
+    .$defaultFn(() => new Date()),
+});
+
+export type User = typeof users.$inferSelect;
+export type NewUser = typeof users.$inferInsert;
+`;
+  }
+
+  return `import { pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
 
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -144,28 +216,65 @@ export const users = pgTable("users", {
 
 export type User = typeof users.$inferSelect;
 export type NewUser = typeof users.$inferInsert;
-`,
-  );
+`;
+}
 
-  builder.addFile(
-    "packages/db/src/index.ts",
-    `import { drizzle } from "drizzle-orm/node-postgres";
+function getDrizzleClientSource(
+  projectName: string,
+  dialect: DbDialect,
+): string {
+  if (dialect === "mysql") {
+    return `import { drizzle } from "drizzle-orm/mysql2";
+import { serverEnv } from "@${projectName}/env/server";
+import * as schema from "./schema";
+
+export const db = drizzle(serverEnv.DATABASE_URL, { schema, mode: "default" });
+export { schema };
+export type { User, NewUser } from "./schema";
+`;
+  }
+
+  if (dialect === "sqlite") {
+    return `import { createClient } from "@libsql/client";
+import { drizzle } from "drizzle-orm/libsql";
+import { serverEnv } from "@${projectName}/env/server";
+import * as schema from "./schema";
+
+const client = createClient({ url: serverEnv.DATABASE_URL });
+export const db = drizzle(client, { schema });
+export { schema };
+export type { User, NewUser } from "./schema";
+`;
+  }
+
+  return `import { drizzle } from "drizzle-orm/node-postgres";
 import { serverEnv } from "@${projectName}/env/server";
 import * as schema from "./schema";
 
 export const db = drizzle(serverEnv.DATABASE_URL, { schema });
 export { schema };
 export type { User, NewUser } from "./schema";
-`,
-  );
-
-  builder.addFile("packages/db/README.md", generateDrizzleReadme(projectName));
+`;
 }
 
-function generateDrizzleReadme(projectName: string): string {
+function dialectLabel(dialect: DbDialect): string {
+  switch (dialect) {
+    case "mysql":
+      return "MySQL";
+    case "sqlite":
+      return "SQLite";
+    case "postgresql":
+      return "PostgreSQL";
+  }
+}
+
+function generateDrizzleReadme(
+  projectName: string,
+  dialect: DbDialect,
+): string {
   return `# @${projectName}/db
 
-Shared database package using **Drizzle ORM** with PostgreSQL.
+Shared database package using **Drizzle ORM** with ${dialectLabel(dialect)}.
 
 ## Setup
 

@@ -97,11 +97,17 @@ export default function App() {
 
 ## `packages/db` (optional)
 
-PostgreSQL only. Created when you pick Drizzle or Prisma.
+Created when you pick Drizzle or Prisma.
 
 ### Drizzle
 
-Exports `db`, `schema`, and `User` / `NewUser`. Starter table: `users`.
+Exports `db`, `schema`, and `User` / `NewUser`. Starter table: `users`. The CLI asks which database to use and scaffolds the matching driver, `drizzle.config.ts` dialect, and schema helpers:
+
+| Database | Driver | Schema |
+| --- | --- | --- |
+| PostgreSQL (default) | `pg` + `drizzle-orm/node-postgres` | `pgTable` |
+| MySQL | `mysql2` + `drizzle-orm/mysql2` | `mysqlTable` |
+| SQLite | `@libsql/client` + `drizzle-orm/libsql` | `sqliteTable` |
 
 ```ts
 import { db, schema } from "@my-app/db";

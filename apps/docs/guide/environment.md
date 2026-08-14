@@ -28,7 +28,8 @@ Clerk and WorkOS also generate `getPublicAuthConfig()`, which reads the publisha
 | When | Name | Kind | Required |
 | --- | --- | --- | --- |
 | Always | `NODE_ENV` | server | no (`development` \| `test` \| `production`) |
-| Any database ORM | `DATABASE_URL` | server | yes (URL) |
+| Any database ORM (PostgreSQL or MySQL) | `DATABASE_URL` | server | yes (URL) |
+| Drizzle + SQLite | `DATABASE_URL` | server | yes (string, e.g. `file:./packages/db/local.db`) |
 | Better Auth | `BETTER_AUTH_SECRET` | server | yes |
 | Better Auth | `BETTER_AUTH_URL` | server | yes (URL) |
 | Clerk | `CLERK_SECRET_KEY` | server | yes |

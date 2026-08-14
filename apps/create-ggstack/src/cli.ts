@@ -5,15 +5,18 @@ import pc from "picocolors";
 import {
   APP_CHOICES,
   AUTH_CHOICES,
+  DB_DIALECT_CHOICES,
   DB_ORM_CHOICES,
   DEFAULT_APP_NAMES,
   DEFAULT_AUTH_PROVIDER,
+  DEFAULT_DB_DIALECT,
   DEFAULT_DB_ORM,
   DEFAULT_PACKAGE_MANAGER,
   DEFAULT_PROJECT_NAME,
   DEFAULT_VITE_FRAMEWORK,
   DEFAULT_VITE_VARIANT,
   isAuthProvider,
+  isDbDialect,
   isDbOrm,
   isViteFramework,
   isViteVariant,
@@ -233,6 +236,17 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
   const db: DbConfig = {
     orm: isDbOrm(selectedDbOrm) ? selectedDbOrm : DEFAULT_DB_ORM,
   };
+
+  if (db.orm === "drizzle") {
+    const selectedDbDialect = await select({
+      message: "Which database do you want to use?",
+      options: DB_DIALECT_CHOICES.map((choice) => ({ ...choice })),
+      initialValue: DEFAULT_DB_DIALECT,
+    });
+    db.dialect = isDbDialect(selectedDbDialect)
+      ? selectedDbDialect
+      : DEFAULT_DB_DIALECT;
+  }
 
   if (db.orm !== "none") {
     packages.push({ type: "db" });

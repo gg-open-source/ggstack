@@ -133,6 +133,12 @@ const ORM_LABELS: Record<string, string> = {
   prisma: "Prisma",
 };
 
+const DIALECT_LABELS: Record<string, string> = {
+  postgresql: "PostgreSQL",
+  mysql: "MySQL",
+  sqlite: "SQLite",
+};
+
 const TOOLING_LABELS: Record<string, string> = {
   tailwind: "Tailwind CSS",
   oxc: "Oxc (lint + format)",
@@ -245,8 +251,12 @@ export function generateRootReadme(config: StackConfig): string {
 
   if (hasDb) {
     const label = ORM_LABELS[config.db.orm] ?? config.db.orm;
+    const dialect =
+      config.db.orm === "drizzle"
+        ? (DIALECT_LABELS[config.db.dialect ?? "postgresql"] ?? "PostgreSQL")
+        : "PostgreSQL";
     lines.push(
-      `- \`packages/db\` — ${label} + PostgreSQL (\`@${name}/db\`). See that package's README.`,
+      `- \`packages/db\` — ${label} + ${dialect} (\`@${name}/db\`). See that package's README.`,
     );
   }
 

@@ -89,7 +89,7 @@ describe("buildProject", () => {
     expect(readme).toContain("React Router");
     expect(readme).toContain("pnpm --filter @test-project/mobile start");
     expect(readme).toContain("Clerk");
-    expect(readme).toContain("Drizzle ORM");
+    expect(readme).toContain("Drizzle ORM + PostgreSQL");
     expect(readme).toContain("@test-project/ui");
     expect(readme).toContain("not mounted automatically");
     expect(readme).toContain("Oxc");
@@ -601,15 +601,74 @@ describe("db package generation", () => {
 
     expect(builder.files["packages/db/package.json"]).toContain("drizzle-orm");
     expect(builder.files["packages/db/package.json"]).toContain("drizzle-kit");
+    expect(builder.files["packages/db/package.json"]).toContain('"pg"');
     expect(builder.files["packages/db/drizzle.config.ts"]).toContain(
       "postgresql",
     );
     expect(builder.files["packages/db/src/schema.ts"]).toContain("pgTable");
     expect(builder.files["packages/db/src/index.ts"]).toContain("drizzle");
     expect(builder.files["packages/db/src/index.ts"]).toContain(
+      "node-postgres",
+    );
+    expect(builder.files["packages/db/src/index.ts"]).toContain(
       "serverEnv.DATABASE_URL",
     );
     expect(builder.files["packages/db/.env.example"]).toBeUndefined();
+    expect(builder.files["README.md"]).toContain("Drizzle ORM + PostgreSQL");
+  });
+
+  it("generates a mysql drizzle package when the mysql dialect is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "db" }],
+      db: { orm: "drizzle", dialect: "mysql" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/db/package.json"]).toContain("mysql2");
+    expect(builder.files["packages/db/package.json"]).not.toContain('"pg"');
+    expect(builder.files["packages/db/drizzle.config.ts"]).toContain(
+      'dialect: "mysql"',
+    );
+    expect(builder.files["packages/db/src/schema.ts"]).toContain("mysqlTable");
+    expect(builder.files["packages/db/src/index.ts"]).toContain("mysql2");
+    expect(builder.files["packages/db/README.md"]).toContain("MySQL");
+    expect(builder.files["README.md"]).toContain("Drizzle ORM + MySQL");
+    expect(builder.files[".env.example"]).toContain(
+      "mysql://user:password@localhost:3306/mydb",
+    );
+  });
+
+  it("generates a sqlite drizzle package when the sqlite dialect is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "db" }],
+      db: { orm: "drizzle", dialect: "sqlite" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/db/package.json"]).toContain(
+      "@libsql/client",
+    );
+    expect(builder.files["packages/db/package.json"]).not.toContain('"pg"');
+    expect(builder.files["packages/db/drizzle.config.ts"]).toContain(
+      'dialect: "sqlite"',
+    );
+    expect(builder.files["packages/db/src/schema.ts"]).toContain("sqliteTable");
+    expect(builder.files["packages/db/src/index.ts"]).toContain("libsql");
+    expect(builder.files["packages/db/src/index.ts"]).toContain("createClient");
+    expect(builder.files["packages/db/README.md"]).toContain("SQLite");
+    expect(builder.files["README.md"]).toContain("Drizzle ORM + SQLite");
+    expect(builder.files[".env.example"]).toContain(
+      "file:./packages/db/local.db",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "DATABASE_URL: z.string().min(1)",
+    );
+    expect(builder.files[".gitignore"]).toContain("*.db");
+    expect(builder.files[".gitignore"]).toContain("*.db-wal");
   });
 
   it("generates prisma db package when prisma is selected", async () => {
@@ -762,8 +821,31 @@ describe("env package generation", () => {
     expect(builder.files["packages/env/src/server.ts"]).toContain(
       "DATABASE_URL",
     );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "z.string().url()",
+    );
     expect(builder.files[".env.example"]).toContain("DATABASE_URL=");
+    expect(builder.files[".env.example"]).toContain(
+      "postgresql://user:password@localhost:5432/mydb",
+    );
     expect(builder.files["turbo.json"]).toContain("DATABASE_URL");
+  });
+
+  it("treats sqlite DATABASE_URL as a file path, not a url", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "db" }],
+      db: { orm: "drizzle", dialect: "sqlite" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "DATABASE_URL: z.string().min(1)",
+    );
+    expect(builder.files[".env.example"]).toContain(
+      "file:./packages/db/local.db",
+    );
   });
 
   it("does not add provider keys when auth and db are none", async () => {

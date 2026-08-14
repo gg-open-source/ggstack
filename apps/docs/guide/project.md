@@ -41,7 +41,7 @@ App folder names are whatever you typed (after sanitizing), not the type names a
 
 ## `.gitignore`
 
-The root `.gitignore` is generated from the apps and tooling you selected. Workspace entries are always present: `node_modules`, `dist`, `.turbo`, `**/.cache/`, `*.log`, `.env`, and `.env.local`.
+The root `.gitignore` is generated from the apps, tooling, and database dialect you selected. Workspace entries are always present: `node_modules`, `dist`, `.turbo`, `**/.cache/`, `*.log`, `.env`, and `.env.local`.
 
 Stack-specific paths are added only when that choice is on:
 
@@ -55,8 +55,9 @@ Stack-specific paths are added only when that choice is on:
 | React Router | `.react-router`, `build` |
 | ESLint | `.eslintcache` |
 | Prettier | `.prettiercache` |
+| Drizzle + SQLite | `*.db`, `*.db-journal`, `*.db-wal`, `*.db-shm` |
 
-Vite, Express, Fastify, shadcn/ui, tRPC, auth, Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section. Astro build output is `dist`; only the generated `.astro` types directory is extra.
+Vite, Express, Fastify, shadcn/ui, tRPC, auth, PostgreSQL/MySQL Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section. Drizzle + SQLite also ignores `*.db`, `*.db-journal`, `*.db-wal`, and `*.db-shm`. Astro build output is `dist`; only the generated `.astro` types directory is extra.
 
 ## Root scripts
 
