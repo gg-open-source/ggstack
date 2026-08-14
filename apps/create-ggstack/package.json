@@ -18,6 +18,8 @@
     "nextjs",
     "expo",
     "electron",
+    "express",
+    "fastify",
     "shadcn",
     "tailwindcss",
     "drizzle",

@@ -1,6 +1,8 @@
 import type { AppConfig, ProjectBuilder, StackConfig } from "../../types.js";
 import { generateElectronApp } from "./electron.js";
 import { generateExpoApp } from "./expo.js";
+import { generateExpressApp } from "./express.js";
+import { generateFastifyApp } from "./fastify.js";
 import { generateNextApp } from "./next.js";
 import { generateViteApp } from "./vite.js";
 
@@ -22,12 +24,20 @@ export async function generateApp(
     case "electron":
       await generateElectronApp(config, builder, app);
       break;
+    case "express":
+      await generateExpressApp(config, builder, app);
+      break;
+    case "fastify":
+      await generateFastifyApp(config, builder, app);
+      break;
   }
 }
 
 export {
   generateElectronApp,
   generateExpoApp,
+  generateExpressApp,
+  generateFastifyApp,
   generateNextApp,
   generateViteApp,
 };

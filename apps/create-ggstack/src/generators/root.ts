@@ -103,6 +103,8 @@ const APP_LABELS: Record<string, string> = {
   next: "Next.js",
   expo: "Expo Router",
   electron: "Electron + Vite",
+  express: "Express",
+  fastify: "Fastify",
 };
 
 const AUTH_LABELS: Record<string, string> = {
@@ -173,7 +175,7 @@ export function generateRootReadme(config: StackConfig): string {
     "",
     "| Script | Description |",
     "| --- | --- |",
-    "| `pnpm dev` | Turbo `dev` for apps that define it (Vite, Next.js, Electron) |",
+    "| `pnpm dev` | Turbo `dev` for apps that define it (Vite, Next.js, Electron, Express, Fastify) |",
     "| `pnpm build` | Turbo `build` |",
     "| `pnpm lint` | Lint |",
     "| `pnpm format` | Format |",

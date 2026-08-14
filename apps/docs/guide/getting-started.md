@@ -37,6 +37,6 @@ pnpm install
 pnpm dev
 ```
 
-`pnpm dev` runs Turbo `dev` across apps that define that script (Vite, Next.js, Electron). Expo uses `start` instead — run it from the app package. Fill in `.env` before anything that reads `packages/env`; validation fails on empty required values unless you skip it. Details are in [Environment](./environment.md).
+`pnpm dev` runs Turbo `dev` across apps that define that script (Vite, Next.js, Electron, Express, Fastify). Expo uses `start` instead — run it from the app package. Fill in `.env` before anything that reads `packages/env`; validation fails on empty required values unless you skip it. Details are in [Environment](./environment.md).
 
 The scaffolded repo also gets a `README.md` that lists what you selected and the same next steps.

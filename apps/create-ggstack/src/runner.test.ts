@@ -48,6 +48,8 @@ describe("buildProject", () => {
       apps: [
         { type: "next", name: "web" },
         { type: "expo", name: "mobile" },
+        { type: "express", name: "api" },
+        { type: "fastify", name: "gateway" },
       ],
       packages: [{ type: "shadcn" }, { type: "db" }],
       auth: { provider: "clerk" },
@@ -63,6 +65,10 @@ describe("buildProject", () => {
     expect(readme).toContain("Next.js");
     expect(readme).toContain("apps/mobile");
     expect(readme).toContain("Expo Router");
+    expect(readme).toContain("apps/api");
+    expect(readme).toContain("Express");
+    expect(readme).toContain("apps/gateway");
+    expect(readme).toContain("Fastify");
     expect(readme).toContain("pnpm --filter @test-project/mobile start");
     expect(readme).toContain("Clerk");
     expect(readme).toContain("Drizzle ORM");
@@ -154,6 +160,48 @@ describe("buildProject", () => {
     );
   });
 
+  it("copies the express template when an express app is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "express", name: "express" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/express/package.json"]).toContain(
+      "@test-project/express",
+    );
+    expect(builder.files["apps/express/src/index.ts"]).toContain("express");
+    expect(builder.files["apps/express/src/index.ts"]).toContain(
+      'name: "express"',
+    );
+    expect(builder.files["apps/express/src/index.ts"]).not.toContain("APP_NAME");
+    expect(builder.files["apps/express/package.json"]).toContain(
+      '"express": "^5.2.1"',
+    );
+  });
+
+  it("copies the fastify template when a fastify app is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "fastify", name: "fastify" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/fastify/package.json"]).toContain(
+      "@test-project/fastify",
+    );
+    expect(builder.files["apps/fastify/src/index.ts"]).toContain("Fastify");
+    expect(builder.files["apps/fastify/src/index.ts"]).toContain(
+      'name: "fastify"',
+    );
+    expect(builder.files["apps/fastify/src/index.ts"]).not.toContain("APP_NAME");
+    expect(builder.files["apps/fastify/package.json"]).toContain(
+      '"fastify": "^5.11.3"',
+    );
+  });
+
   it("does not add external CLI commands for app scaffolding", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({
@@ -162,6 +210,8 @@ describe("buildProject", () => {
         { type: "next", name: "next" },
         { type: "expo", name: "expo" },
         { type: "electron", name: "electron" },
+        { type: "express", name: "express" },
+        { type: "fastify", name: "fastify" },
       ],
     });
 

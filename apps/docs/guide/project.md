@@ -17,7 +17,9 @@ my-app/
 │   ├── vite/             # optional Vanilla Vite
 │   ├── next/             # optional Next.js
 │   ├── expo/             # optional Expo Router
-│   └── electron/         # optional Electron + Vite
+│   ├── electron/         # optional Electron + Vite
+│   ├── express/          # optional Express
+│   └── fastify/          # optional Fastify
 ├── packages/
 │   ├── env/              # always
 │   ├── ui/               # optional shadcn/ui

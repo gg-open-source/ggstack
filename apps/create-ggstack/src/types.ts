@@ -1,4 +1,10 @@
-export type AppType = "vite" | "next" | "expo" | "electron";
+export type AppType =
+  | "vite"
+  | "next"
+  | "expo"
+  | "electron"
+  | "express"
+  | "fastify";
 
 export interface AppConfig {
   type: AppType;

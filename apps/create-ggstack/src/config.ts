@@ -10,6 +10,8 @@ export const APP_CHOICES = [
   { value: "next", label: "Next.js", hint: "custom template" },
   { value: "expo", label: "Expo Router", hint: "custom template" },
   { value: "electron", label: "Electron + Vite", hint: "custom template" },
+  { value: "express", label: "Express", hint: "custom template" },
+  { value: "fastify", label: "Fastify", hint: "custom template" },
 ] as const;
 
 export const DEFAULT_APP_NAMES = {
@@ -17,6 +19,8 @@ export const DEFAULT_APP_NAMES = {
   next: "next",
   expo: "expo",
   electron: "electron",
+  express: "express",
+  fastify: "fastify",
 } as const;
 
 export const PACKAGE_CHOICES = [

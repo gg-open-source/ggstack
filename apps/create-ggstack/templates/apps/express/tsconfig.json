@@ -1,0 +1,9 @@
+{
+  "extends": "@{{PROJECT_NAME}}/tsconfig/base.json",
+  "compilerOptions": {
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "noEmit": true
+  },
+  "include": ["src"]
+}

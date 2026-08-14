@@ -46,6 +46,26 @@ The main process reads optional `VITE_DEV_SERVER_URL` from `serverEnv`. Vite inj
 pnpm --filter @my-app/electron dev
 ```
 
+## Express
+
+Express 5 + TypeScript. Scripts: `dev` (`tsx watch`), `start` (`tsx`), `build` (`tsc --noEmit`).
+
+`src/index.ts` imports `@<project>/env/server` so server env is validated when the process starts. Default port: `3001` (`process.env.PORT` overrides it). Routes: `GET /`, `GET /health`.
+
+```bash
+pnpm --filter @my-app/express dev
+```
+
+## Fastify
+
+Fastify 5 + TypeScript. Scripts: `dev` (`tsx watch`), `start` (`tsx`), `build` (`tsc --noEmit`).
+
+`src/index.ts` imports `@<project>/env/server` so server env is validated when the process starts. Default port: `3002` (`process.env.PORT` overrides it). Routes: `GET /`, `GET /health`.
+
+```bash
+pnpm --filter @my-app/fastify dev
+```
+
 ## Auth and database
 
 App templates do **not** wrap `AuthProvider` or import `@<project>/db`. After you add those packages, import them in the app yourself. See [Packages](./packages.md).

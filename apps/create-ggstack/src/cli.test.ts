@@ -181,11 +181,15 @@ describe("collectConfig", () => {
       "next",
       "expo",
       "electron",
+      "express",
+      "fastify",
     ]); // apps
     mockedText.mockResolvedValueOnce(""); // vite default
     mockedText.mockResolvedValueOnce(""); // next default
     mockedText.mockResolvedValueOnce(""); // expo default
     mockedText.mockResolvedValueOnce(""); // electron default
+    mockedText.mockResolvedValueOnce(""); // express default
+    mockedText.mockResolvedValueOnce(""); // fastify default
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
@@ -221,6 +225,20 @@ describe("collectConfig", () => {
         defaultValue: "electron",
       }),
     );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for the express app?",
+        placeholder: "express",
+        defaultValue: "express",
+      }),
+    );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for the fastify app?",
+        placeholder: "fastify",
+        defaultValue: "fastify",
+      }),
+    );
   });
 
   it("shows the project name default as a placeholder", async () => {
@@ -246,7 +264,7 @@ describe("collectConfig", () => {
     );
   });
 
-  it("supports all four app types", async () => {
+  it("supports all six app types", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
     const mockedSelect = vi.mocked(prompts.select);
@@ -257,11 +275,15 @@ describe("collectConfig", () => {
       "next",
       "expo",
       "electron",
+      "express",
+      "fastify",
     ]); // apps
     mockedText.mockResolvedValueOnce("vite"); // vite
     mockedText.mockResolvedValueOnce("docs"); // next
     mockedText.mockResolvedValueOnce("expo"); // expo
     mockedText.mockResolvedValueOnce("desktop"); // electron
+    mockedText.mockResolvedValueOnce("api"); // express
+    mockedText.mockResolvedValueOnce("gateway"); // fastify
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
@@ -274,6 +296,8 @@ describe("collectConfig", () => {
       { type: "next", name: "docs" },
       { type: "expo", name: "expo" },
       { type: "electron", name: "desktop" },
+      { type: "express", name: "api" },
+      { type: "fastify", name: "gateway" },
     ]);
   });
 

@@ -18,6 +18,7 @@ The Zod schema is generated from the apps, auth provider, and ORM you selected. 
 | Next.js | `NEXT_PUBLIC_` | `nextEnv` |
 | Expo | `EXPO_PUBLIC_` | `expoEnv` |
 | Vite or Electron | `VITE_` | `createViteEnv(runtimeEnv)` — pass `import.meta.env` |
+| Express or Fastify | — | no client export; they import `@<project>/env/server` on boot |
 
 Clerk and WorkOS also generate `getPublicAuthConfig()`, which reads the publishable key / client id from whichever of those prefixed names is set.
 
