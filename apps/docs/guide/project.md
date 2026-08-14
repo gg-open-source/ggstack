@@ -35,6 +35,22 @@ my-app/
 
 App folder names are whatever you typed (after sanitizing), not the type names above.
 
+## `.gitignore`
+
+The root `.gitignore` is generated from the apps and tooling you selected. Workspace entries are always present: `node_modules`, `dist`, `.turbo`, `**/.cache/`, `*.log`, `.env`, and `.env.local`.
+
+Stack-specific paths are added only when that choice is on:
+
+| Selection | Entries |
+| --- | --- |
+| Next.js | `.next`, `out` |
+| Expo Router | `.expo`, `expo-env.d.ts`, `web-build` |
+| Electron + Vite | `release` |
+| ESLint | `.eslintcache` |
+| Prettier | `.prettiercache` |
+
+Vite, Express, Fastify, shadcn/ui, auth, Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section.
+
 ## Root scripts
 
 | Script | What it runs |

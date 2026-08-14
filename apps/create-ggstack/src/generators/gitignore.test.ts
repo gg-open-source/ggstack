@@ -1,0 +1,146 @@
+import { describe, expect, it } from "vitest";
+import { generateGitignore, getGitignoreSections } from "./gitignore.js";
+import type { StackConfig } from "../types.js";
+
+function createTestConfig(overrides: Partial<StackConfig> = {}): StackConfig {
+  return {
+    projectName: "test-project",
+    targetDir: "/tmp/test-project",
+    packageManager: "pnpm",
+    apps: [],
+    packages: [],
+    auth: { provider: "none" },
+    db: { orm: "none" },
+    tooling: [],
+    ...overrides,
+  };
+}
+
+describe("getGitignoreSections", () => {
+  it("always includes the workspace section", () => {
+    const sections = getGitignoreSections(createTestConfig());
+
+    expect(sections).toHaveLength(1);
+    expect(sections[0]?.title).toBe("Workspace");
+    expect(sections[0]?.entries).toEqual([
+      "node_modules",
+      "dist",
+      ".turbo",
+      "**/.cache/",
+      "*.log",
+      ".env",
+      ".env.local",
+    ]);
+  });
+
+  it("adds one section per selected app type that produces artifacts", () => {
+    const sections = getGitignoreSections(
+      createTestConfig({
+        apps: [
+          { type: "next", name: "web" },
+          { type: "next", name: "admin" },
+          { type: "expo", name: "mobile" },
+          { type: "vite", name: "marketing" },
+        ],
+      }),
+    );
+
+    expect(sections.map((section) => section.title)).toEqual([
+      "Workspace",
+      "Next.js",
+      "Expo",
+    ]);
+  });
+
+  it("adds eslint and prettier cache entries when those tools are selected", () => {
+    const sections = getGitignoreSections(
+      createTestConfig({
+        tooling: [{ type: "eslint" }, { type: "prettier" }, { type: "oxc" }],
+      }),
+    );
+
+    expect(sections.map((section) => section.title)).toEqual([
+      "Workspace",
+      "ESLint",
+      "Prettier",
+    ]);
+  });
+});
+
+describe("generateGitignore", () => {
+  it("writes only workspace entries when no apps or tooling are selected", () => {
+    expect(generateGitignore(createTestConfig())).toBe(`# Workspace
+node_modules
+dist
+.turbo
+**/.cache/
+*.log
+.env
+.env.local
+`);
+  });
+
+  it("omits stack-specific paths that were not selected", () => {
+    const gitignore = generateGitignore(
+      createTestConfig({
+        apps: [{ type: "vite", name: "vite" }],
+        packages: [{ type: "shadcn" }],
+        db: { orm: "drizzle" },
+        tooling: [{ type: "tailwind" }, { type: "oxc" }],
+      }),
+    );
+
+    expect(gitignore).not.toContain(".next");
+    expect(gitignore).not.toContain("out");
+    expect(gitignore).not.toContain(".expo");
+    expect(gitignore).not.toContain("web-build");
+    expect(gitignore).not.toContain("release");
+    expect(gitignore).not.toContain(".eslintcache");
+    expect(gitignore).not.toContain(".prettiercache");
+  });
+
+  it("adds next, expo, and electron entries only for those apps", () => {
+    const gitignore = generateGitignore(
+      createTestConfig({
+        apps: [
+          { type: "next", name: "web" },
+          { type: "expo", name: "mobile" },
+          { type: "electron", name: "desktop" },
+        ],
+      }),
+    );
+
+    expect(gitignore).toBe(`# Workspace
+node_modules
+dist
+.turbo
+**/.cache/
+*.log
+.env
+.env.local
+
+# Next.js
+.next
+out
+
+# Expo
+.expo
+expo-env.d.ts
+web-build
+
+# Electron
+release
+`);
+  });
+
+  it("adds tool cache files for eslint and prettier", () => {
+    const gitignore = generateGitignore(
+      createTestConfig({
+        tooling: [{ type: "eslint" }, { type: "prettier" }],
+      }),
+    );
+
+    expect(gitignore).toContain("# ESLint\n.eslintcache");
+    expect(gitignore).toContain("# Prettier\n.prettiercache");
+  });
+});

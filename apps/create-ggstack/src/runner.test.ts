@@ -32,6 +32,8 @@ describe("buildProject", () => {
     expect(builder.files["pnpm-workspace.yaml"]).toContain("apps/*");
     expect(builder.files["turbo.json"]).toContain("build");
     expect(builder.files[".gitignore"]).toContain("node_modules");
+    expect(builder.files[".gitignore"]).not.toContain(".next");
+    expect(builder.files[".gitignore"]).not.toContain(".expo");
     expect(builder.rootPackageJson.name).toBe("test-project");
     expect(builder.files[".env.example"]).toContain("NODE_ENV=development");
     expect(builder.files["packages/env/package.json"]).toContain(
@@ -175,7 +177,9 @@ describe("buildProject", () => {
     expect(builder.files["apps/express/src/index.ts"]).toContain(
       'name: "express"',
     );
-    expect(builder.files["apps/express/src/index.ts"]).not.toContain("APP_NAME");
+    expect(builder.files["apps/express/src/index.ts"]).not.toContain(
+      "APP_NAME",
+    );
     expect(builder.files["apps/express/package.json"]).toContain(
       '"express": "^5.2.1"',
     );
@@ -196,7 +200,9 @@ describe("buildProject", () => {
     expect(builder.files["apps/fastify/src/index.ts"]).toContain(
       'name: "fastify"',
     );
-    expect(builder.files["apps/fastify/src/index.ts"]).not.toContain("APP_NAME");
+    expect(builder.files["apps/fastify/src/index.ts"]).not.toContain(
+      "APP_NAME",
+    );
     expect(builder.files["apps/fastify/package.json"]).toContain(
       '"fastify": "^5.11.3"',
     );

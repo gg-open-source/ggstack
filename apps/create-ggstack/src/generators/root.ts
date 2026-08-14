@@ -1,4 +1,5 @@
 import type { ProjectBuilder, StackConfig } from "../types.js";
+import { generateGitignore } from "./gitignore.js";
 
 export function generateRoot(
   config: StackConfig,
@@ -71,23 +72,7 @@ export function generateRoot(
     ),
   );
 
-  builder.addFile(
-    ".gitignore",
-    `node_modules
-dist
-.next
-.turbo
-**/.cache/
-*.log
-.env
-.env.local
-.expo
-expo-env.d.ts
-web-build
-out
-release
-`,
-  );
+  builder.addFile(".gitignore", generateGitignore(config));
 
   builder.addFile(
     ".npmrc",
