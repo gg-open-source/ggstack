@@ -52,6 +52,8 @@ describe("buildProject", () => {
         { type: "expo", name: "mobile" },
         { type: "express", name: "api" },
         { type: "fastify", name: "gateway" },
+        { type: "tanstack-start", name: "start" },
+        { type: "react-router", name: "rr" },
       ],
       packages: [{ type: "shadcn" }, { type: "db" }],
       auth: { provider: "clerk" },
@@ -71,6 +73,10 @@ describe("buildProject", () => {
     expect(readme).toContain("Express");
     expect(readme).toContain("apps/gateway");
     expect(readme).toContain("Fastify");
+    expect(readme).toContain("apps/start");
+    expect(readme).toContain("TanStack Start");
+    expect(readme).toContain("apps/rr");
+    expect(readme).toContain("React Router");
     expect(readme).toContain("pnpm --filter @test-project/mobile start");
     expect(readme).toContain("Clerk");
     expect(readme).toContain("Drizzle ORM");
@@ -208,6 +214,68 @@ describe("buildProject", () => {
     );
   });
 
+  it("copies the tanstack start template when a tanstack-start app is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "tanstack-start", name: "tanstack-start" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/tanstack-start/package.json"]).toContain(
+      "@test-project/tanstack-start",
+    );
+    expect(builder.files["apps/tanstack-start/src/routes/index.tsx"]).toContain(
+      "TanStack Start",
+    );
+    expect(builder.files["apps/tanstack-start/src/routes/index.tsx"]).toContain(
+      '{"tanstack-start"}',
+    );
+    expect(
+      builder.files["apps/tanstack-start/src/routes/index.tsx"],
+    ).not.toContain("APP_NAME");
+    expect(builder.files["apps/tanstack-start/vite.config.ts"]).toContain(
+      "createViteEnv",
+    );
+    expect(builder.files["apps/tanstack-start/vite.config.ts"]).toContain(
+      "@test-project/env/server",
+    );
+    expect(builder.files["apps/tanstack-start/package.json"]).toContain(
+      '"@tanstack/react-start": "^1.168.44"',
+    );
+  });
+
+  it("copies the react router template when a react-router app is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "react-router", name: "react-router" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/react-router/package.json"]).toContain(
+      "@test-project/react-router",
+    );
+    expect(builder.files["apps/react-router/app/routes/home.tsx"]).toContain(
+      "React Router",
+    );
+    expect(builder.files["apps/react-router/app/routes/home.tsx"]).toContain(
+      '{"react-router"}',
+    );
+    expect(builder.files["apps/react-router/app/routes/home.tsx"]).not.toContain(
+      "APP_NAME",
+    );
+    expect(builder.files["apps/react-router/vite.config.ts"]).toContain(
+      "createViteEnv",
+    );
+    expect(builder.files["apps/react-router/vite.config.ts"]).toContain(
+      "@test-project/env/server",
+    );
+    expect(builder.files["apps/react-router/package.json"]).toContain(
+      '"react-router": "^8.3.0"',
+    );
+  });
+
   it("does not add external CLI commands for app scaffolding", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({
@@ -218,6 +286,8 @@ describe("buildProject", () => {
         { type: "electron", name: "electron" },
         { type: "express", name: "express" },
         { type: "fastify", name: "fastify" },
+        { type: "tanstack-start", name: "tanstack-start" },
+        { type: "react-router", name: "react-router" },
       ],
     });
 
@@ -509,12 +579,37 @@ describe("env package generation", () => {
     );
   });
 
+  it("adds VITE_ client prefix when tanstack-start or react-router is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [
+        { type: "tanstack-start", name: "start" },
+        { type: "react-router", name: "web" },
+      ],
+      auth: { provider: "clerk" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      "VITE_CLERK_PUBLISHABLE_KEY",
+    );
+    expect(builder.files["packages/env/src/client.ts"]).toContain(
+      'clientPrefix: "VITE_"',
+    );
+    expect(builder.files["packages/env/src/client.ts"]).not.toContain(
+      'clientPrefix: "NEXT_PUBLIC_"',
+    );
+  });
+
   it("adds clerk keys and next/vite client prefixes when those apps are selected", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({
       apps: [
         { type: "next", name: "next" },
         { type: "vite", name: "vite" },
+        { type: "tanstack-start", name: "start" },
+        { type: "react-router", name: "web" },
       ],
       auth: { provider: "clerk" },
     });
@@ -543,6 +638,12 @@ describe("env package generation", () => {
       "@test-project/env/server",
     );
     expect(builder.files["apps/vite/vite.config.ts"]).toContain(
+      "createViteEnv",
+    );
+    expect(builder.files["apps/start/vite.config.ts"]).toContain(
+      "createViteEnv",
+    );
+    expect(builder.files["apps/web/vite.config.ts"]).toContain(
       "createViteEnv",
     );
   });

@@ -1,0 +1,30 @@
+{
+  "name": "@{{PROJECT_NAME}}/{{APP_NAME}}",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite dev",
+    "preview": "vite preview",
+    "lint": "oxlint --config ../../tooling/oxc/oxlint.json src",
+    "format": "oxfmt --config ../../tooling/oxc/oxfmt.json src",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@{{PROJECT_NAME}}/env": "workspace:*",
+    "@tanstack/react-router": "^1.170.27",
+    "@tanstack/react-start": "^1.168.44",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8"
+  },
+  "devDependencies": {
+    "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "@vitejs/plugin-react": "^6.0.1",
+    "typescript": "^5.8.0",
+    "vite": "^8.2.0"
+  }
+}

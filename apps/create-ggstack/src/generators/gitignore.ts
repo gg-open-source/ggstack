@@ -31,6 +31,14 @@ const APP_SECTIONS: Partial<Record<AppType, GitignoreSection>> = {
     title: "Electron",
     entries: ["release"],
   },
+  "tanstack-start": {
+    title: "TanStack Start",
+    entries: [".output", ".nitro", ".tanstack"],
+  },
+  "react-router": {
+    title: "React Router",
+    entries: [".react-router", "build"],
+  },
 };
 
 const TOOLING_SECTIONS: Partial<Record<ToolingType, GitignoreSection>> = {

@@ -4,6 +4,8 @@ import { generateExpoApp } from "./expo.js";
 import { generateExpressApp } from "./express.js";
 import { generateFastifyApp } from "./fastify.js";
 import { generateNextApp } from "./next.js";
+import { generateReactRouterApp } from "./react-router.js";
+import { generateTanstackStartApp } from "./tanstack-start.js";
 import { generateViteApp } from "./vite.js";
 
 export async function generateApp(
@@ -30,6 +32,12 @@ export async function generateApp(
     case "fastify":
       await generateFastifyApp(config, builder, app);
       break;
+    case "tanstack-start":
+      await generateTanstackStartApp(config, builder, app);
+      break;
+    case "react-router":
+      await generateReactRouterApp(config, builder, app);
+      break;
   }
 }
 
@@ -39,5 +47,7 @@ export {
   generateExpressApp,
   generateFastifyApp,
   generateNextApp,
+  generateReactRouterApp,
+  generateTanstackStartApp,
   generateViteApp,
 };

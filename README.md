@@ -1,6 +1,6 @@
 # ggstack
 
-Interactive CLI that scaffolds a **pnpm + Turborepo** monorepo in the T3/Turbo style. Pick Vite, Next.js, Expo Router, Electron, Express, and/or Fastify, then optionally add shadcn/ui, Better Auth / Clerk / WorkOS, and Drizzle or Prisma (PostgreSQL). Every project gets a typed `packages/env` and a root `.env.example`.
+Interactive CLI that scaffolds a **pnpm + Turborepo** monorepo in the T3/Turbo style. Pick Vite, Next.js, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, Better Auth / Clerk / WorkOS, and Drizzle or Prisma (PostgreSQL). Every project gets a typed `packages/env` and a root `.env.example`.
 
 ## Requirements
 

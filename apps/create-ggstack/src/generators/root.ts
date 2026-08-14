@@ -53,6 +53,8 @@ export function generateRoot(
               "web-build/**",
               "out/**",
               "release/**",
+              ".output/**",
+              "build/**",
             ],
           },
           lint: {},
@@ -90,6 +92,8 @@ const APP_LABELS: Record<string, string> = {
   electron: "Electron + Vite",
   express: "Express",
   fastify: "Fastify",
+  "tanstack-start": "TanStack Start",
+  "react-router": "React Router",
 };
 
 const AUTH_LABELS: Record<string, string> = {
@@ -160,7 +164,7 @@ export function generateRootReadme(config: StackConfig): string {
     "",
     "| Script | Description |",
     "| --- | --- |",
-    "| `pnpm dev` | Turbo `dev` for apps that define it (Vite, Next.js, Electron, Express, Fastify) |",
+    "| `pnpm dev` | Turbo `dev` for apps that define it (Vite, Next.js, Electron, Express, Fastify, TanStack Start, React Router) |",
     "| `pnpm build` | Turbo `build` |",
     "| `pnpm lint` | Lint |",
     "| `pnpm format` | Format |",

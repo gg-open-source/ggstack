@@ -66,6 +66,30 @@ Fastify 5 + TypeScript. Scripts: `dev` (`tsx watch`), `start` (`tsx`), `build` (
 pnpm --filter @my-app/fastify dev
 ```
 
+## TanStack Start
+
+TanStack Start + Vite + React 19. Scripts: `dev` (`vite dev`), `build` (`vite build`), `preview`.
+
+`vite.config.ts` imports `@<project>/env/server` and calls `createViteEnv(import.meta.env)` so both server and `VITE_` client vars are validated at config load.
+
+```bash
+pnpm --filter @my-app/tanstack-start dev
+```
+
+Default port: `3003`.
+
+## React Router
+
+React Router 8 framework mode + Vite + React 19. Scripts: `dev` (`react-router dev`), `build` (`react-router build`), `start` (`react-router-serve`).
+
+`vite.config.ts` imports `@<project>/env/server` and calls `createViteEnv(import.meta.env)` so both server and `VITE_` client vars are validated at config load.
+
+```bash
+pnpm --filter @my-app/react-router dev
+```
+
+Default port: `5174`.
+
 ## Auth and database
 
 App templates do **not** wrap `AuthProvider` or import `@<project>/db`. After you add those packages, import them in the app yourself. See [Packages](./packages.md).

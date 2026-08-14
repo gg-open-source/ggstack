@@ -20,6 +20,8 @@
     "electron",
     "express",
     "fastify",
+    "tanstack-start",
+    "react-router",
     "shadcn",
     "tailwindcss",
     "drizzle",

@@ -4,7 +4,9 @@ export type AppType =
   | "expo"
   | "electron"
   | "express"
-  | "fastify";
+  | "fastify"
+  | "tanstack-start"
+  | "react-router";
 
 export interface AppConfig {
   type: AppType;

@@ -36,7 +36,13 @@ export function getClientPrefixes(config: StackConfig): ClientPrefix[] {
     prefixes.push("EXPO_PUBLIC_");
   }
   if (
-    config.apps.some((app) => app.type === "vite" || app.type === "electron")
+    config.apps.some(
+      (app) =>
+        app.type === "vite" ||
+        app.type === "electron" ||
+        app.type === "tanstack-start" ||
+        app.type === "react-router",
+    )
   ) {
     prefixes.push("VITE_");
   }

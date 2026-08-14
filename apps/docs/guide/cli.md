@@ -22,8 +22,8 @@ There are no flags for apps, packages, auth, database, or tooling. Those choices
 ## Interactive flow
 
 1. **Project name** — positional argument, or a prompt (default `project`). The default is shown as grey placeholder text and is used if you press Enter without typing.
-2. **Apps** — multi-select, optional: Vanilla Vite, Next.js, Expo Router, Electron + Vite, Express, Fastify.
-3. **App names** — one prompt per selected app. Defaults: `vite`, `next`, `expo`, `electron`, `express`, `fastify`. Same grey placeholder as the project name.
+2. **Apps** — multi-select, optional: Vanilla Vite, Next.js, Expo Router, Electron + Vite, Express, Fastify, TanStack Start, React Router.
+3. **App names** — one prompt per selected app. Defaults: `vite`, `next`, `expo`, `electron`, `express`, `fastify`, `tanstack-start`, `react-router`. Same grey placeholder as the project name.
 4. **Packages** — multi-select, optional: shadcn/ui.
 5. **Tooling** — multi-select: Tailwind CSS, Oxc, Prettier, ESLint. Tailwind is pre-selected (and always kept) if shadcn/ui is on.
 6. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).

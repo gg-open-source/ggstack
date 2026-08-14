@@ -12,6 +12,8 @@ export const APP_CHOICES = [
   { value: "electron", label: "Electron + Vite", hint: "custom template" },
   { value: "express", label: "Express", hint: "custom template" },
   { value: "fastify", label: "Fastify", hint: "custom template" },
+  { value: "tanstack-start", label: "TanStack Start", hint: "custom template" },
+  { value: "react-router", label: "React Router", hint: "custom template" },
 ] as const;
 
 export const DEFAULT_APP_NAMES = {
@@ -21,6 +23,8 @@ export const DEFAULT_APP_NAMES = {
   electron: "electron",
   express: "express",
   fastify: "fastify",
+  "tanstack-start": "tanstack-start",
+  "react-router": "react-router",
 } as const;
 
 export const PACKAGE_CHOICES = [

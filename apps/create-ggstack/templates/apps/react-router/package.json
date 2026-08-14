@@ -1,0 +1,31 @@
+{
+  "name": "@{{PROJECT_NAME}}/{{APP_NAME}}",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "react-router build",
+    "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
+    "lint": "oxlint --config ../../tooling/oxc/oxlint.json app",
+    "format": "oxfmt --config ../../tooling/oxc/oxfmt.json app",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@{{PROJECT_NAME}}/env": "workspace:*",
+    "@react-router/node": "^8.3.0",
+    "@react-router/serve": "^8.3.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
+    "react-router": "^8.3.0"
+  },
+  "devDependencies": {
+    "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
+    "@react-router/dev": "^8.3.0",
+    "@types/node": "^26.1.2",
+    "@types/react": "^19.2.18",
+    "@types/react-dom": "^19.2.4",
+    "typescript": "^5.8.0",
+    "vite": "^8.2.0"
+  }
+}

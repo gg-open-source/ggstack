@@ -19,7 +19,9 @@ my-app/
 │   ├── expo/             # optional Expo Router
 │   ├── electron/         # optional Electron + Vite
 │   ├── express/          # optional Express
-│   └── fastify/          # optional Fastify
+│   ├── fastify/          # optional Fastify
+│   ├── tanstack-start/   # optional TanStack Start
+│   └── react-router/     # optional React Router
 ├── packages/
 │   ├── env/              # always
 │   ├── ui/               # optional shadcn/ui
@@ -46,6 +48,8 @@ Stack-specific paths are added only when that choice is on:
 | Next.js | `.next`, `out` |
 | Expo Router | `.expo`, `expo-env.d.ts`, `web-build` |
 | Electron + Vite | `release` |
+| TanStack Start | `.output`, `.nitro`, `.tanstack` |
+| React Router | `.react-router`, `build` |
 | ESLint | `.eslintcache` |
 | Prettier | `.prettiercache` |
 

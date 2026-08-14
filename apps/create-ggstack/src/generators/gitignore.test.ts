@@ -95,17 +95,23 @@ dist
     expect(gitignore).not.toContain(".expo");
     expect(gitignore).not.toContain("web-build");
     expect(gitignore).not.toContain("release");
+    expect(gitignore).not.toContain(".output");
+    expect(gitignore).not.toContain(".tanstack");
+    expect(gitignore).not.toContain(".react-router");
+    expect(gitignore).not.toContain("\nbuild\n");
     expect(gitignore).not.toContain(".eslintcache");
     expect(gitignore).not.toContain(".prettiercache");
   });
 
-  it("adds next, expo, and electron entries only for those apps", () => {
+  it("adds next, expo, electron, tanstack start, and react router entries only for those apps", () => {
     const gitignore = generateGitignore(
       createTestConfig({
         apps: [
           { type: "next", name: "web" },
           { type: "expo", name: "mobile" },
           { type: "electron", name: "desktop" },
+          { type: "tanstack-start", name: "start" },
+          { type: "react-router", name: "rr" },
         ],
       }),
     );
@@ -130,6 +136,15 @@ web-build
 
 # Electron
 release
+
+# TanStack Start
+.output
+.nitro
+.tanstack
+
+# React Router
+.react-router
+build
 `);
   });
 

@@ -183,6 +183,8 @@ describe("collectConfig", () => {
       "electron",
       "express",
       "fastify",
+      "tanstack-start",
+      "react-router",
     ]); // apps
     mockedText.mockResolvedValueOnce(""); // vite default
     mockedText.mockResolvedValueOnce(""); // next default
@@ -190,6 +192,8 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce(""); // electron default
     mockedText.mockResolvedValueOnce(""); // express default
     mockedText.mockResolvedValueOnce(""); // fastify default
+    mockedText.mockResolvedValueOnce(""); // tanstack-start default
+    mockedText.mockResolvedValueOnce(""); // react-router default
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
@@ -239,6 +243,20 @@ describe("collectConfig", () => {
         defaultValue: "fastify",
       }),
     );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for the tanstack-start app?",
+        placeholder: "tanstack-start",
+        defaultValue: "tanstack-start",
+      }),
+    );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for the react-router app?",
+        placeholder: "react-router",
+        defaultValue: "react-router",
+      }),
+    );
   });
 
   it("shows the project name default as a placeholder", async () => {
@@ -264,7 +282,7 @@ describe("collectConfig", () => {
     );
   });
 
-  it("supports all six app types", async () => {
+  it("supports all eight app types", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
     const mockedSelect = vi.mocked(prompts.select);
@@ -277,6 +295,8 @@ describe("collectConfig", () => {
       "electron",
       "express",
       "fastify",
+      "tanstack-start",
+      "react-router",
     ]); // apps
     mockedText.mockResolvedValueOnce("vite"); // vite
     mockedText.mockResolvedValueOnce("docs"); // next
@@ -284,6 +304,8 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce("desktop"); // electron
     mockedText.mockResolvedValueOnce("api"); // express
     mockedText.mockResolvedValueOnce("gateway"); // fastify
+    mockedText.mockResolvedValueOnce("start"); // tanstack-start
+    mockedText.mockResolvedValueOnce("web"); // react-router
     mockedMultiSelect.mockResolvedValueOnce([]); // packages
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
@@ -298,6 +320,8 @@ describe("collectConfig", () => {
       { type: "electron", name: "desktop" },
       { type: "express", name: "api" },
       { type: "fastify", name: "gateway" },
+      { type: "tanstack-start", name: "start" },
+      { type: "react-router", name: "web" },
     ]);
   });
 
