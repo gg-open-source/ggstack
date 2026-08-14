@@ -7,6 +7,7 @@ import {
   AUTH_CHOICES,
   DB_DIALECT_CHOICES,
   DB_ORM_CHOICES,
+  PRISMA_DB_DIALECT_CHOICES,
   DEFAULT_APP_NAMES,
   DEFAULT_AUTH_PROVIDER,
   DEFAULT_DB_DIALECT,
@@ -237,10 +238,12 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     orm: isDbOrm(selectedDbOrm) ? selectedDbOrm : DEFAULT_DB_ORM,
   };
 
-  if (db.orm === "drizzle") {
+  if (db.orm !== "none") {
+    const dialectChoices =
+      db.orm === "prisma" ? PRISMA_DB_DIALECT_CHOICES : DB_DIALECT_CHOICES;
     const selectedDbDialect = await select({
       message: "Which database do you want to use?",
-      options: DB_DIALECT_CHOICES.map((choice) => ({ ...choice })),
+      options: dialectChoices.map((choice) => ({ ...choice })),
       initialValue: DEFAULT_DB_DIALECT,
     });
     db.dialect = isDbDialect(selectedDbDialect)

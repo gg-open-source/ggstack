@@ -479,7 +479,7 @@ describe("collectConfig", () => {
     expect(config.db).toEqual({ orm: "drizzle", dialect: "mysql" });
   });
 
-  it("does not prompt for a database dialect when prisma is selected", async () => {
+  it("prompts for a database dialect when prisma is selected", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
     const mockedSelect = vi.mocked(prompts.select);
@@ -490,16 +490,35 @@ describe("collectConfig", () => {
     mockedMultiSelect.mockResolvedValueOnce([]);
     mockedSelect.mockResolvedValueOnce("none");
     mockedSelect.mockResolvedValueOnce("prisma");
+    mockedSelect.mockResolvedValueOnce("postgresql");
 
     const config = await collectConfig([]);
 
-    expect(config.db).toEqual({ orm: "prisma" });
+    expect(config.db).toEqual({ orm: "prisma", dialect: "postgresql" });
     expect(config.packages).toContainEqual({ type: "db" });
-    expect(mockedSelect).not.toHaveBeenCalledWith(
+    expect(mockedSelect).toHaveBeenCalledWith(
       expect.objectContaining({
         message: "Which database do you want to use?",
       }),
     );
+  });
+
+  it("stores the selected prisma dialect", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("prisma");
+    mockedSelect.mockResolvedValueOnce("mysql");
+
+    const config = await collectConfig([]);
+
+    expect(config.db).toEqual({ orm: "prisma", dialect: "mysql" });
   });
 
   it("does not prompt for a database dialect when the orm is none", async () => {

@@ -252,9 +252,7 @@ export function generateRootReadme(config: StackConfig): string {
   if (hasDb) {
     const label = ORM_LABELS[config.db.orm] ?? config.db.orm;
     const dialect =
-      config.db.orm === "drizzle"
-        ? (DIALECT_LABELS[config.db.dialect ?? "postgresql"] ?? "PostgreSQL")
-        : "PostgreSQL";
+      DIALECT_LABELS[config.db.dialect ?? "postgresql"] ?? "PostgreSQL";
     lines.push(
       `- \`packages/db\` — ${label} + ${dialect} (\`@${name}/db\`). See that package's README.`,
     );

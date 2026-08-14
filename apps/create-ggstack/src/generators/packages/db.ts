@@ -1,4 +1,4 @@
-import { resolveDrizzleDialect } from "../../config.js";
+import { resolveDbDialect } from "../../config.js";
 import type { DbDialect, ProjectBuilder, StackConfig } from "../../types.js";
 
 type SupportedDbOrm = "drizzle" | "prisma";
@@ -18,8 +18,7 @@ export function generateDbPackage(
     return;
   }
 
-  const dialect =
-    orm === "drizzle" ? resolveDrizzleDialect(config.db.dialect) : undefined;
+  const dialect = resolveDbDialect(config.db.dialect);
 
   builder.addFile(
     "packages/db/package.json",
@@ -42,17 +41,17 @@ export function generateDbPackage(
     ),
   );
 
-  if (orm === "drizzle" && dialect) {
+  if (orm === "drizzle") {
     generateDrizzleFiles(projectName, dialect, builder);
   } else {
-    generatePrismaFiles(projectName, builder);
+    generatePrismaFiles(projectName, dialect, builder);
   }
 }
 
 function getPackageJson(
   projectName: string,
   orm: SupportedDbOrm,
-  dialect: DbDialect | undefined,
+  dialect: DbDialect,
 ): Record<string, unknown> {
   const base = {
     name: `@${projectName}/db`,
@@ -86,11 +85,11 @@ function getPackageJson(
       dependencies: {
         [`@${projectName}/env`]: "workspace:*",
         "drizzle-orm": "^0.40.0",
-        ...getDrizzleDriverDependencies(dialect ?? "postgresql"),
+        ...getDrizzleDriverDependencies(dialect),
       },
       devDependencies: {
         ...base.devDependencies,
-        ...getDrizzleDriverDevDependencies(dialect ?? "postgresql"),
+        ...getDrizzleDriverDevDependencies(dialect),
         "drizzle-kit": "^0.30.0",
       },
     };
@@ -159,7 +158,12 @@ export default defineConfig({
 `,
   );
 
-  builder.addFile("packages/db/src/schema.ts", getDrizzleSchemaSource(dialect));
+  builder.addFile(
+    "packages/db/src/schema.ts",
+    `// Add your Drizzle tables here.
+export {};
+`,
+  );
 
   builder.addFile(
     "packages/db/src/index.ts",
@@ -172,53 +176,6 @@ export default defineConfig({
   );
 }
 
-function getDrizzleSchemaSource(dialect: DbDialect): string {
-  if (dialect === "mysql") {
-    return `import { int, mysqlTable, timestamp, varchar } from "drizzle-orm/mysql-core";
-
-export const users = mysqlTable("users", {
-  id: int("id").primaryKey().autoincrement(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  name: varchar("name", { length: 255 }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
-`;
-  }
-
-  if (dialect === "sqlite") {
-    return `import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-
-export const users = sqliteTable("users", {
-  id: integer("id").primaryKey({ autoIncrement: true }),
-  email: text("email").notNull().unique(),
-  name: text("name"),
-  createdAt: integer("created_at", { mode: "timestamp" })
-    .notNull()
-    .$defaultFn(() => new Date()),
-});
-
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
-`;
-  }
-
-  return `import { pgTable, serial, timestamp, varchar } from "drizzle-orm/pg-core";
-
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  email: varchar("email", { length: 255 }).notNull().unique(),
-  name: varchar("name", { length: 255 }),
-  createdAt: timestamp("created_at").defaultNow().notNull(),
-});
-
-export type User = typeof users.$inferSelect;
-export type NewUser = typeof users.$inferInsert;
-`;
-}
-
 function getDrizzleClientSource(
   projectName: string,
   dialect: DbDialect,
@@ -226,11 +183,8 @@ function getDrizzleClientSource(
   if (dialect === "mysql") {
     return `import { drizzle } from "drizzle-orm/mysql2";
 import { serverEnv } from "@${projectName}/env/server";
-import * as schema from "./schema";
 
-export const db = drizzle(serverEnv.DATABASE_URL, { schema, mode: "default" });
-export { schema };
-export type { User, NewUser } from "./schema";
+export const db = drizzle(serverEnv.DATABASE_URL, { mode: "default" });
 `;
   }
 
@@ -238,22 +192,16 @@ export type { User, NewUser } from "./schema";
     return `import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
 import { serverEnv } from "@${projectName}/env/server";
-import * as schema from "./schema";
 
 const client = createClient({ url: serverEnv.DATABASE_URL });
-export const db = drizzle(client, { schema });
-export { schema };
-export type { User, NewUser } from "./schema";
+export const db = drizzle(client);
 `;
   }
 
   return `import { drizzle } from "drizzle-orm/node-postgres";
 import { serverEnv } from "@${projectName}/env/server";
-import * as schema from "./schema";
 
-export const db = drizzle(serverEnv.DATABASE_URL, { schema });
-export { schema };
-export type { User, NewUser } from "./schema";
+export const db = drizzle(serverEnv.DATABASE_URL);
 `;
 }
 
@@ -279,13 +227,12 @@ Shared database package using **Drizzle ORM** with ${dialectLabel(dialect)}.
 ## Setup
 
 1. Copy the repo-root \`.env.example\` to \`.env\` and fill in \`DATABASE_URL\`.
-2. Run migrations: \`pnpm db:migrate\`
-3. Use the exported \`db\` client in your apps:
+2. Add tables in \`src/schema.ts\`.
+3. Run migrations: \`pnpm db:migrate\`
+4. Use the exported \`db\` client in your apps:
 
 \`\`\`ts
-import { db, schema } from "@${projectName}/db";
-
-const allUsers = await db.select().from(schema.users);
+import { db } from "@${projectName}/db";
 \`\`\`
 
 ## Scripts
@@ -299,6 +246,7 @@ const allUsers = await db.select().from(schema.users);
 
 function generatePrismaFiles(
   projectName: string,
+  dialect: DbDialect,
   builder: ProjectBuilder,
 ): void {
   builder.addFile(
@@ -308,15 +256,8 @@ function generatePrismaFiles(
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "${dialect}"
   url      = env("DATABASE_URL")
-}
-
-model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
-  name      String?
-  createdAt DateTime @default(now())
 }
 `,
   );
@@ -337,30 +278,30 @@ export const prisma = globalForPrisma.prisma ?? new PrismaClient();
 if (serverEnv.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
 }
-
-export type { User } from "@prisma/client";
 `,
   );
 
-  builder.addFile("packages/db/README.md", generatePrismaReadme(projectName));
+  builder.addFile(
+    "packages/db/README.md",
+    generatePrismaReadme(projectName, dialect),
+  );
 }
 
-function generatePrismaReadme(projectName: string): string {
+function generatePrismaReadme(projectName: string, dialect: DbDialect): string {
   return `# @${projectName}/db
 
-Shared database package using **Prisma ORM** with PostgreSQL.
+Shared database package using **Prisma ORM** with ${dialectLabel(dialect)}.
 
 ## Setup
 
 1. Copy the repo-root \`.env.example\` to \`.env\` and fill in \`DATABASE_URL\`.
-2. Generate the Prisma client: \`pnpm db:generate\`
-3. Push schema changes: \`pnpm db:push\`
-4. Use the exported \`prisma\` client in your apps:
+2. Add models in \`prisma/schema.prisma\`.
+3. Generate the Prisma client: \`pnpm db:generate\`
+4. Push schema changes: \`pnpm db:push\`
+5. Use the exported \`prisma\` client in your apps:
 
 \`\`\`ts
 import { prisma } from "@${projectName}/db";
-
-const allUsers = await prisma.user.findMany();
 \`\`\`
 
 ## Scripts

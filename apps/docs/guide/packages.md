@@ -42,7 +42,7 @@ Created when you select tRPC. Exports:
 
 Starter procedure: `hello.greet({ name?: string })` → `{ greeting }`.
 
-If you also picked Drizzle or Prisma, context includes `db` / `prisma` and `users.list` queries the starter `User` table.
+If you also picked Drizzle or Prisma, context includes `db` / `prisma`. Add procedures after you define your own schema.
 
 ```ts
 import { createCaller, createTRPCContext } from "@my-app/api";
@@ -101,28 +101,24 @@ Created when you pick Drizzle or Prisma.
 
 ### Drizzle
 
-Exports `db`, `schema`, and `User` / `NewUser`. Starter table: `users`. The CLI asks which database to use and scaffolds the matching driver, `drizzle.config.ts` dialect, and schema helpers:
+Exports `db`. The CLI asks which database to use and scaffolds the matching driver and `drizzle.config.ts` dialect. No starter tables — add them in `src/schema.ts`.
 
-| Database | Driver | Schema |
-| --- | --- | --- |
-| PostgreSQL (default) | `pg` + `drizzle-orm/node-postgres` | `pgTable` |
-| MySQL | `mysql2` + `drizzle-orm/mysql2` | `mysqlTable` |
-| SQLite | `@libsql/client` + `drizzle-orm/libsql` | `sqliteTable` |
+| Database | Driver |
+| --- | --- |
+| PostgreSQL (default) | `pg` + `drizzle-orm/node-postgres` |
+| MySQL | `mysql2` + `drizzle-orm/mysql2` |
+| SQLite | `@libsql/client` + `drizzle-orm/libsql` |
 
 ```ts
-import { db, schema } from "@my-app/db";
-
-const allUsers = await db.select().from(schema.users);
+import { db } from "@my-app/db";
 ```
 
 ### Prisma
 
-Exports `prisma` and `User`. Starter model: `User`.
+Exports `prisma`. The CLI asks which database to use and sets `datasource.provider` in `schema.prisma` (`postgresql`, `mysql`, or `sqlite`). No starter models — add them in `prisma/schema.prisma`.
 
 ```ts
 import { prisma } from "@my-app/db";
-
-const allUsers = await prisma.user.findMany();
 ```
 
 Scripts (run from the repo root with a filter, or inside `packages/db`):

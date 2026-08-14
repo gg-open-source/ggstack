@@ -1,4 +1,4 @@
-import { resolveDrizzleDialect } from "../../config.js";
+import { resolveDbDialect } from "../../config.js";
 import type { DbDialect, ProjectBuilder, StackConfig } from "../../types.js";
 
 export type ClientPrefix =
@@ -69,10 +69,7 @@ export function getEnvVarSpecs(config: StackConfig): EnvVarSpec[] {
   ];
 
   if (config.db.orm !== "none") {
-    const dialect =
-      config.db.orm === "drizzle"
-        ? resolveDrizzleDialect(config.db.dialect)
-        : "postgresql";
+    const dialect = resolveDbDialect(config.db.dialect);
     specs.push({
       name: "DATABASE_URL",
       kind: "server",

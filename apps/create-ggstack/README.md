@@ -1,6 +1,6 @@
 # create-ggstack
 
-Interactive CLI that scaffolds a pnpm + Turborepo monorepo (T3/Turbo style): Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, React Router, shadcn/ui, tRPC, typed env, optional auth, Drizzle (PostgreSQL, MySQL, or SQLite), or Prisma (PostgreSQL).
+Interactive CLI that scaffolds a pnpm + Turborepo monorepo (T3/Turbo style): Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, React Router, shadcn/ui, tRPC, typed env, optional auth, Drizzle or Prisma (PostgreSQL, MySQL, or SQLite).
 
 ## Usage
 

@@ -605,7 +605,8 @@ describe("db package generation", () => {
     expect(builder.files["packages/db/drizzle.config.ts"]).toContain(
       "postgresql",
     );
-    expect(builder.files["packages/db/src/schema.ts"]).toContain("pgTable");
+    expect(builder.files["packages/db/src/schema.ts"]).not.toContain("pgTable");
+    expect(builder.files["packages/db/src/schema.ts"]).not.toContain("users");
     expect(builder.files["packages/db/src/index.ts"]).toContain("drizzle");
     expect(builder.files["packages/db/src/index.ts"]).toContain(
       "node-postgres",
@@ -631,7 +632,10 @@ describe("db package generation", () => {
     expect(builder.files["packages/db/drizzle.config.ts"]).toContain(
       'dialect: "mysql"',
     );
-    expect(builder.files["packages/db/src/schema.ts"]).toContain("mysqlTable");
+    expect(builder.files["packages/db/src/schema.ts"]).not.toContain(
+      "mysqlTable",
+    );
+    expect(builder.files["packages/db/src/schema.ts"]).not.toContain("users");
     expect(builder.files["packages/db/src/index.ts"]).toContain("mysql2");
     expect(builder.files["packages/db/README.md"]).toContain("MySQL");
     expect(builder.files["README.md"]).toContain("Drizzle ORM + MySQL");
@@ -656,7 +660,10 @@ describe("db package generation", () => {
     expect(builder.files["packages/db/drizzle.config.ts"]).toContain(
       'dialect: "sqlite"',
     );
-    expect(builder.files["packages/db/src/schema.ts"]).toContain("sqliteTable");
+    expect(builder.files["packages/db/src/schema.ts"]).not.toContain(
+      "sqliteTable",
+    );
+    expect(builder.files["packages/db/src/schema.ts"]).not.toContain("users");
     expect(builder.files["packages/db/src/index.ts"]).toContain("libsql");
     expect(builder.files["packages/db/src/index.ts"]).toContain("createClient");
     expect(builder.files["packages/db/README.md"]).toContain("SQLite");
@@ -685,13 +692,68 @@ describe("db package generation", () => {
     );
     expect(builder.files["packages/db/package.json"]).toContain("prisma");
     expect(builder.files["packages/db/prisma/schema.prisma"]).toContain(
-      "postgresql",
+      'provider = "postgresql"',
+    );
+    expect(builder.files["packages/db/prisma/schema.prisma"]).not.toContain(
+      "model User",
     );
     expect(builder.files["packages/db/src/index.ts"]).toContain("PrismaClient");
     expect(builder.files["packages/db/src/index.ts"]).toContain(
       "serverEnv.DATABASE_URL",
     );
+    expect(builder.files["packages/db/src/index.ts"]).not.toContain(
+      "export type { User }",
+    );
     expect(builder.files["packages/db/.env.example"]).toBeUndefined();
+  });
+
+  it("generates a mysql prisma package when the mysql dialect is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "db" }],
+      db: { orm: "prisma", dialect: "mysql" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/db/prisma/schema.prisma"]).toContain(
+      'provider = "mysql"',
+    );
+    expect(builder.files["packages/db/prisma/schema.prisma"]).not.toContain(
+      "model User",
+    );
+    expect(builder.files["packages/db/README.md"]).toContain("MySQL");
+    expect(builder.files["README.md"]).toContain("Prisma + MySQL");
+    expect(builder.files[".env.example"]).toContain(
+      "mysql://user:password@localhost:3306/mydb",
+    );
+  });
+
+  it("generates a sqlite prisma package when the sqlite dialect is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "db" }],
+      db: { orm: "prisma", dialect: "sqlite" },
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/db/prisma/schema.prisma"]).toContain(
+      'provider = "sqlite"',
+    );
+    expect(builder.files["packages/db/prisma/schema.prisma"]).not.toContain(
+      "model User",
+    );
+    expect(builder.files["packages/db/README.md"]).toContain("SQLite");
+    expect(builder.files["README.md"]).toContain("Prisma + SQLite");
+    expect(builder.files[".env.example"]).toContain(
+      "file:./packages/db/local.db",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "DATABASE_URL: z.string().min(1)",
+    );
+    expect(builder.files[".gitignore"]).toContain("*.db");
+    expect(builder.files[".gitignore"]).toContain("*.db-wal");
   });
 });
 
@@ -754,10 +816,8 @@ describe("trpc package generation", () => {
     expect(builder.files["packages/api/src/trpc.ts"]).toContain(
       "return { db };",
     );
-    expect(builder.files["packages/api/src/root.ts"]).toContain("users");
-    expect(builder.files["packages/api/src/router/users.ts"]).toContain(
-      "ctx.db.select()",
-    );
+    expect(builder.files["packages/api/src/root.ts"]).not.toContain("users");
+    expect(builder.files["packages/api/src/router/users.ts"]).toBeUndefined();
   });
 
   it("includes prisma in tRPC context when prisma is selected", async () => {
@@ -775,9 +835,8 @@ describe("trpc package generation", () => {
     expect(builder.files["packages/api/src/trpc.ts"]).toContain(
       "return { prisma };",
     );
-    expect(builder.files["packages/api/src/router/users.ts"]).toContain(
-      "ctx.prisma.user.findMany()",
-    );
+    expect(builder.files["packages/api/src/root.ts"]).not.toContain("users");
+    expect(builder.files["packages/api/src/router/users.ts"]).toBeUndefined();
   });
 
   it("lists the api package in the generated root README", async () => {

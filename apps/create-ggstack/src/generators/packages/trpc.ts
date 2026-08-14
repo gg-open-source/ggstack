@@ -39,13 +39,7 @@ export function generateTrpcPackage(
 
   builder.addFile("packages/api/src/trpc.ts", generateTrpc(projectName, dbOrm));
   builder.addFile("packages/api/src/router/hello.ts", generateHelloRouter());
-  if (dbOrm) {
-    builder.addFile(
-      "packages/api/src/router/users.ts",
-      generateUsersRouter(projectName, dbOrm),
-    );
-  }
-  builder.addFile("packages/api/src/root.ts", generateRoot(dbOrm));
+  builder.addFile("packages/api/src/root.ts", generateRoot());
   builder.addFile("packages/api/src/client.ts", generateClient());
   builder.addFile("packages/api/src/index.ts", generateIndex());
   builder.addFile("packages/api/README.md", generateReadme(projectName, dbOrm));
@@ -155,49 +149,7 @@ export const helloRouter = router({
 `;
 }
 
-function generateUsersRouter(
-  projectName: string,
-  dbOrm: SupportedDbOrm,
-): string {
-  if (dbOrm === "drizzle") {
-    return `import { schema } from "@${projectName}/db";
-import { publicProcedure, router } from "../trpc";
-
-export const usersRouter = router({
-  list: publicProcedure.query(({ ctx }) => {
-    return ctx.db.select().from(schema.users);
-  }),
-});
-`;
-  }
-
-  return `import { publicProcedure, router } from "../trpc";
-
-export const usersRouter = router({
-  list: publicProcedure.query(({ ctx }) => {
-    return ctx.prisma.user.findMany();
-  }),
-});
-`;
-}
-
-function generateRoot(dbOrm: SupportedDbOrm | undefined): string {
-  if (dbOrm) {
-    return `import { createCallerFactory, router } from "./trpc";
-import { helloRouter } from "./router/hello";
-import { usersRouter } from "./router/users";
-
-export const appRouter = router({
-  hello: helloRouter,
-  users: usersRouter,
-});
-
-export type AppRouter = typeof appRouter;
-
-export const createCaller = createCallerFactory(appRouter);
-`;
-  }
-
+function generateRoot(): string {
   return `import { createCallerFactory, router } from "./trpc";
 import { helloRouter } from "./router/hello";
 
@@ -234,7 +186,7 @@ function generateReadme(
   dbOrm: SupportedDbOrm | undefined,
 ): string {
   const dbSection = dbOrm
-    ? `When a database ORM is selected, context includes \`${dbOrm === "prisma" ? "prisma" : "db"}\` and \`users.list\` queries the starter \`User\` table.
+    ? `When a database ORM is selected, context includes \`${dbOrm === "prisma" ? "prisma" : "db"}\`. Add procedures after you define your own schema.
 
 `
     : "";

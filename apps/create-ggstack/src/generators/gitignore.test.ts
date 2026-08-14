@@ -153,20 +153,22 @@ build
 `);
   });
 
-  it("adds sqlite database files when the drizzle dialect is sqlite", () => {
-    const gitignore = generateGitignore(
-      createTestConfig({
-        packages: [{ type: "db" }],
-        db: { orm: "drizzle", dialect: "sqlite" },
-      }),
-    );
+  it("adds sqlite database files when the dialect is sqlite", () => {
+    for (const orm of ["drizzle", "prisma"] as const) {
+      const gitignore = generateGitignore(
+        createTestConfig({
+          packages: [{ type: "db" }],
+          db: { orm, dialect: "sqlite" },
+        }),
+      );
 
-    expect(gitignore).toContain(`# SQLite
+      expect(gitignore).toContain(`# SQLite
 *.db
 *.db-journal
 *.db-wal
 *.db-shm
 `);
+    }
   });
 
   it("does not add sqlite ignore entries for postgres or mysql drizzle", () => {

@@ -47,13 +47,19 @@ export const PACKAGE_CHOICES = [
 export const DB_ORM_CHOICES = [
   { value: "none", label: "None", hint: "no database package" },
   { value: "drizzle", label: "Drizzle ORM", hint: "SQL ORM" },
-  { value: "prisma", label: "Prisma ORM", hint: "PostgreSQL provider" },
+  { value: "prisma", label: "Prisma ORM", hint: "SQL ORM" },
 ] as const;
 
 export const DB_DIALECT_CHOICES = [
   { value: "postgresql", label: "PostgreSQL", hint: "node-postgres" },
   { value: "mysql", label: "MySQL", hint: "mysql2" },
   { value: "sqlite", label: "SQLite", hint: "libsql" },
+] as const;
+
+export const PRISMA_DB_DIALECT_CHOICES = [
+  { value: "postgresql", label: "PostgreSQL", hint: "provider = postgresql" },
+  { value: "mysql", label: "MySQL", hint: "provider = mysql" },
+  { value: "sqlite", label: "SQLite", hint: "provider = sqlite" },
 ] as const;
 
 export const AUTH_CHOICES = [
@@ -104,9 +110,7 @@ export function isDbDialect(value: string): value is DbDialect {
   return ["postgresql", "mysql", "sqlite"].includes(value);
 }
 
-export function resolveDrizzleDialect(
-  dialect: DbDialect | undefined,
-): DbDialect {
+export function resolveDbDialect(dialect: DbDialect | undefined): DbDialect {
   return dialect ?? DEFAULT_DB_DIALECT;
 }
 

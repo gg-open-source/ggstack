@@ -30,7 +30,7 @@ There are no flags for apps, packages, auth, database, or tooling. Those choices
 7. **Tooling** — multi-select: Tailwind CSS, Oxc, Prettier, ESLint. Tailwind is pre-selected (and always kept) if shadcn/ui is on.
 8. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).
 9. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.
-10. **Database** — if you chose Drizzle: PostgreSQL (default, node-postgres), MySQL (mysql2), or SQLite (libsql). Prisma stays PostgreSQL and skips this prompt.
+10. **Database** — if you chose Drizzle or Prisma: PostgreSQL (default), MySQL, or SQLite. Drizzle hints name the driver (`node-postgres`, `mysql2`, `libsql`). Prisma hints name the `schema.prisma` `provider`.
 
 `packages/env`, `tooling/tsconfig`, and a root `.env.example` are always written.
 

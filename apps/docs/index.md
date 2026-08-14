@@ -17,7 +17,7 @@ features:
   - title: Typed environment
     details: Every project gets packages/env (@t3-oss/env-core + Zod) and a root .env.example filled from the auth, database, and app types you chose.
   - title: Optional tRPC, auth, and a database
-    details: Shared tRPC router in packages/api. Better Auth, Clerk, or WorkOS as a shared package. Drizzle against PostgreSQL, MySQL, or SQLite, or Prisma against PostgreSQL. You wire them into apps yourself.
+    details: Shared tRPC router in packages/api. Better Auth, Clerk, or WorkOS as a shared package. Drizzle or Prisma against PostgreSQL, MySQL, or SQLite. You wire them into apps yourself.
   - title: Shared tooling
     details: Shared TypeScript config always. Tailwind, Oxc, and optional Prettier/ESLint stubs when you ask for them.
 ---
