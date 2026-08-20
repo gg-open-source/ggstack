@@ -35,6 +35,8 @@ Apps, packages, tooling, auth, and database are chosen interactively. `--preset`
 
 Full guide: [apps/docs](https://github.com/gg-open-source/ggstack/tree/main/apps/docs) in the [ggstack](https://github.com/gg-open-source/ggstack) repo.
 
+For language models: [llms.txt](https://github.com/gg-open-source/ggstack/blob/main/llms.txt) (index) and [llms-full.txt](https://github.com/gg-open-source/ggstack/blob/main/llms-full.txt) (full guide). The docs site also serves a Markdown copy of each page.
+
 ## License
 
 MIT

@@ -36,6 +36,8 @@ pnpm --filter @ggstack/docs dev
 - [CLI](./apps/docs/guide/cli.md)
 - [Generated project](./apps/docs/guide/project.md)
 
+For language models: [`llms.txt`](./llms.txt) (index) and [`llms-full.txt`](./llms-full.txt) (full guide in one file). The docs site serves those plus a Markdown copy of each page at the same URL with a `.md` suffix (see [llmstxt.org](https://llmstxt.org/)).
+
 ## This repository
 
 | Path | What |

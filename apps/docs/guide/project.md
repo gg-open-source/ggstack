@@ -1,3 +1,7 @@
+---
+description: Workspace layout, root scripts, Turbo env, gitignore rules, and package names.
+---
+
 # Project
 
 A generated repo is a pnpm workspace with Turborepo. Workspace globs are `apps/*`, `packages/*`, and `tooling/*`.

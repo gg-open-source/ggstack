@@ -14,6 +14,7 @@
   "devDependencies": {
     "@ggstack/tsconfig": "workspace:*",
     "typescript": "catalog:tooling",
-    "vitepress": "catalog:app"
+    "vitepress": "catalog:app",
+    "vitepress-plugin-llms": "^1.13.5"
   }
 }

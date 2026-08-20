@@ -1,3 +1,7 @@
+---
+description: Server vs client prefixes, the variable matrix, and when validation is skipped.
+---
+
 # Environment
 
 Every project gets `packages/env` and a root `.env.example`. Copy that file to `.env` at the repo root and fill in values. `.env` is gitignored.

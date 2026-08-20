@@ -1,0 +1,621 @@
+# ggstack
+
+> Interactive CLI (`create-ggstack`) that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style. Pick Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, tRPC, Better Auth / Clerk / WorkOS, and Drizzle or Prisma (PostgreSQL, MySQL, or SQLite). Every project gets a typed `packages/env` and a root `.env.example`.
+
+This file is the full user guide concatenated for language models. Prefer it over HTML docs pages. Source of each section: `apps/docs/guide/`. The docs site also serves each page as Markdown at the same path with a `.md` suffix, plus `/llms.txt` (index) and `/llms-full.txt` (this bundle).
+
+`create-ggstack` is the published npm package. This repository also contains the VitePress docs (`apps/docs`) and the CLI source (`apps/create-ggstack`). It is **not** a generated app — it *writes* generated apps.
+
+Create a project:
+
+```bash
+pnpm create ggstack my-app
+cd my-app
+cp .env.example .env
+pnpm install
+pnpm dev
+```
+
+Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`.
+
+---
+
+# Getting Started
+
+`create-ggstack` is an interactive CLI. It writes a pnpm workspace with Turborepo, a typed env package, and the apps and packages you select.
+
+## Requirements
+
+- Node.js 22 or newer
+- [pnpm](https://pnpm.io) — the generated monorepo uses pnpm workspaces even if you pass `--npm`, `--yarn`, or `--bun`
+
+## Create a project
+
+```bash
+pnpm create ggstack
+```
+
+Or pass a directory name:
+
+```bash
+pnpm create ggstack my-app
+```
+
+Other runners:
+
+```bash
+npx create-ggstack my-app --pnpm
+pnpm dlx create-ggstack my-app
+```
+
+The CLI prompts for apps, package extras (including a shadcn base and, if you want one, a preset when shadcn/ui is on), tooling, auth, a database ORM, and — when you pick Drizzle or Prisma — which database to use. You can also pass a shadcn preset on the command line with `--preset <code>`. See CLI.
+
+## After the CLI finishes
+
+```bash
+cd my-app
+cp .env.example .env
+pnpm install
+pnpm dev
+```
+
+`pnpm dev` runs Turbo `dev` across apps that define that script (Vite, Next.js, Astro, Electron, Express, Fastify, TanStack Start, React Router). Expo uses `start` instead — run it from the app package. Fill in `.env` before anything that reads `packages/env`; validation fails on empty required values unless you skip it. Details are in Environment.
+
+The scaffolded repo also gets a `README.md` that lists what you selected and the same next steps.
+
+---
+
+# CLI
+
+```text
+create-ggstack [project-name] [options]
+```
+
+## Options
+
+| Flag | Description |
+| --- | --- |
+| `--preset <code>` | shadcn/ui preset: a named style (`nova`, `luma`, …) or a code from [ui.shadcn.com/create](https://ui.shadcn.com/create). Enables shadcn/ui. |
+| `--pnpm` | Use pnpm to run official app CLIs (default) |
+| `--npm` | Use npm to run official app CLIs |
+| `--yarn` | Use yarn to run official app CLIs |
+| `--bun` | Use bun to run official app CLIs |
+| `-h`, `--help` | Print help |
+| `-v`, `--version` | Print the package version |
+
+```bash
+pnpm create ggstack my-app --preset b2D0vQ7G4
+```
+
+Also accepted: `--preset=b2D0vQ7G4`. Apps, other packages, auth, database, and tooling stay interactive. `--preset` skips the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list.
+
+`--npm`, `--yarn`, and `--bun` only affect package-manager invocations the CLI runs during scaffold. The generated repo is still a **pnpm workspace**. The CLI warns when the flag is not `--pnpm`. You still need pnpm installed to work in the project.
+
+## Interactive flow
+
+1. **Project name** — positional argument, or a prompt (default `project`). The default is shown as grey placeholder text and is used if you press Enter without typing.
+2. **Apps** — multi-select, optional: Vite, Next.js, Astro, Expo Router, Electron + Vite, Express, Fastify, TanStack Start, React Router.
+3. **App names** — one prompt per selected app. Defaults: `vite`, `next`, `astro`, `expo`, `electron`, `express`, `fastify`, `tanstack-start`, `react-router`. Same grey placeholder as the project name.
+4. **Vite framework** — if you selected Vite: Vanilla, Vue, React, Preact, Lit, Svelte, Solid, or Qwik. TypeScript only; JavaScript variants are not offered.
+5. **Vite variant** — if the Vite framework is React: TypeScript, or TypeScript + React Compiler. Other frameworks skip this prompt.
+6. **Packages** — multi-select, optional: shadcn/ui, tRPC.
+7. **shadcn component base** — if you selected shadcn/ui (or passed `--preset`): Base UI (default), Radix UI, or React Aria.
+8. **shadcn preset** — if you selected shadcn/ui and did not pass `--preset`: "Do you want to use a shadcn preset?" Default no. No prints that the CLI is using the default config (`nova`) and continues. Yes asks for a named style (`nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) or a code from [ui.shadcn.com/create](https://ui.shadcn.com/create). Skipped when `--preset` is already on the command line.
+9. **Tooling** — multi-select: Tailwind CSS, Oxc, Prettier, ESLint. Tailwind is pre-selected (and always kept) if shadcn/ui is on. Selecting Tailwind installs Tailwind CSS v4 once in `tooling/tailwind` and wires it into frontend apps. Expo also gets NativeWind.
+10. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).
+11. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.
+12. **Database** — if you chose Drizzle or Prisma: PostgreSQL (default), MySQL, or SQLite. Drizzle hints name the driver (`node-postgres`, `mysql2`, `libsql`). Prisma hints name the `schema.prisma` `provider`.
+
+`packages/env`, `tooling/tsconfig`, and a root `.env.example` are always written.
+
+## Names
+
+Project and app names go through the same sanitizer: lowercase, spaces become hyphens, characters outside `a-z`, `0-9`, and `-` are stripped, leading and trailing hyphens are removed. App names in one project must be unique after sanitizing.
+
+## Abort conditions
+
+The CLI exits without writing files when:
+
+- The chosen package manager is not installed
+- `--preset` is passed with no value, or with a value that is not a named style or preset code
+- The target directory already exists
+
+---
+
+# Project
+
+A generated repo is a pnpm workspace with Turborepo. Workspace globs are `apps/*`, `packages/*`, and `tooling/*`.
+
+## Layout
+
+```text
+my-app/
+├── .env.example          # always; copy to .env
+├── .gitignore
+├── .npmrc                # engine-strict=true
+├── package.json
+├── pnpm-workspace.yaml
+├── turbo.json
+├── README.md
+├── apps/
+│   ├── vite/             # optional Vite (framework chosen in the CLI)
+│   ├── next/             # optional Next.js
+│   ├── astro/             # optional Astro
+│   ├── expo/             # optional Expo Router
+│   ├── electron/         # optional Electron + Vite
+│   ├── express/          # optional Express
+│   ├── fastify/          # optional Fastify
+│   ├── tanstack-start/   # optional TanStack Start
+│   └── react-router/     # optional React Router
+├── packages/
+│   ├── env/              # always
+│   ├── ui/               # optional shadcn/ui
+│   ├── api/              # optional tRPC
+│   ├── auth/             # optional, when an auth provider is selected
+│   └── db/               # optional, when Drizzle or Prisma is selected
+└── tooling/
+    ├── tsconfig/         # always
+    ├── tailwind/         # optional
+    ├── oxc/              # optional
+    ├── prettier/         # optional stub
+    └── eslint/           # optional stub
+```
+
+App folder names are whatever you typed (after sanitizing), not the type names above.
+
+## `.gitignore`
+
+The root `.gitignore` is generated from the apps, tooling, and database dialect you selected. Workspace entries are always present: `node_modules`, `dist`, `.turbo`, `**/.cache/`, `*.log`, `.env`, and `.env.local`.
+
+Stack-specific paths are added only when that choice is on:
+
+| Selection | Entries |
+| --- | --- |
+| Next.js | `.next`, `out` |
+| Astro | `.astro` |
+| Expo Router | `.expo`, `expo-env.d.ts`, `web-build` |
+| Electron + Vite | `release` |
+| TanStack Start | `.output`, `.nitro`, `.tanstack` |
+| React Router | `.react-router`, `build` |
+| ESLint | `.eslintcache` |
+| Prettier | `.prettiercache` |
+| Drizzle + SQLite | `*.db`, `*.db-journal`, `*.db-wal`, `*.db-shm` |
+
+Vite, Express, Fastify, shadcn/ui, tRPC, auth, PostgreSQL/MySQL Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section. Drizzle + SQLite also ignores `*.db`, `*.db-journal`, `*.db-wal`, and `*.db-shm`. Astro build output is `dist`; only the generated `.astro` types directory is extra.
+
+## Root scripts
+
+| Script | What it runs |
+| --- | --- |
+| `pnpm dev` | `turbo run dev` |
+| `pnpm build` | `turbo run build` |
+| `pnpm lint` | `turbo run lint`, or repo-wide Oxc if you selected Oxc |
+| `pnpm format` | `turbo run format`, or repo-wide Oxc format if you selected Oxc |
+| `pnpm check-types` | `turbo run check-types` |
+| `pnpm test` | `turbo run test` |
+
+Turbo `dev` is uncached and persistent. `check-types` depends on `^build`. Env vars from `packages/env` are listed on `turbo.json` `globalEnv` (except `NODE_ENV`).
+
+## Package manager
+
+Install and run scripts with **pnpm**. The generated `package.json` pins `packageManager` to `pnpm@11.2.2` when you scaffolded with pnpm. Node is declared as `>=22` (`engine-strict` is on).
+
+Filter a single package:
+
+```bash
+pnpm --filter @my-app/next dev
+pnpm --filter @my-app/db db:studio
+```
+
+Workspace package names are `@<project-name>/<folder>`.
+
+---
+
+# Apps
+
+Apps are optional. You can scaffold packages and tooling with no apps.
+
+Each selected app is copied from a static template shipped with the CLI. Every app depends on `@<project>/env`.
+
+## Vite
+
+TypeScript Vite app (`vite` ^8). After you select Vite, the CLI asks for a framework. JavaScript variants are not offered.
+
+| Framework | Variant prompt | Plugin / extra |
+| --- | --- | --- |
+| Vanilla | none (TypeScript) | none |
+| Vue | none (TypeScript) | `@vitejs/plugin-vue`, `vue-tsc` |
+| React | TypeScript, or TypeScript + React Compiler | `@vitejs/plugin-react` |
+| Preact | none (TypeScript) | `@preact/preset-vite` |
+| Lit | none (TypeScript) | `lit` |
+| Svelte | none (TypeScript) | `@sveltejs/vite-plugin-svelte`, `svelte-check` |
+| Solid | none (TypeScript) | `vite-plugin-solid` |
+| Qwik | none (TypeScript) | `@builder.io/qwik` (`qwikVite({ csr: true })`) |
+
+React Compiler is an overlay on the React template: it adds `@rolldown/plugin-babel`, `babel-plugin-react-compiler`, `@babel/core`, and `@types/babel__core`, and wires `reactCompilerPreset()` in `vite.config.ts`.
+
+Scripts: `dev`, `build`, `preview`. Vue uses `vue-tsc --noEmit` for `check-types`; Svelte uses `svelte-check`.
+
+`vite.config.ts` calls `createViteEnv(import.meta.env)` so client vars with the `VITE_` prefix are validated at config load.
+
+```bash
+pnpm --filter @my-app/vite dev
+```
+
+Default port: `5173`. Default folder name is still `vite`; the framework only changes the files inside that app.
+
+## Astro
+
+Astro 7 + TypeScript. Scripts: `dev` (`astro dev`), `build` (`astro build`), `preview`, `check-types` (`astro check`).
+
+`astro.config.ts` imports `@<project>/env/server` so server env is validated when Astro starts. Client vars use the `PUBLIC_` prefix (`astroEnv`).
+
+```bash
+pnpm --filter @my-app/astro dev
+```
+
+Default port: `4321`.
+
+## Next.js
+
+Next.js 16 + React 19 App Router. Scripts: `dev`, `build`, `start`.
+
+`next.config.ts` imports `@<project>/env/server` so server env is validated when Next starts.
+
+```bash
+pnpm --filter @my-app/next dev
+```
+
+## Expo Router
+
+Expo SDK 57 + Expo Router. Scripts: `start`, `ios`, `android`, `web`. There is **no** `dev` script, so this app does not join root `pnpm dev`.
+
+`app/_layout.tsx` imports `expoEnv` from `@<project>/env/client`.
+
+When Tailwind is selected, NativeWind v5 is added to the Expo app. Styling comes from the shared `@<project>/tailwind` package (`tailwindcss` is not installed in the Expo app). `app/_layout.tsx` imports `../global.css`, Metro is wrapped with `withNativewind`, and the home screen uses `className`.
+
+```bash
+pnpm --filter @my-app/expo start
+```
+
+## Electron + Vite
+
+Electron + Vite + vanilla TypeScript. Scripts: `dev` (Vite), `build` (`tsc && vite build && electron-builder`), `preview`.
+
+The main process reads optional `VITE_DEV_SERVER_URL` from `serverEnv`. Vite injects that URL during desktop `dev`.
+
+```bash
+pnpm --filter @my-app/electron dev
+```
+
+## Express
+
+Express 5 + TypeScript. Scripts: `dev` (`tsx watch`), `start` (`tsx`), `build` (`tsc --noEmit`).
+
+`src/index.ts` imports `@<project>/env/server` so server env is validated when the process starts. Default port: `3001` (`process.env.PORT` overrides it). Routes: `GET /`, `GET /health`.
+
+```bash
+pnpm --filter @my-app/express dev
+```
+
+## Fastify
+
+Fastify 5 + TypeScript. Scripts: `dev` (`tsx watch`), `start` (`tsx`), `build` (`tsc --noEmit`).
+
+`src/index.ts` imports `@<project>/env/server` so server env is validated when the process starts. Default port: `3002` (`process.env.PORT` overrides it). Routes: `GET /`, `GET /health`.
+
+```bash
+pnpm --filter @my-app/fastify dev
+```
+
+## TanStack Start
+
+TanStack Start + Vite + React 19. Scripts: `dev` (`vite dev`), `build` (`vite build`), `preview`.
+
+`vite.config.ts` imports `@<project>/env/server` and calls `createViteEnv(import.meta.env)` so both server and `VITE_` client vars are validated at config load.
+
+```bash
+pnpm --filter @my-app/tanstack-start dev
+```
+
+Default port: `3003`.
+
+## React Router
+
+React Router 8 framework mode + Vite + React 19. Scripts: `dev` (`react-router dev`), `build` (`react-router build`), `start` (`react-router-serve`).
+
+`vite.config.ts` imports `@<project>/env/server` and calls `createViteEnv(import.meta.env)` so both server and `VITE_` client vars are validated at config load.
+
+```bash
+pnpm --filter @my-app/react-router dev
+```
+
+Default port: `5174`.
+
+## Auth and database
+
+App templates do **not** wrap `AuthProvider` or import `@<project>/db`. After you add those packages, import them in the app yourself. See Packages.
+
+---
+
+# Packages
+
+## `packages/env` (always)
+
+Typed env via `@t3-oss/env-core` and Zod. Exports:
+
+| Import | Use |
+| --- | --- |
+| `@<project>/env/server` | `serverEnv` — Node/server variables |
+| `@<project>/env/client` | `nextEnv`, `astroEnv`, `expoEnv`, and/or `createViteEnv`, plus `getPublicAuthConfig()` for Clerk/WorkOS |
+| `@<project>/env` | Re-exports server and client |
+
+Add new variables in the Zod schemas **and** in the root `.env.example`. Full matrix: Environment.
+
+```ts
+import { serverEnv } from "@my-app/env/server";
+
+const url = serverEnv.DATABASE_URL;
+```
+
+## `packages/ui` (shadcn/ui)
+
+Created when you select shadcn/ui, or when you pass `--preset`. Tailwind is forced on. After you pick the package, the CLI asks for a **component base**, then whether you want a **preset** (unless `--preset` was already passed).
+
+| Prompt / flag | Default | What it sets |
+| --- | --- | --- |
+| Component base | Base UI | Primitive library: Base UI, Radix UI, or React Aria. Written as the `style` prefix (`base-nova`, `radix-nova`, `aria-nova`). |
+| Do you want to use a shadcn preset? | No | No keeps the default config (`nova`) and says so. Yes asks you to paste a named style (`nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) or a short code from [shadcn/create](https://ui.shadcn.com/create). You can also pass `--preset <code>`. The code packs colors, theme, fonts, radius, and icon library. |
+
+What you get:
+
+- Latest shadcn CLI (`shadcn@^4.18.0`) plus `class-variance-authority`, `clsx`, `tailwind-merge`, and `lucide-react`
+- `components.json` using the current schema: `{base}-{style}` (not the deprecated `default` style), CSS variables, `baseColor: neutral`, `iconLibrary: lucide`, aliases for `components` / `ui` / `utils` / `lib` / `hooks`, Tailwind v4 with empty `config`
+- Theme CSS path points at `tooling/tailwind/src/theme.css` so tokens stay shared
+- `src/lib/utils.ts` with `cn()`
+- `src/globals.css` importing `@<project>/tailwind`
+- `src/index.ts` re-exports `cn()` — no components are pre-generated
+
+If you paste a custom preset code (not a named style), scaffold runs `shadcn@latest apply --preset <code> --yes` in `packages/ui` so the official CLI writes the theme.
+
+Add components from the repo root:
+
+```bash
+pnpm --filter @my-app/ui add button
+```
+
+Or:
+
+```bash
+pnpm dlx shadcn@latest add button -c packages/ui
+```
+
+Then export them from `src/index.ts`. Switch themes later with `pnpm --filter @my-app/ui apply --preset <code>`. Partial apply (`--only theme` or `--only theme,font`) keeps your components and only updates tokens or fonts.
+
+## `packages/api` (tRPC)
+
+Created when you select tRPC. Exports:
+
+| Import | Use |
+| --- | --- |
+| `@<project>/api` | `appRouter`, `AppRouter`, `createTRPCContext`, `createCaller` |
+| `@<project>/api/client` | `createApiClient(url)` — vanilla HTTP client |
+
+Starter procedure: `hello.greet({ name?: string })` → `{ greeting }`.
+
+If you also picked Drizzle or Prisma, context includes `db` / `prisma`. Add procedures after you define your own schema.
+
+```ts
+import { createCaller, createTRPCContext } from "@my-app/api";
+
+const caller = createCaller(await createTRPCContext());
+const { greeting } = await caller.hello.greet({ name: "Ada" });
+```
+
+```ts
+import { createApiClient } from "@my-app/api/client";
+
+const api = createApiClient("http://localhost:3000/api/trpc");
+const { greeting } = await api.hello.greet.query({ name: "Ada" });
+```
+
+React Query is not included. Type-only import `AppRouter` and create the React client in the app:
+
+```ts
+import type { AppRouter } from "@my-app/api";
+import { createTRPCReact } from "@trpc/react-query";
+
+export const api = createTRPCReact<AppRouter>();
+```
+
+**Not auto-wired.** Mount the router on a host after scaffold. Next.js App Router uses `@trpc/server/adapters/fetch` at `app/api/trpc/[trpc]/route.ts`. Express uses `createExpressMiddleware`. Fastify uses `fastifyTRPCPlugin`. See the generated `packages/api/README.md` for the snippets.
+
+## `packages/auth` (optional)
+
+Created when the auth provider is not `none`. Unified surface:
+
+```tsx
+import { AuthProvider, AuthDemo, useAuth } from "@my-app/auth";
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AuthDemo />
+    </AuthProvider>
+  );
+}
+```
+
+`useAuth()` returns `{ user, isAuthenticated, isLoading, signIn, signOut }`. Each provider also re-exports its SDK helpers.
+
+| Provider | SDK | Notes |
+| --- | --- | --- |
+| Better Auth | `better-auth` | Client wrapper only. Add a Next.js route such as `app/api/auth/[...all]/route.ts` yourself. `signIn` on `useAuth` is a stub — call `authClient.signIn.social()` or send users to your sign-in page. |
+| Clerk | `@clerk/clerk-react` | `AuthProvider` wraps `ClerkProvider` with the publishable key from `getPublicAuthConfig()`. |
+| WorkOS | `@workos-inc/authkit-react` | `AuthProvider` wraps AuthKit with the client id from `getPublicAuthConfig()`. |
+
+**Not auto-wired.** Wrap your app root with `AuthProvider` after scaffold.
+
+## `packages/db` (optional)
+
+Created when you pick Drizzle or Prisma.
+
+### Drizzle
+
+Exports `db`. The CLI asks which database to use and scaffolds the matching driver and `drizzle.config.ts` dialect. No starter tables — add them in `src/schema.ts`.
+
+| Database | Driver |
+| --- | --- |
+| PostgreSQL (default) | `pg` + `drizzle-orm/node-postgres` |
+| MySQL | `mysql2` + `drizzle-orm/mysql2` |
+| SQLite | `@libsql/client` + `drizzle-orm/libsql` |
+
+```ts
+import { db } from "@my-app/db";
+```
+
+### Prisma
+
+Exports `prisma`. The CLI asks which database to use and sets `datasource.provider` in `schema.prisma` (`postgresql`, `mysql`, or `sqlite`). No starter models — add them in `prisma/schema.prisma`.
+
+```ts
+import { prisma } from "@my-app/db";
+```
+
+Scripts (run from the repo root with a filter, or inside `packages/db`):
+
+| Script | Drizzle | Prisma |
+| --- | --- | --- |
+| `db:generate` | `drizzle-kit generate` | `prisma generate` |
+| `db:migrate` | `drizzle-kit migrate` | `prisma migrate dev` |
+| `db:push` | `drizzle-kit push` | `prisma db push` |
+| `db:studio` | Drizzle Studio | Prisma Studio |
+
+```bash
+pnpm --filter @my-app/db db:push
+```
+
+Set `DATABASE_URL` first. **Not auto-wired** into app templates — import `@<project>/db` where you need a query.
+
+---
+
+# Environment
+
+Every project gets `packages/env` and a root `.env.example`. Copy that file to `.env` at the repo root and fill in values. `.env` is gitignored.
+
+```bash
+cp .env.example .env
+```
+
+The Zod schema is generated from the apps, auth provider, and ORM you selected. Empty required strings fail validation.
+
+## Server vs client
+
+- **Server** vars live on `serverEnv` (`@<project>/env/server`) and are read from `process.env`.
+- **Client** vars use the prefix of each selected app family and are validated separately.
+
+| App type | Client prefix | Client export |
+| --- | --- | --- |
+| Next.js | `NEXT_PUBLIC_` | `nextEnv` |
+| Astro | `PUBLIC_` | `astroEnv` |
+| Expo | `EXPO_PUBLIC_` | `expoEnv` |
+| Vite, Electron, TanStack Start, or React Router | `VITE_` | `createViteEnv(runtimeEnv)` — pass `import.meta.env` |
+| Express or Fastify | — | no client export; they import `@<project>/env/server` on boot |
+
+Clerk and WorkOS also generate `getPublicAuthConfig()`, which reads the publishable key / client id from whichever of those prefixed names is set.
+
+## Variable matrix
+
+| When | Name | Kind | Required |
+| --- | --- | --- | --- |
+| Always | `NODE_ENV` | server | no (`development` \| `test` \| `production`) |
+| Any database ORM (PostgreSQL or MySQL) | `DATABASE_URL` | server | yes (URL) |
+| Any database ORM + SQLite | `DATABASE_URL` | server | yes (string, e.g. `file:./packages/db/local.db`) |
+| Better Auth | `BETTER_AUTH_SECRET` | server | yes |
+| Better Auth | `BETTER_AUTH_URL` | server | yes (URL) |
+| Clerk | `CLERK_SECRET_KEY` | server | yes |
+| Clerk + Next | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` | client | yes |
+| Clerk + Astro | `PUBLIC_CLERK_PUBLISHABLE_KEY` | client | yes |
+| Clerk + Vite/Electron/TanStack Start/React Router | `VITE_CLERK_PUBLISHABLE_KEY` | client | yes |
+| Clerk + Expo | `EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY` | client | yes |
+| WorkOS | `WORKOS_API_KEY` | server | yes |
+| WorkOS | `WORKOS_COOKIE_PASSWORD` | server | yes |
+| WorkOS + Next | `NEXT_PUBLIC_WORKOS_CLIENT_ID` | client | yes |
+| WorkOS + Astro | `PUBLIC_WORKOS_CLIENT_ID` | client | yes |
+| WorkOS + Vite/Electron/TanStack Start/React Router | `VITE_WORKOS_CLIENT_ID` | client | yes |
+| WorkOS + Expo | `EXPO_PUBLIC_WORKOS_CLIENT_ID` | client | yes |
+| Electron | `VITE_DEV_SERVER_URL` | server | no (URL; injected in Electron dev) |
+
+Better Auth extra secrets (for example `GITHUB_CLIENT_ID`) are not generated. Add them to the schema and `.env.example` if you need them.
+
+## Skipping validation
+
+Validation is skipped when any of these is true:
+
+- `CI` is set
+- `SKIP_ENV_VALIDATION=true`
+- `npm_lifecycle_event` is `lint`
+
+Those names, plus `NODE_ENV`, `VERCEL`, `VERCEL_ENV`, and `VERCEL_URL`, are listed on Turbo `globalPassThroughEnv`. Generated app/auth/db keys (except `NODE_ENV`) are listed on `globalEnv`.
+
+---
+
+# Tooling
+
+`tooling/tsconfig` is always generated. Everything else is opt-in at the tooling prompt.
+
+## TypeScript
+
+`@<project>/tsconfig` ships `base.json`: `ES2022`, `moduleResolution: bundler`, `strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`. Apps and packages extend it.
+
+## Tailwind CSS
+
+Creates `tooling/tailwind` with Tailwind CSS v4 (`^4.3.3`) and a shared PostCSS plugin. `tailwindcss` is declared only in that package. Forced on when shadcn/ui is selected (the prompt pre-selects it and the generator keeps it even if you deselect it).
+
+Frontend apps (Vite, Next.js, Astro, Electron, TanStack Start, React Router) get a `postcss.config.mjs` that re-exports `@<project>/tailwind/postcss` and an `@import "@<project>/tailwind"` in their CSS entry. They depend on `@<project>/tailwind`, not `tailwindcss`. Express and Fastify are left alone.
+
+Expo is wired with NativeWind v5 on top of the same package: `withNativewind` in `metro.config.js`, `global.css` imported from `app/_layout.tsx`, and `lightningcss` pinned to `1.30.1` at the workspace root.
+
+With shadcn, the shared `theme.css` includes the current CSS-variable color tokens (oklch, light and dark, charts, sidebar). `styles.css` also imports `tw-animate-css` and `shadcn/tailwind.css` from the latest `shadcn` package. A custom preset code is applied onto this file by `shadcn apply`.
+
+## Oxc
+
+Creates `tooling/oxc/oxlint.json` and `oxfmt.json`, and rewrites the **root** `lint` and `format` scripts to run Oxc across the repo:
+
+```bash
+pnpm lint    # oxlint --config tooling/oxc/oxlint.json .
+pnpm format  # oxfmt --config tooling/oxc/oxfmt.json .
+```
+
+Default lint rule of note: `typescript/no-explicit-any` is an error. Format defaults: 2-space indent, semicolons, double quotes, trailing commas.
+
+Selecting Oxc also adds `oxlint` and `oxfmt` to the root `devDependencies`.
+
+## Prettier (stub)
+
+Writes `tooling/prettier/.prettierrc.json` and installs Prettier at the repo root. It does **not** wire a root `format` script or editor integration. The CLI says “manual wiring still required.”
+
+## ESLint (stub)
+
+Writes `tooling/eslint/eslint.config.js` (flat config with ignore patterns only) and installs ESLint at the repo root. Same story: no root `lint` rewrite. Prefer Oxc if you want lint/format to work immediately.
+
+---
+
+# This repository
+
+This GitHub repo is the CLI + docs, not a generated project.
+
+| Path | What |
+| --- | --- |
+| `apps/create-ggstack` | Published CLI (`create-ggstack`) |
+| `apps/docs` | VitePress site (Vercel) |
+| `packages/ui` | Placeholder workspace package for this repo |
+| `tooling/` | Shared Oxc + TypeScript config |
+
+MIT. See LICENSE.
+
+Links:
+
+- GitHub: https://github.com/gg-open-source/ggstack
+- npm: https://www.npmjs.com/package/create-ggstack
+- Index for agents: [llms.txt](./llms.txt)

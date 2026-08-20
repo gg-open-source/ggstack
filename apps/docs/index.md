@@ -1,5 +1,6 @@
 ---
 layout: home
+description: Interactive CLI that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style.
 hero:
   name: ggstack
   text: Scaffold a pnpm monorepo

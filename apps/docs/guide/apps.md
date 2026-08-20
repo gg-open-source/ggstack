@@ -1,3 +1,7 @@
+---
+description: Per-app templates, scripts, default ports, env wiring, and Vite frameworks.
+---
+
 # Apps
 
 Apps are optional. You can scaffold packages and tooling with no apps.

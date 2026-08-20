@@ -1,3 +1,7 @@
+---
+description: Flags, interactive prompt order, name sanitizing, and abort conditions.
+---
+
 # CLI
 
 ```text

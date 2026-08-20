@@ -1,5 +1,16 @@
 {
   "installCommand": "pnpm install --frozen-lockfile",
   "buildCommand": "pnpm run build --filter=@ggstack/docs",
-  "outputDirectory": "apps/docs/.vitepress/dist"
+  "outputDirectory": "apps/docs/.vitepress/dist",
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "Link",
+          "value": "</llms.txt>; rel=\"describedby\""
+        }
+      ]
+    }
+  ]
 }

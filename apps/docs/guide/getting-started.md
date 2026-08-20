@@ -1,3 +1,7 @@
+---
+description: Requirements, how to run create-ggstack, and the post-scaffold steps.
+---
+
 # Getting Started
 
 `create-ggstack` is an interactive CLI. It writes a pnpm workspace with Turborepo, a typed env package, and the apps and packages you select.

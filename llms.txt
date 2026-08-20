@@ -1,0 +1,42 @@
+# ggstack
+
+> Interactive CLI (`create-ggstack`) that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style. Pick Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, tRPC, Better Auth / Clerk / WorkOS, and Drizzle or Prisma (PostgreSQL, MySQL, or SQLite). Every project gets a typed `packages/env` and a root `.env.example`.
+
+`create-ggstack` is the published npm package. This repository contains the CLI source (`apps/create-ggstack`) and the VitePress docs (`apps/docs`). It is not a generated app.
+
+Requirements: Node.js >= 22 and pnpm. The generated workspace is always a pnpm monorepo (`apps/*`, `packages/*`, `tooling/*`) even if you pass `--npm`, `--yarn`, or `--bun`. Those flags only change which package manager runs official app CLIs during scaffold.
+
+Always written: `packages/env` (`@t3-oss/env-core` + Zod), `tooling/tsconfig`, and a root `.env.example`.
+
+Never auto-wired into app templates: auth, database, or tRPC. Import those packages in the app yourself after scaffold. Expo has no `dev` script, so it does not join root `pnpm dev`.
+
+```bash
+pnpm create ggstack my-app
+cd my-app
+cp .env.example .env
+pnpm install
+pnpm dev
+```
+
+Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`. Prefer the Markdown sources linked below over HTML docs pages.
+
+## Docs
+
+- [Getting started](./apps/docs/guide/getting-started.md): Requirements, how to run the CLI, and the post-scaffold steps.
+- [CLI](./apps/docs/guide/cli.md): Flags (`--preset`, `--pnpm`/`--npm`/`--yarn`/`--bun`), the full interactive prompt order, name sanitizing, and abort conditions.
+- [Generated project](./apps/docs/guide/project.md): Workspace layout, root scripts, Turbo `globalEnv`, `.gitignore` rules, and `@<project>/<folder>` package names.
+- [Apps](./apps/docs/guide/apps.md): Per-app templates, scripts, default ports, env wiring, Vite frameworks (TypeScript only), and Expo/NativeWind notes.
+- [Packages](./apps/docs/guide/packages.md): `env`, shadcn/ui (bases, presets, `cn()` only — no pre-generated components), tRPC, auth providers, and Drizzle/Prisma.
+- [Environment](./apps/docs/guide/environment.md): Server vs client prefixes, the variable matrix (auth, database, Electron), and when validation is skipped (`CI`, `SKIP_ENV_VALIDATION`, lint).
+- [Tooling](./apps/docs/guide/tooling.md): Shared TypeScript config; Tailwind v4 (forced on with shadcn); Oxc lint/format vs Prettier/ESLint stubs.
+
+## Optional
+
+- [Full documentation](./llms-full.txt): All guide pages in one file. Use when you need the whole manual in one fetch.
+- [GitHub repository](https://github.com/gg-open-source/ggstack): CLI source, templates, and this docs site. MIT licensed.
+- [npm: create-ggstack](https://www.npmjs.com/package/create-ggstack): Published CLI. Version is in `apps/create-ggstack/package.json`.
+- [CLI source](./apps/create-ggstack/src): Prompts (`cli.ts`), generators, and config/choice lists.
+- [App templates](./apps/create-ggstack/templates): Static files copied into generated apps.
+- [Human README](./README.md): Short overview of this repo.
+- [LICENSE](./LICENSE): MIT.
+- [shadcn/ui create](https://ui.shadcn.com/create): Source of `--preset` codes. Named styles: `nova` (default), `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`. Component bases: Base UI (default), Radix UI, React Aria.

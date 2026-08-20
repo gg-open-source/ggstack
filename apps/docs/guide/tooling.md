@@ -1,3 +1,7 @@
+---
+description: Shared TypeScript config, Tailwind v4, Oxc lint/format, and Prettier/ESLint stubs.
+---
+
 # Tooling
 
 `tooling/tsconfig` is always generated. Everything else is opt-in at the tooling prompt.

@@ -1,3 +1,7 @@
+---
+description: env, shadcn/ui, tRPC, auth, and Drizzle or Prisma. Auth, db, and tRPC are not auto-wired into apps.
+---
+
 # Packages
 
 ## `packages/env` (always)
