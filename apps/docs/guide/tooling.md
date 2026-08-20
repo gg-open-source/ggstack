@@ -8,9 +8,13 @@
 
 ## Tailwind CSS
 
-Creates `tooling/tailwind` with a shared Tailwind + PostCSS config. Forced on when shadcn/ui is selected (the prompt pre-selects it and the generator keeps it even if you deselect it).
+Creates `tooling/tailwind` with Tailwind CSS v4 (`^4.3.3`) and a shared PostCSS plugin. `tailwindcss` is declared only in that package. Forced on when shadcn/ui is selected (the prompt pre-selects it and the generator keeps it even if you deselect it).
 
-With shadcn, the shared theme includes the CSS-variable color tokens (`background`, `primary`, `destructive`, and the rest).
+Frontend apps (Vite, Next.js, Astro, Electron, TanStack Start, React Router) get a `postcss.config.mjs` that re-exports `@<project>/tailwind/postcss` and an `@import "@<project>/tailwind"` in their CSS entry. They depend on `@<project>/tailwind`, not `tailwindcss`. Express and Fastify are left alone.
+
+Expo is wired with NativeWind v5 on top of the same package: `withNativewind` in `metro.config.js`, `global.css` imported from `app/_layout.tsx`, and `lightningcss` pinned to `1.30.1` at the workspace root.
+
+With shadcn, the shared `theme.css` includes the CSS-variable color tokens (`background`, `primary`, `destructive`, and the rest).
 
 ## Oxc
 

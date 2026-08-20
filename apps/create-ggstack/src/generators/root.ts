@@ -165,6 +165,7 @@ export function generateRootReadme(config: StackConfig): string {
   const hasTrpc = config.packages.some((pkg) => pkg.type === "trpc");
   const hasAuth = config.auth.provider !== "none";
   const hasDb = config.db.orm !== "none";
+  const hasTailwind = config.tooling.some((tool) => tool.type === "tailwind");
 
   const lines: string[] = [
     `# ${name}`,
@@ -198,6 +199,13 @@ export function generateRootReadme(config: StackConfig): string {
     );
     for (const app of expoApps) {
       lines.push("```bash", `pnpm --filter @${name}/${app.name} start`, "```");
+    }
+
+    if (hasTailwind) {
+      lines.push(
+        "",
+        `Expo is styled with NativeWind using the shared \`@${name}/tailwind\` package. Tailwind CSS is installed once in \`tooling/tailwind\`.`,
+      );
     }
   }
 

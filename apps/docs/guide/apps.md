@@ -59,6 +59,8 @@ Expo SDK 57 + Expo Router. Scripts: `start`, `ios`, `android`, `web`. There is *
 
 `app/_layout.tsx` imports `expoEnv` from `@<project>/env/client`.
 
+When Tailwind is selected, NativeWind v5 is added to the Expo app. Styling comes from the shared `@<project>/tailwind` package (`tailwindcss` is not installed in the Expo app). `app/_layout.tsx` imports `../global.css`, Metro is wrapped with `withNativewind`, and the home screen uses `className`.
+
 ```bash
 pnpm --filter @my-app/expo start
 ```

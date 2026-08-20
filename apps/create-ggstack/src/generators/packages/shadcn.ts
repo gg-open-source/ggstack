@@ -24,14 +24,11 @@ export function generateShadcnPackage(
         },
         dependencies: {
           clsx: "^2.1.0",
-          "tailwind-merge": "^2.5.0",
+          "tailwind-merge": "^3.6.0",
         },
         devDependencies: {
           [`@${projectName}/tailwind`]: "workspace:*",
           [`@${projectName}/tsconfig`]: "workspace:*",
-          tailwindcss: "^3.4.0",
-          postcss: "^8.4.0",
-          autoprefixer: "^10.4.0",
           typescript: "^5.8.0",
         },
       },
@@ -65,7 +62,7 @@ export function generateShadcnPackage(
         rsc: false,
         tsx: true,
         tailwind: {
-          config: "./tailwind.config.ts",
+          config: "",
           css: "./src/globals.css",
           baseColor: "neutral",
           cssVariables: true,
@@ -81,55 +78,15 @@ export function generateShadcnPackage(
   );
 
   builder.addFile(
-    "packages/ui/tailwind.config.ts",
-    `import type { Config } from "tailwindcss";
-import { config as baseConfig } from "@${projectName}/tailwind";
-
-export default {
-  ...baseConfig,
-  content: ["./src/**/*.{js,ts,jsx,tsx,mdx}"],
-} satisfies Config;
-`,
-  );
-
-  builder.addFile(
     "packages/ui/postcss.config.mjs",
-    `import { postcssConfig } from "@${projectName}/tailwind";
-
-export default postcssConfig;
+    `export { default } from "@${projectName}/tailwind/postcss";
 `,
   );
 
   builder.addFile(
     "packages/ui/src/globals.css",
-    `@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --radius: 0.5rem;
-  }
-}
+    `@import "@${projectName}/tailwind";
+@source ".";
 `,
   );
 

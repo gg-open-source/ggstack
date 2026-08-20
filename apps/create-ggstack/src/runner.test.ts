@@ -454,12 +454,126 @@ describe("buildProject", () => {
 
     await buildProject(config, builder);
 
-    expect(builder.files["tooling/tailwind/src/index.ts"]).toContain(
+    expect(builder.files["tooling/tailwind/src/theme.css"]).toContain(
       "--background",
+    );
+    expect(builder.files["tooling/tailwind/package.json"]).toContain(
+      '"tailwindcss": "^4.3.3"',
     );
     expect(builder.files["packages/ui/src/lib/utils.ts"]).toContain(
       "tailwind-merge",
     );
+    expect(builder.files["packages/ui/package.json"]).not.toContain(
+      '"tailwindcss"',
+    );
+    expect(builder.files["packages/ui/src/globals.css"]).toContain(
+      '@import "@test-project/tailwind"',
+    );
+  });
+
+  it("installs tailwindcss once and wires it into frontend apps", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [
+        { type: "next", name: "web" },
+        {
+          type: "vite",
+          name: "vite",
+          vite: { framework: "react", variant: "ts" },
+        },
+        { type: "express", name: "api" },
+      ],
+      tooling: [{ type: "tailwind" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["tooling/tailwind/package.json"]).toContain(
+      '"tailwindcss": "^4.3.3"',
+    );
+    expect(builder.files["tooling/tailwind/src/styles.css"]).toContain(
+      '@import "tailwindcss/theme.css"',
+    );
+    expect(builder.files["apps/web/package.json"]).toContain(
+      '"@test-project/tailwind": "workspace:*"',
+    );
+    expect(builder.files["apps/web/package.json"]).not.toContain(
+      '"tailwindcss"',
+    );
+    expect(builder.files["apps/web/postcss.config.mjs"]).toContain(
+      "@test-project/tailwind/postcss",
+    );
+    expect(builder.files["apps/web/app/globals.css"]).toContain(
+      '@import "@test-project/tailwind"',
+    );
+    expect(builder.files["apps/web/app/layout.tsx"]).toContain(
+      'import "./globals.css"',
+    );
+    expect(builder.files["apps/vite/src/style.css"]).toContain(
+      '@import "@test-project/tailwind"',
+    );
+    expect(builder.files["apps/api/package.json"]).not.toContain(
+      "@test-project/tailwind",
+    );
+    expect(builder.files["apps/api/postcss.config.mjs"]).toBeUndefined();
+  });
+
+  it("does not add nativewind to expo when tailwind is not selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "expo", name: "expo" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/expo/package.json"]).not.toContain("nativewind");
+    expect(builder.files["apps/expo/metro.config.js"]).not.toContain(
+      "withNativewind",
+    );
+    expect(builder.files["apps/expo/app/index.tsx"]).toContain("StyleSheet");
+  });
+
+  it("adds nativewind to expo from the shared tailwind package", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [{ type: "expo", name: "mobile" }],
+      tooling: [{ type: "tailwind" }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/mobile/package.json"]).toContain(
+      '"nativewind": "5.0.0-preview.4"',
+    );
+    expect(builder.files["apps/mobile/package.json"]).toContain(
+      '"@test-project/tailwind": "workspace:*"',
+    );
+    expect(builder.files["apps/mobile/package.json"]).not.toContain(
+      '"tailwindcss"',
+    );
+    expect(builder.files["apps/mobile/metro.config.js"]).toContain(
+      "withNativewind",
+    );
+    expect(builder.files["apps/mobile/global.css"]).toContain(
+      '@import "@test-project/tailwind"',
+    );
+    expect(builder.files["apps/mobile/global.css"]).toContain(
+      '@import "nativewind/theme"',
+    );
+    expect(builder.files["apps/mobile/app/_layout.tsx"]).toContain(
+      'import "../global.css"',
+    );
+    expect(builder.files["apps/mobile/app/index.tsx"]).toContain("className");
+    expect(builder.files["apps/mobile/nativewind-env.d.ts"]).toContain(
+      "react-native-css/types",
+    );
+    expect(builder.files["apps/mobile/tsconfig.json"]).toContain(
+      "nativewind-env.d.ts",
+    );
+    expect(builder.rootPackageJson.pnpm).toEqual({
+      overrides: { lightningcss: "1.30.1" },
+    });
+    expect(builder.files["README.md"]).toContain("NativeWind");
   });
 
   it("generates oxc tooling and updates root scripts", async () => {

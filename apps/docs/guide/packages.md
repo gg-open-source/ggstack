@@ -24,9 +24,9 @@ Created when you select shadcn/ui. Tailwind is forced on.
 
 What you get:
 
-- `components.json` (shadcn default style, CSS variables, `baseColor: neutral`)
+- `components.json` (shadcn default style, CSS variables, `baseColor: neutral`, Tailwind v4 with empty `config`)
 - `src/lib/utils.ts` with `cn()` (`clsx` + `tailwind-merge`)
-- `src/globals.css` with the usual shadcn CSS variables
+- `src/globals.css` importing `@<project>/tailwind` (tokens live in `tooling/tailwind`)
 - `src/index.ts` is an empty export — no components are pre-generated
 
 Add components with the shadcn CLI from `packages/ui`, then export them from `src/index.ts`.
