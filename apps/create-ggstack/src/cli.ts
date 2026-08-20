@@ -14,13 +14,18 @@ import {
   DEFAULT_DB_ORM,
   DEFAULT_PACKAGE_MANAGER,
   DEFAULT_PROJECT_NAME,
+  DEFAULT_SHADCN_BASE,
+  DEFAULT_SHADCN_PRESET,
   DEFAULT_VITE_FRAMEWORK,
   DEFAULT_VITE_VARIANT,
   isAuthProvider,
   isDbDialect,
   isDbOrm,
+  isShadcnBase,
+  isShadcnPreset,
   isViteFramework,
   isViteVariant,
+  SHADCN_BASE_CHOICES,
   VITE_FRAMEWORK_CHOICES,
   VITE_REACT_VARIANT_CHOICES,
   PACKAGE_CHOICES,
@@ -43,6 +48,7 @@ import { execa } from "execa";
 import { runCommands } from "./utils/exec.js";
 import { writeProjectFiles } from "./utils/files.js";
 import {
+  confirm,
   intro,
   log,
   multiSelect,
@@ -65,7 +71,54 @@ export function parsePackageManagerFlag(
 }
 
 export function getProjectNameArg(args: string[]): string | undefined {
-  return args.find((arg) => !arg.startsWith("-"));
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i];
+    if (!arg) continue;
+    if (arg === "--preset") {
+      i += 1;
+      continue;
+    }
+    if (!arg.startsWith("-")) return arg;
+  }
+  return undefined;
+}
+
+export type ParsedPresetFlag =
+  | { kind: "none" }
+  | { kind: "value"; value: string }
+  | { kind: "error"; message: string };
+
+export function parsePresetFlag(args: string[]): ParsedPresetFlag {
+  for (let i = 0; i < args.length; i += 1) {
+    const arg = args[i] ?? "";
+    let value: string | undefined;
+
+    if (arg === "--preset") {
+      value = args[i + 1];
+      if (!value || value.startsWith("-")) {
+        return {
+          kind: "error",
+          message: "The --preset flag requires a code, e.g. --preset b2D0vQ7G4",
+        };
+      }
+    } else if (arg.startsWith("--preset=")) {
+      value = arg.slice("--preset=".length);
+    } else {
+      continue;
+    }
+
+    if (!value || !isShadcnPreset(value)) {
+      return {
+        kind: "error",
+        message:
+          "Invalid --preset. Use a named style like nova, or a preset code from ui.shadcn.com/create",
+      };
+    }
+
+    return { kind: "value", value };
+  }
+
+  return { kind: "none" };
 }
 
 export function sanitizeAppName(name: string): string {
@@ -128,6 +181,12 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
 
   warnAboutPnpmWorkspace(packageManager);
 
+  const presetFlag = parsePresetFlag(args);
+  if (presetFlag.kind === "error") {
+    log(pc.red(presetFlag.message));
+    process.exit(1);
+  }
+
   const selectedApps = await multiSelect({
     message: "Which apps do you want to add?",
     options: APP_CHOICES.map((choice) => ({ ...choice })),
@@ -184,15 +243,78 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
 
   const selectedPackages = await multiSelect({
     message: "Which packages do you want to add?",
-    options: PACKAGE_CHOICES.map((choice) => ({ ...choice })),
+    options: PACKAGE_CHOICES.map((choice) => ({
+      ...choice,
+      hint:
+        choice.value === "shadcn" && presetFlag.kind === "value"
+          ? "auto-selected because --preset was passed"
+          : choice.hint,
+    })),
     required: false,
+    initialValues: presetFlag.kind === "value" ? ["shadcn"] : undefined,
   });
 
-  const packages: PackageConfig[] = selectedPackages.map((type) => ({
+  let packages: PackageConfig[] = selectedPackages.map((type) => ({
     type: type as PackageType,
   }));
 
+  if (
+    presetFlag.kind === "value" &&
+    !packages.some((pkg) => pkg.type === "shadcn")
+  ) {
+    packages.push({ type: "shadcn" });
+  }
+
   const shadcnSelected = packages.some((pkg) => pkg.type === "shadcn");
+
+  if (shadcnSelected) {
+    const selectedBase = await select({
+      message: "Which shadcn component base?",
+      options: SHADCN_BASE_CHOICES.map((choice) => ({ ...choice })),
+      initialValue: DEFAULT_SHADCN_BASE,
+    });
+    const base = isShadcnBase(selectedBase)
+      ? selectedBase
+      : DEFAULT_SHADCN_BASE;
+
+    let preset = DEFAULT_SHADCN_PRESET;
+    if (presetFlag.kind === "value") {
+      preset = presetFlag.value;
+    } else {
+      const wantsPreset = await confirm({
+        message: "Do you want to use a shadcn preset?",
+        initialValue: false,
+      });
+
+      if (wantsPreset) {
+        const selectedPreset = await text({
+          message: "Enter your shadcn preset code (from ui.shadcn.com/create)",
+          placeholder: "b2D0vQ7G4",
+          validate: (value) => {
+            const trimmed = value.trim();
+            if (trimmed.length === 0) return "Preset code is required";
+            if (!isShadcnPreset(trimmed)) {
+              return "Use a named style like nova, or a preset code from ui.shadcn.com/create";
+            }
+            return undefined;
+          },
+        });
+        preset = selectedPreset.trim();
+      } else {
+        log(
+          pc.gray(
+            `Using the default shadcn config (${DEFAULT_SHADCN_PRESET}).`,
+          ),
+        );
+      }
+    }
+
+    packages = packages.map((pkg) =>
+      pkg.type === "shadcn"
+        ? { type: "shadcn", shadcn: { preset, base } }
+        : pkg,
+    );
+  }
 
   const availableTooling = TOOLING_CHOICES.map((choice) => ({
     ...choice,

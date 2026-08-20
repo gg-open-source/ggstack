@@ -14,7 +14,7 @@ Frontend apps (Vite, Next.js, Astro, Electron, TanStack Start, React Router) get
 
 Expo is wired with NativeWind v5 on top of the same package: `withNativewind` in `metro.config.js`, `global.css` imported from `app/_layout.tsx`, and `lightningcss` pinned to `1.30.1` at the workspace root.
 
-With shadcn, the shared `theme.css` includes the CSS-variable color tokens (`background`, `primary`, `destructive`, and the rest).
+With shadcn, the shared `theme.css` includes the current CSS-variable color tokens (oklch, light and dark, charts, sidebar). `styles.css` also imports `tw-animate-css` and `shadcn/tailwind.css` from the latest `shadcn` package. A custom preset code is applied onto this file by `shadcn apply`.
 
 ## Oxc
 

@@ -3,6 +3,9 @@ import type {
   DbDialect,
   DbOrm,
   PackageManager,
+  ShadcnBase,
+  ShadcnOptions,
+  StackConfig,
   ViteFramework,
   ViteVariant,
 } from "./types.js";
@@ -14,6 +17,8 @@ export const DEFAULT_DB_ORM: DbOrm = "none";
 export const DEFAULT_DB_DIALECT: DbDialect = "postgresql";
 export const DEFAULT_VITE_FRAMEWORK: ViteFramework = "vanilla";
 export const DEFAULT_VITE_VARIANT: ViteVariant = "ts";
+export const DEFAULT_SHADCN_PRESET = "nova";
+export const DEFAULT_SHADCN_BASE: ShadcnBase = "base";
 
 export const APP_CHOICES = [
   { value: "vite", label: "Vite", hint: "custom template" },
@@ -40,9 +45,28 @@ export const DEFAULT_APP_NAMES = {
 } as const;
 
 export const PACKAGE_CHOICES = [
-  { value: "shadcn", label: "shadcn/ui", hint: "shared UI package" },
+  { value: "shadcn", label: "shadcn/ui", hint: "shared UI package + presets" },
   { value: "trpc", label: "tRPC", hint: "shared API package" },
 ] as const;
+
+export const SHADCN_BASE_CHOICES = [
+  { value: "base", label: "Base UI", hint: "default primitives" },
+  { value: "radix", label: "Radix UI", hint: "radix-ui primitives" },
+  { value: "aria", label: "React Aria", hint: "react-aria-components" },
+] as const;
+
+export const SHADCN_STYLES = [
+  "nova",
+  "vega",
+  "maia",
+  "lyra",
+  "mira",
+  "luma",
+  "sera",
+  "rhea",
+] as const;
+
+export type ShadcnStyle = (typeof SHADCN_STYLES)[number];
 
 export const DB_ORM_CHOICES = [
   { value: "none", label: "None", hint: "no database package" },
@@ -129,4 +153,35 @@ export function isViteFramework(value: string): value is ViteFramework {
 
 export function isViteVariant(value: string): value is ViteVariant {
   return ["ts", "react-compiler"].includes(value);
+}
+
+export function isShadcnBase(value: string): value is ShadcnBase {
+  return SHADCN_BASE_CHOICES.some((choice) => choice.value === value);
+}
+
+export function isShadcnStyle(value: string): value is ShadcnStyle {
+  return (SHADCN_STYLES as readonly string[]).includes(value);
+}
+
+export function isShadcnPreset(value: string): boolean {
+  return /^[A-Za-z0-9-]+$/.test(value);
+}
+
+export function resolveShadcnStyle(base: ShadcnBase, preset: string): string {
+  const style = isShadcnStyle(preset) ? preset : DEFAULT_SHADCN_PRESET;
+  return `${base}-${style}`;
+}
+
+export function getShadcnOptions(
+  config: StackConfig,
+): ShadcnOptions | undefined {
+  const pkg = config.packages.find((item) => item.type === "shadcn");
+  if (!pkg) {
+    return undefined;
+  }
+
+  return {
+    preset: pkg.shadcn?.preset ?? DEFAULT_SHADCN_PRESET,
+    base: pkg.shadcn?.base ?? DEFAULT_SHADCN_BASE,
+  };
 }

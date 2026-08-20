@@ -20,16 +20,37 @@ const url = serverEnv.DATABASE_URL;
 
 ## `packages/ui` (shadcn/ui)
 
-Created when you select shadcn/ui. Tailwind is forced on.
+Created when you select shadcn/ui, or when you pass `--preset`. Tailwind is forced on. After you pick the package, the CLI asks for a **component base**, then whether you want a **preset** (unless `--preset` was already passed).
+
+| Prompt / flag | Default | What it sets |
+| --- | --- | --- |
+| Component base | Base UI | Primitive library: Base UI, Radix UI, or React Aria. Written as the `style` prefix (`base-nova`, `radix-nova`, `aria-nova`). |
+| Do you want to use a shadcn preset? | No | No keeps the default config (`nova`) and says so. Yes asks you to paste a named style (`nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) or a short code from [shadcn/create](https://ui.shadcn.com/create). You can also pass `--preset <code>`. The code packs colors, theme, fonts, radius, and icon library. |
 
 What you get:
 
-- `components.json` (shadcn default style, CSS variables, `baseColor: neutral`, Tailwind v4 with empty `config`)
-- `src/lib/utils.ts` with `cn()` (`clsx` + `tailwind-merge`)
-- `src/globals.css` importing `@<project>/tailwind` (tokens live in `tooling/tailwind`)
-- `src/index.ts` is an empty export — no components are pre-generated
+- Latest shadcn CLI (`shadcn@^4.18.0`) plus `class-variance-authority`, `clsx`, `tailwind-merge`, and `lucide-react`
+- `components.json` using the current schema: `{base}-{style}` (not the deprecated `default` style), CSS variables, `baseColor: neutral`, `iconLibrary: lucide`, aliases for `components` / `ui` / `utils` / `lib` / `hooks`, Tailwind v4 with empty `config`
+- Theme CSS path points at `tooling/tailwind/src/theme.css` so tokens stay shared
+- `src/lib/utils.ts` with `cn()`
+- `src/globals.css` importing `@<project>/tailwind`
+- `src/index.ts` re-exports `cn()` — no components are pre-generated
 
-Add components with the shadcn CLI from `packages/ui`, then export them from `src/index.ts`.
+If you paste a custom preset code (not a named style), scaffold runs `shadcn@latest apply --preset <code> --yes` in `packages/ui` so the official CLI writes the theme.
+
+Add components from the repo root:
+
+```bash
+pnpm --filter @my-app/ui add button
+```
+
+Or:
+
+```bash
+pnpm dlx shadcn@latest add button -c packages/ui
+```
+
+Then export them from `src/index.ts`. Switch themes later with `pnpm --filter @my-app/ui apply --preset <code>`. Partial apply (`--only theme` or `--only theme,font`) keeps your components and only updates tokens or fonts.
 
 ## `packages/api` (tRPC)
 

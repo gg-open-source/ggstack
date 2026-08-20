@@ -8,6 +8,7 @@ create-ggstack [project-name] [options]
 
 | Flag | Description |
 | --- | --- |
+| `--preset <code>` | shadcn/ui preset: a named style (`nova`, `luma`, …) or a code from [ui.shadcn.com/create](https://ui.shadcn.com/create). Enables shadcn/ui. |
 | `--pnpm` | Use pnpm to run official app CLIs (default) |
 | `--npm` | Use npm to run official app CLIs |
 | `--yarn` | Use yarn to run official app CLIs |
@@ -15,7 +16,11 @@ create-ggstack [project-name] [options]
 | `-h`, `--help` | Print help |
 | `-v`, `--version` | Print the package version |
 
-There are no flags for apps, packages, auth, database, or tooling. Those choices are interactive only.
+```bash
+pnpm create ggstack my-app --preset b2D0vQ7G4
+```
+
+Also accepted: `--preset=b2D0vQ7G4`. Apps, other packages, auth, database, and tooling stay interactive. `--preset` skips the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list.
 
 `--npm`, `--yarn`, and `--bun` only affect package-manager invocations the CLI runs during scaffold. The generated repo is still a **pnpm workspace**. The CLI warns when the flag is not `--pnpm`. You still need pnpm installed to work in the project.
 
@@ -27,10 +32,12 @@ There are no flags for apps, packages, auth, database, or tooling. Those choices
 4. **Vite framework** — if you selected Vite: Vanilla, Vue, React, Preact, Lit, Svelte, Solid, or Qwik. TypeScript only; JavaScript variants are not offered.
 5. **Vite variant** — if the Vite framework is React: TypeScript, or TypeScript + React Compiler. Other frameworks skip this prompt.
 6. **Packages** — multi-select, optional: shadcn/ui, tRPC.
-7. **Tooling** — multi-select: Tailwind CSS, Oxc, Prettier, ESLint. Tailwind is pre-selected (and always kept) if shadcn/ui is on. Selecting Tailwind installs Tailwind CSS v4 once in `tooling/tailwind` and wires it into frontend apps. Expo also gets NativeWind.
-8. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).
-9. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.
-10. **Database** — if you chose Drizzle or Prisma: PostgreSQL (default), MySQL, or SQLite. Drizzle hints name the driver (`node-postgres`, `mysql2`, `libsql`). Prisma hints name the `schema.prisma` `provider`.
+7. **shadcn component base** — if you selected shadcn/ui (or passed `--preset`): Base UI (default), Radix UI, or React Aria.
+8. **shadcn preset** — if you selected shadcn/ui and did not pass `--preset`: "Do you want to use a shadcn preset?" Default no. No prints that the CLI is using the default config (`nova`) and continues. Yes asks for a named style (`nova`, `vega`, `maia`, `lyra`, `mira`, `luma`, `sera`, `rhea`) or a code from [ui.shadcn.com/create](https://ui.shadcn.com/create). Skipped when `--preset` is already on the command line.
+9. **Tooling** — multi-select: Tailwind CSS, Oxc, Prettier, ESLint. Tailwind is pre-selected (and always kept) if shadcn/ui is on. Selecting Tailwind installs Tailwind CSS v4 once in `tooling/tailwind` and wires it into frontend apps. Expo also gets NativeWind.
+10. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).
+11. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.
+12. **Database** — if you chose Drizzle or Prisma: PostgreSQL (default), MySQL, or SQLite. Drizzle hints name the driver (`node-postgres`, `mysql2`, `libsql`). Prisma hints name the `schema.prisma` `provider`.
 
 `packages/env`, `tooling/tsconfig`, and a root `.env.example` are always written.
 
@@ -43,4 +50,5 @@ Project and app names go through the same sanitizer: lowercase, spaces become hy
 The CLI exits without writing files when:
 
 - The chosen package manager is not installed
+- `--preset` is passed with no value, or with a value that is not a named style or preset code
 - The target directory already exists

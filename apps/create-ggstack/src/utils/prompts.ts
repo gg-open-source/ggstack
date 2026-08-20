@@ -47,6 +47,25 @@ export async function select(options: SelectOptions): Promise<string> {
   return result as string;
 }
 
+export type ConfirmOptions = {
+  message: string;
+  initialValue?: boolean;
+};
+
+export async function confirm(options: ConfirmOptions): Promise<boolean> {
+  const result = await p.confirm({
+    message: options.message,
+    initialValue: options.initialValue,
+  });
+
+  if (p.isCancel(result)) {
+    p.cancel(pc.red("Setup cancelled."));
+    process.exit(0);
+  }
+
+  return result as boolean;
+}
+
 export type MultiSelectOptions = {
   message: string;
   options: Array<{ value: string; label: string; hint?: string }>;

@@ -440,9 +440,70 @@ describe("buildProject", () => {
     expect(builder.files["packages/ui/package.json"]).toContain(
       "@test-project/ui",
     );
+    expect(builder.files["packages/ui/package.json"]).toContain(
+      '"shadcn": "^4.18.0"',
+    );
+    expect(builder.files["packages/ui/package.json"]).toContain(
+      "class-variance-authority",
+    );
     expect(builder.files["packages/ui/components.json"]).toContain(
       "shadcn.com",
     );
+    expect(builder.files["packages/ui/components.json"]).toContain(
+      '"style": "base-nova"',
+    );
+    expect(builder.files["packages/ui/components.json"]).toContain(
+      '"iconLibrary": "lucide"',
+    );
+    expect(builder.files["packages/ui/components.json"]).toContain(
+      '"ui": "@/components"',
+    );
+    expect(builder.commands).toEqual([]);
+  });
+
+  it("uses the selected shadcn base and named preset in components.json", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [{ type: "shadcn", shadcn: { preset: "luma", base: "radix" } }],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/ui/components.json"]).toContain(
+      '"style": "radix-luma"',
+    );
+    expect(builder.files["packages/ui/README.md"]).toContain("preset `luma`");
+    expect(builder.commands).toEqual([]);
+  });
+
+  it("applies a custom shadcn preset code after scaffold", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      packages: [
+        { type: "shadcn", shadcn: { preset: "b2D0vQ7G4", base: "aria" } },
+      ],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/ui/components.json"]).toContain(
+      '"style": "aria-nova"',
+    );
+    expect(builder.commands).toEqual([
+      {
+        command: "pnpm",
+        args: [
+          "dlx",
+          "shadcn@latest",
+          "apply",
+          "--preset",
+          "b2D0vQ7G4",
+          "--yes",
+        ],
+        cwd: "/tmp/test-project/packages/ui",
+        description: "Apply shadcn/ui preset",
+      },
+    ]);
   });
 
   it("generates tailwind tooling with shadcn colors when shadcn is selected", async () => {
@@ -457,8 +518,16 @@ describe("buildProject", () => {
     expect(builder.files["tooling/tailwind/src/theme.css"]).toContain(
       "--background",
     );
+    expect(builder.files["tooling/tailwind/src/theme.css"]).toContain("oklch");
+    expect(builder.files["tooling/tailwind/src/theme.css"]).toContain(".dark");
+    expect(builder.files["tooling/tailwind/src/styles.css"]).toContain(
+      '@import "shadcn/tailwind.css"',
+    );
     expect(builder.files["tooling/tailwind/package.json"]).toContain(
       '"tailwindcss": "^4.3.3"',
+    );
+    expect(builder.files["tooling/tailwind/package.json"]).toContain(
+      '"shadcn": "^4.18.0"',
     );
     expect(builder.files["packages/ui/src/lib/utils.ts"]).toContain(
       "tailwind-merge",

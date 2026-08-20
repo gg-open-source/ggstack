@@ -1,3 +1,4 @@
+import { getShadcnOptions, resolveShadcnStyle } from "../config.js";
 import type { AppConfig, ProjectBuilder, StackConfig } from "../types.js";
 import { generateGitignore } from "./gitignore.js";
 
@@ -239,8 +240,13 @@ export function generateRootReadme(config: StackConfig): string {
   );
 
   if (hasShadcn) {
+    const shadcn = getShadcnOptions(config);
+    const style = shadcn
+      ? resolveShadcnStyle(shadcn.base, shadcn.preset)
+      : "base-nova";
+    const preset = shadcn?.preset ?? "nova";
     lines.push(
-      `- \`packages/ui\` — shadcn/ui starter (\`@${name}/ui\`). \`cn()\` and CSS variables are included; add components yourself.`,
+      `- \`packages/ui\` — shadcn/ui (\`@${name}/ui\`), style \`${style}\`, preset \`${preset}\`. Add components with \`pnpm --filter @${name}/ui add button\`. Apply another preset with \`pnpm --filter @${name}/ui apply --preset <code>\`.`,
     );
   }
 

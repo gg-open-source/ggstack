@@ -34,8 +34,16 @@ export interface AppConfig {
 
 export type PackageType = "shadcn" | "auth" | "db" | "trpc";
 
+export type ShadcnBase = "base" | "radix" | "aria";
+
+export interface ShadcnOptions {
+  preset: string;
+  base: ShadcnBase;
+}
+
 export interface PackageConfig {
   type: PackageType;
+  shadcn?: ShadcnOptions;
 }
 
 export type AuthProvider = "none" | "better-auth" | "clerk" | "workos";

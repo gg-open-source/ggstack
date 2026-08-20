@@ -4,6 +4,7 @@ import {
   getProjectNameArg,
   isPackageManagerInstalled,
   parsePackageManagerFlag,
+  parsePresetFlag,
   sanitizeAppName,
   warnAboutPnpmWorkspace,
 } from "./cli.js";
@@ -16,6 +17,7 @@ vi.mock("./utils/prompts.js", async (importOriginal) => {
     text: vi.fn(),
     select: vi.fn(),
     multiSelect: vi.fn(),
+    confirm: vi.fn(),
     intro: vi.fn(),
     outro: vi.fn(),
     log: vi.fn(),
@@ -60,6 +62,56 @@ describe("CLI argument parsing", () => {
 
     it("returns undefined when only flags are passed", () => {
       expect(getProjectNameArg(["--pnpm", "--yarn"])).toBeUndefined();
+    });
+
+    it("skips the --preset value when finding the project name", () => {
+      expect(getProjectNameArg(["--preset", "b2D0vQ7G4", "my-app"])).toBe(
+        "my-app",
+      );
+      expect(getProjectNameArg(["my-app", "--preset", "nova"])).toBe("my-app");
+      expect(getProjectNameArg(["--preset=nova", "my-app"])).toBe("my-app");
+    });
+  });
+
+  describe("parsePresetFlag", () => {
+    it("returns none when --preset is not passed", () => {
+      expect(parsePresetFlag(["my-app", "--pnpm"])).toEqual({ kind: "none" });
+    });
+
+    it("reads --preset <code>", () => {
+      expect(parsePresetFlag(["--preset", "b2D0vQ7G4"])).toEqual({
+        kind: "value",
+        value: "b2D0vQ7G4",
+      });
+    });
+
+    it("reads --preset=<code>", () => {
+      expect(parsePresetFlag(["--preset=luma"])).toEqual({
+        kind: "value",
+        value: "luma",
+      });
+    });
+
+    it("errors when --preset has no value", () => {
+      expect(parsePresetFlag(["--preset"])).toEqual({
+        kind: "error",
+        message: expect.stringContaining("requires a code"),
+      });
+      expect(parsePresetFlag(["--preset", "--pnpm"])).toEqual({
+        kind: "error",
+        message: expect.stringContaining("requires a code"),
+      });
+    });
+
+    it("errors when --preset is invalid", () => {
+      expect(parsePresetFlag(["--preset", "not a code!"])).toEqual({
+        kind: "error",
+        message: expect.stringContaining("Invalid --preset"),
+      });
+      expect(parsePresetFlag(["--preset="])).toEqual({
+        kind: "error",
+        message: expect.stringContaining("Invalid --preset"),
+      });
     });
   });
 
@@ -120,13 +172,17 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce("test-project"); // project name
     mockedMultiSelect.mockResolvedValueOnce([]); // apps
     mockedMultiSelect.mockResolvedValueOnce(["shadcn"]); // packages
+    mockedSelect.mockResolvedValueOnce("base"); // shadcn base
+    vi.mocked(prompts.confirm).mockResolvedValueOnce(false); // no preset
     mockedMultiSelect.mockResolvedValueOnce([]); // tooling
     mockedSelect.mockResolvedValueOnce("none"); // auth
     mockedSelect.mockResolvedValueOnce("none"); // db orm
 
     const config = await collectConfig([]);
 
-    expect(config.packages).toEqual([{ type: "shadcn" }]);
+    expect(config.packages).toEqual([
+      { type: "shadcn", shadcn: { preset: "nova", base: "base" } },
+    ]);
     expect(config.tooling).toContainEqual({ type: "tailwind" });
   });
 
@@ -409,14 +465,182 @@ describe("collectConfig", () => {
     mockedText.mockResolvedValueOnce("test-project");
     mockedMultiSelect.mockResolvedValueOnce([]);
     mockedMultiSelect.mockResolvedValueOnce(["shadcn", "trpc"]);
+    mockedSelect.mockResolvedValueOnce("base");
+    vi.mocked(prompts.confirm).mockResolvedValueOnce(false);
     mockedMultiSelect.mockResolvedValueOnce([]);
     mockedSelect.mockResolvedValueOnce("none");
     mockedSelect.mockResolvedValueOnce("none");
 
     const config = await collectConfig([]);
 
-    expect(config.packages).toEqual([{ type: "shadcn" }, { type: "trpc" }]);
+    expect(config.packages).toEqual([
+      { type: "shadcn", shadcn: { preset: "nova", base: "base" } },
+      { type: "trpc" },
+    ]);
     expect(config.tooling).toContainEqual({ type: "tailwind" });
+  });
+
+  it("asks for a preset code when the user wants a preset", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+    const mockedConfirm = vi.mocked(prompts.confirm);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce(["shadcn"]);
+    mockedSelect.mockResolvedValueOnce("radix");
+    mockedConfirm.mockResolvedValueOnce(true);
+    mockedText.mockResolvedValueOnce("luma");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(mockedConfirm).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Do you want to use a shadcn preset?",
+        initialValue: false,
+      }),
+    );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Enter your shadcn preset code (from ui.shadcn.com/create)",
+      }),
+    );
+    expect(config.packages).toEqual([
+      { type: "shadcn", shadcn: { preset: "luma", base: "radix" } },
+    ]);
+  });
+
+  it("uses the default shadcn config when the user does not want a preset", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+    const mockedConfirm = vi.mocked(prompts.confirm);
+    const mockedLog = vi.mocked(prompts.log);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce(["shadcn"]);
+    mockedSelect.mockResolvedValueOnce("aria");
+    mockedConfirm.mockResolvedValueOnce(false);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(mockedText).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Enter your shadcn preset code (from ui.shadcn.com/create)",
+      }),
+    );
+    expect(mockedLog).toHaveBeenCalledWith(
+      expect.stringContaining("default shadcn config"),
+    );
+    expect(config.packages).toEqual([
+      { type: "shadcn", shadcn: { preset: "nova", base: "aria" } },
+    ]);
+  });
+
+  it("collects a custom shadcn preset code when the user wants a preset", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+    const mockedConfirm = vi.mocked(prompts.confirm);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce(["shadcn"]);
+    mockedSelect.mockResolvedValueOnce("base");
+    mockedConfirm.mockResolvedValueOnce(true);
+    mockedText.mockResolvedValueOnce("b2D0vQ7G4");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(config.packages).toEqual([
+      { type: "shadcn", shadcn: { preset: "b2D0vQ7G4", base: "base" } },
+    ]);
+  });
+
+  it("uses --preset and skips the preset prompt", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce(["shadcn"]);
+    mockedSelect.mockResolvedValueOnce("base");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig(["--preset", "b2D0vQ7G4"]);
+
+    expect(vi.mocked(prompts.confirm)).not.toHaveBeenCalled();
+    expect(mockedText).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Enter your shadcn preset code (from ui.shadcn.com/create)",
+      }),
+    );
+    expect(config.packages).toEqual([
+      { type: "shadcn", shadcn: { preset: "b2D0vQ7G4", base: "base" } },
+    ]);
+  });
+
+  it("adds shadcn when --preset is passed even if it was not selected", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("radix");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig(["--preset=luma"]);
+
+    expect(mockedMultiSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Which packages do you want to add?",
+        initialValues: ["shadcn"],
+      }),
+    );
+    expect(config.packages).toEqual([
+      { type: "shadcn", shadcn: { preset: "luma", base: "radix" } },
+    ]);
+    expect(config.tooling).toContainEqual({ type: "tailwind" });
+  });
+
+  it("does not prompt for shadcn options when shadcn is not selected", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    await collectConfig([]);
+
+    expect(mockedSelect).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Which shadcn component base?",
+      }),
+    );
+    expect(vi.mocked(prompts.confirm)).not.toHaveBeenCalled();
   });
 
   it("does not add db package when db orm is none", async () => {

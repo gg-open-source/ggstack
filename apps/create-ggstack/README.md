@@ -7,6 +7,7 @@ Interactive CLI that scaffolds a pnpm + Turborepo monorepo (T3/Turbo style): Vit
 ```bash
 pnpm create ggstack
 pnpm create ggstack my-app
+pnpm create ggstack my-app --preset b2D0vQ7G4
 npx create-ggstack my-app --pnpm
 pnpm dlx create-ggstack my-app
 ```
@@ -20,6 +21,7 @@ pnpm dlx create-ggstack my-app
 
 | Flag | Description |
 |------|-------------|
+| `--preset <code>` | shadcn/ui preset (named style or code from ui.shadcn.com/create) |
 | `--pnpm` | Use pnpm to run official app CLIs (default) |
 | `--npm` | Use npm to run official app CLIs |
 | `--yarn` | Use yarn to run official app CLIs |
@@ -27,7 +29,7 @@ pnpm dlx create-ggstack my-app
 | `-h, --help` | Show help |
 | `-v, --version` | Show version |
 
-Apps, packages, tooling, auth, and database are chosen interactively. `--npm` / `--yarn` / `--bun` only affect external CLIs during scaffold; you still need pnpm to work in the generated repo.
+Apps, packages, tooling, auth, and database are chosen interactively. `--preset` enables shadcn/ui and skips the preset-code prompt. `--npm` / `--yarn` / `--bun` only affect external CLIs during scaffold; you still need pnpm to work in the generated repo.
 
 ## Docs
 
