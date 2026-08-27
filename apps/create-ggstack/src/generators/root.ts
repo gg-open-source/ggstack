@@ -129,6 +129,12 @@ const AUTH_LABELS: Record<string, string> = {
   workos: "WorkOS",
 };
 
+const PAYMENT_LABELS: Record<string, string> = {
+  stripe: "Stripe",
+  polar: "Polar",
+  autumn: "Autumn",
+};
+
 const ORM_LABELS: Record<string, string> = {
   drizzle: "Drizzle ORM",
   prisma: "Prisma",
@@ -166,6 +172,7 @@ export function generateRootReadme(config: StackConfig): string {
   const hasTrpc = config.packages.some((pkg) => pkg.type === "trpc");
   const hasAuth = config.auth.provider !== "none";
   const hasDb = config.db.orm !== "none";
+  const hasPayments = config.payments.provider !== "none";
   const hasTailwind = config.tooling.some((tool) => tool.type === "tailwind");
 
   const lines: string[] = [
@@ -272,11 +279,20 @@ export function generateRootReadme(config: StackConfig): string {
     );
   }
 
-  if (hasAuth || hasDb || hasTrpc) {
+  if (hasPayments) {
+    const label =
+      PAYMENT_LABELS[config.payments.provider] ?? config.payments.provider;
+    lines.push(
+      `- \`packages/payments\` — ${label} (\`@${name}/payments\`). See that package's README.`,
+    );
+  }
+
+  if (hasAuth || hasDb || hasTrpc || hasPayments) {
     const subjects = [
       hasAuth ? "Auth" : null,
       hasDb ? "database" : null,
       hasTrpc ? "API" : null,
+      hasPayments ? "payments" : null,
     ].filter((value): value is string => value !== null);
     const heading =
       subjects.length === 1
@@ -286,6 +302,7 @@ export function generateRootReadme(config: StackConfig): string {
       hasAuth ? "wrap `AuthProvider`" : null,
       hasDb ? `import \`@${name}/db\`` : null,
       hasTrpc ? `mount \`@${name}/api\`` : null,
+      hasPayments ? `import \`@${name}/payments\`` : null,
     ].filter((value): value is string => value !== null);
 
     lines.push(

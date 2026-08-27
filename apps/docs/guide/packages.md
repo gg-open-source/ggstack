@@ -1,5 +1,5 @@
 ---
-description: env, shadcn/ui, tRPC, auth, and Drizzle or Prisma. Auth, db, and tRPC are not auto-wired into apps.
+description: env, shadcn/ui, tRPC, auth, payments, and Drizzle or Prisma. Auth, db, tRPC, and payments are not auto-wired into apps.
 ---
 
 # Packages
@@ -119,6 +119,38 @@ export default function App() {
 | WorkOS | `@workos-inc/authkit-react` | `AuthProvider` wraps AuthKit with the client id from `getPublicAuthConfig()`. |
 
 **Not auto-wired.** Wrap your app root with `AuthProvider` after scaffold.
+
+## `packages/payments` (optional)
+
+Created when the payment provider is not `none`. Shared checkout helpers live in `@<project>/payments`. **Not auto-wired** — mount the routes after scaffold. See the generated `packages/payments/README.md` for snippets.
+
+| Provider | SDK | What you get |
+| --- | --- | --- |
+| Stripe | `stripe` + `@upstash/redis` | [Theo's Stripe recommendations](https://github.com/t3dotgg/stripe-recommendations): create the customer **before** checkout, store `userId ↔ customerId` in Upstash Redis, and keep subscription state in a single `syncStripeDataToKV(customerId)` used by both the success route and the webhook. Do not use `CHECKOUT_SESSION_ID`. Disable Cash App Pay and enable **Limit customers to one subscription** in the Stripe Dashboard. |
+| Polar | `@polar-sh/sdk` | Merchant of record. Checkout and customer portal bind your auth user id via `externalCustomerId`. Verify webhooks with `validateEvent`. Query live state with `getCustomerState(userId)`. |
+| Autumn | `autumn-js` + `atmn` | Entitlements layer on Stripe. Starter `autumn.config.ts` (Free + Pro, metered `messages`). Use your auth user id as `customerId`. `attachPlan` returns a Stripe payment URL; `checkFeature` / `trackUsage` gate metered features. Push plans with `pnpm --filter @<project>/payments autumn:push`. |
+
+Pass your authenticated `userId` into these helpers. The package does not import `@<project>/auth`.
+
+Stripe and Polar:
+
+```ts
+import { createCheckoutSession } from "@my-app/payments";
+
+const { url } = await createCheckoutSession({
+  userId: user.id,
+  email: user.email,
+  successUrl: "http://localhost:3000/success",
+});
+```
+
+Autumn:
+
+```ts
+import { attachPlan } from "@my-app/payments";
+
+const checkout = await attachPlan({ customerId: user.id, planId: "pro" });
+```
 
 ## `packages/db` (optional)
 

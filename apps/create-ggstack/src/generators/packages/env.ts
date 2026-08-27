@@ -7,13 +7,18 @@ export type ClientPrefix =
   | "VITE_"
   | "PUBLIC_";
 
-export type EnvVarGroup = "core" | "database" | "auth" | "electron";
+export type EnvVarGroup =
+  | "core"
+  | "database"
+  | "auth"
+  | "payments"
+  | "electron";
 
 export interface EnvVarSpec {
   name: string;
   kind: "server" | "client";
   required: boolean;
-  schema: "string" | "url" | "nodeEnv";
+  schema: "string" | "url" | "nodeEnv" | "polarServer";
   group: EnvVarGroup;
   comment?: string;
 }
@@ -148,6 +153,96 @@ export function getEnvVarSpecs(config: StackConfig): EnvVarSpec[] {
     }
   }
 
+  if (config.payments.provider === "stripe") {
+    specs.push(
+      {
+        name: "STRIPE_SECRET_KEY",
+        kind: "server",
+        required: true,
+        schema: "string",
+        group: "payments",
+        comment: "sk_test_... from the Stripe Dashboard",
+      },
+      {
+        name: "STRIPE_WEBHOOK_SECRET",
+        kind: "server",
+        required: true,
+        schema: "string",
+        group: "payments",
+        comment: "whsec_... from stripe listen or the Dashboard",
+      },
+      {
+        name: "STRIPE_PRICE_ID",
+        kind: "server",
+        required: true,
+        schema: "string",
+        group: "payments",
+        comment: "price_... for the subscription you sell",
+      },
+      {
+        name: "UPSTASH_REDIS_REST_URL",
+        kind: "server",
+        required: true,
+        schema: "url",
+        group: "payments",
+        comment: "Upstash Redis REST URL used as the Stripe KV store",
+      },
+      {
+        name: "UPSTASH_REDIS_REST_TOKEN",
+        kind: "server",
+        required: true,
+        schema: "string",
+        group: "payments",
+        comment: "Upstash Redis REST token",
+      },
+    );
+  }
+
+  if (config.payments.provider === "polar") {
+    specs.push(
+      {
+        name: "POLAR_ACCESS_TOKEN",
+        kind: "server",
+        required: true,
+        schema: "string",
+        group: "payments",
+      },
+      {
+        name: "POLAR_WEBHOOK_SECRET",
+        kind: "server",
+        required: true,
+        schema: "string",
+        group: "payments",
+      },
+      {
+        name: "POLAR_PRODUCT_ID",
+        kind: "server",
+        required: true,
+        schema: "string",
+        group: "payments",
+      },
+      {
+        name: "POLAR_SERVER",
+        kind: "server",
+        required: false,
+        schema: "polarServer",
+        group: "payments",
+        comment: "sandbox or production (defaults to sandbox)",
+      },
+    );
+  }
+
+  if (config.payments.provider === "autumn") {
+    specs.push({
+      name: "AUTUMN_SECRET_KEY",
+      kind: "server",
+      required: true,
+      schema: "string",
+      group: "payments",
+      comment: "am_sk_test_... from the Autumn dashboard",
+    });
+  }
+
   if (config.apps.some((app) => app.type === "electron")) {
     specs.push({
       name: "VITE_DEV_SERVER_URL",
@@ -251,6 +346,8 @@ function zodForSpec(spec: EnvVarSpec): string {
   switch (spec.schema) {
     case "nodeEnv":
       return 'z.enum(["development", "test", "production"]).optional()';
+    case "polarServer":
+      return 'z.enum(["sandbox", "production"]).optional()';
     case "url":
       return spec.required ? "z.string().url()" : "z.string().url().optional()";
     case "string":
@@ -398,6 +495,7 @@ function generateEnvExample(specs: EnvVarSpec[]): string {
   const groups: Array<{ group: EnvVarGroup; heading: string }> = [
     { group: "database", heading: "Database" },
     { group: "auth", heading: "Authentication" },
+    { group: "payments", heading: "Payments" },
     { group: "electron", heading: "Electron" },
   ];
 

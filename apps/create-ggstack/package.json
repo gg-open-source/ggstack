@@ -27,7 +27,10 @@
     "tailwindcss",
     "drizzle",
     "prisma",
-    "database"
+    "database",
+    "stripe",
+    "polar",
+    "autumn"
   ],
   "bin": {
     "create-ggstack": "./dist/index.js"

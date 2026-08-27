@@ -3,6 +3,7 @@ import { generateApp } from "./generators/apps/index.js";
 import { generateAuthPackage } from "./generators/packages/auth.js";
 import { generateEnvPackage } from "./generators/packages/env.js";
 import { generatePackage } from "./generators/packages/index.js";
+import { generatePaymentsPackage } from "./generators/packages/payments.js";
 import { generateRoot } from "./generators/root.js";
 import { generateTooling } from "./generators/tooling/index.js";
 import { generateTsconfigTooling } from "./generators/tooling/tsconfig.js";
@@ -27,6 +28,10 @@ export async function buildProject(
     generateAuthPackage(config, builder);
   }
 
+  if (config.payments.provider !== "none") {
+    generatePaymentsPackage(config, builder);
+  }
+
   for (const tooling of config.tooling) {
     generateTooling(config, builder, tooling);
   }
@@ -46,4 +51,8 @@ export function hasApp(config: StackConfig, type: string): boolean {
 
 export function hasAuth(config: StackConfig): boolean {
   return config.auth.provider !== "none";
+}
+
+export function hasPayments(config: StackConfig): boolean {
+  return config.payments.provider !== "none";
 }

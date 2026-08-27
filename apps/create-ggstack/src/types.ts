@@ -61,6 +61,12 @@ export interface DbConfig {
   dialect?: DbDialect;
 }
 
+export type PaymentProvider = "none" | "stripe" | "polar" | "autumn";
+
+export interface PaymentConfig {
+  provider: PaymentProvider;
+}
+
 export type ToolingType = "tailwind" | "oxc" | "prettier" | "eslint";
 
 export interface ToolingConfig {
@@ -75,6 +81,7 @@ export interface StackConfig {
   packages: PackageConfig[];
   auth: AuthConfig;
   db: DbConfig;
+  payments: PaymentConfig;
   tooling: ToolingConfig[];
 }
 

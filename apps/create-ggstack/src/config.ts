@@ -3,6 +3,7 @@ import type {
   DbDialect,
   DbOrm,
   PackageManager,
+  PaymentProvider,
   ShadcnBase,
   ShadcnOptions,
   StackConfig,
@@ -15,6 +16,7 @@ export const DEFAULT_PACKAGE_MANAGER: PackageManager = "pnpm";
 export const DEFAULT_AUTH_PROVIDER: AuthProvider = "none";
 export const DEFAULT_DB_ORM: DbOrm = "none";
 export const DEFAULT_DB_DIALECT: DbDialect = "postgresql";
+export const DEFAULT_PAYMENT_PROVIDER: PaymentProvider = "none";
 export const DEFAULT_VITE_FRAMEWORK: ViteFramework = "vanilla";
 export const DEFAULT_VITE_VARIANT: ViteVariant = "ts";
 export const DEFAULT_SHADCN_PRESET = "nova";
@@ -93,6 +95,25 @@ export const AUTH_CHOICES = [
   { value: "workos", label: "WorkOS", hint: "enterprise auth" },
 ] as const;
 
+export const PAYMENT_CHOICES = [
+  { value: "none", label: "None", hint: "no payments" },
+  {
+    value: "stripe",
+    label: "Stripe",
+    hint: "Theo's KV-sync checkout pattern",
+  },
+  {
+    value: "polar",
+    label: "Polar",
+    hint: "merchant of record",
+  },
+  {
+    value: "autumn",
+    label: "Autumn",
+    hint: "Stripe entitlements layer",
+  },
+] as const;
+
 export const VITE_FRAMEWORK_CHOICES = [
   { value: "vanilla", label: "Vanilla", hint: "TypeScript" },
   { value: "vue", label: "Vue", hint: "TypeScript" },
@@ -132,6 +153,10 @@ export function isDbOrm(value: string): value is DbOrm {
 
 export function isDbDialect(value: string): value is DbDialect {
   return ["postgresql", "mysql", "sqlite"].includes(value);
+}
+
+export function isPaymentProvider(value: string): value is PaymentProvider {
+  return ["none", "stripe", "polar", "autumn"].includes(value);
 }
 
 export function resolveDbDialect(dialect: DbDialect | undefined): DbDialect {

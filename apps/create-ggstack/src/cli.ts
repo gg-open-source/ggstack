@@ -13,6 +13,7 @@ import {
   DEFAULT_DB_DIALECT,
   DEFAULT_DB_ORM,
   DEFAULT_PACKAGE_MANAGER,
+  DEFAULT_PAYMENT_PROVIDER,
   DEFAULT_PROJECT_NAME,
   DEFAULT_SHADCN_BASE,
   DEFAULT_SHADCN_PRESET,
@@ -21,6 +22,7 @@ import {
   isAuthProvider,
   isDbDialect,
   isDbOrm,
+  isPaymentProvider,
   isShadcnBase,
   isShadcnPreset,
   isViteFramework,
@@ -29,6 +31,7 @@ import {
   VITE_FRAMEWORK_CHOICES,
   VITE_REACT_VARIANT_CHOICES,
   PACKAGE_CHOICES,
+  PAYMENT_CHOICES,
   TOOLING_CHOICES,
 } from "./config.js";
 import { buildProject } from "./runner.js";
@@ -39,6 +42,7 @@ import type {
   PackageConfig,
   PackageManager,
   PackageType,
+  PaymentConfig,
   StackConfig,
   ToolingConfig,
   ViteVariant,
@@ -377,6 +381,26 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     packages.push({ type: "db" });
   }
 
+  const selectedPayments = await select({
+    message: "Which payment provider do you want to use?",
+    options: PAYMENT_CHOICES.map((choice) => ({ ...choice })),
+    initialValue: DEFAULT_PAYMENT_PROVIDER,
+  });
+
+  const payments: PaymentConfig = {
+    provider: isPaymentProvider(selectedPayments)
+      ? selectedPayments
+      : DEFAULT_PAYMENT_PROVIDER,
+  };
+
+  if (payments.provider === "stripe") {
+    log(
+      pc.gray(
+        "Stripe uses Upstash Redis as a KV store and a single syncStripeDataToKV function (Theo's pattern).",
+      ),
+    );
+  }
+
   return {
     projectName: sanitizeAppName(projectName),
     targetDir: path.resolve(process.cwd(), projectName),
@@ -385,6 +409,7 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     packages,
     auth,
     db,
+    payments,
     tooling,
   };
 }

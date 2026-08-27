@@ -10,7 +10,7 @@ Every project gets `packages/env` and a root `.env.example`. Copy that file to `
 cp .env.example .env
 ```
 
-The Zod schema is generated from the apps, auth provider, and ORM you selected. Empty required strings fail validation.
+The Zod schema is generated from the apps, auth provider, payment provider, and ORM you selected. Empty required strings fail validation.
 
 ## Server vs client
 
@@ -48,6 +48,16 @@ Clerk and WorkOS also generate `getPublicAuthConfig()`, which reads the publisha
 | WorkOS + Vite/Electron/TanStack Start/React Router | `VITE_WORKOS_CLIENT_ID` | client | yes |
 | WorkOS + Expo | `EXPO_PUBLIC_WORKOS_CLIENT_ID` | client | yes |
 | Electron | `VITE_DEV_SERVER_URL` | server | no (URL; injected in Electron dev) |
+| Stripe | `STRIPE_SECRET_KEY` | server | yes |
+| Stripe | `STRIPE_WEBHOOK_SECRET` | server | yes |
+| Stripe | `STRIPE_PRICE_ID` | server | yes |
+| Stripe | `UPSTASH_REDIS_REST_URL` | server | yes (URL; Upstash Redis used as the Stripe KV store) |
+| Stripe | `UPSTASH_REDIS_REST_TOKEN` | server | yes |
+| Polar | `POLAR_ACCESS_TOKEN` | server | yes |
+| Polar | `POLAR_WEBHOOK_SECRET` | server | yes |
+| Polar | `POLAR_PRODUCT_ID` | server | yes |
+| Polar | `POLAR_SERVER` | server | no (`sandbox` \| `production`; defaults to sandbox in code) |
+| Autumn | `AUTUMN_SECRET_KEY` | server | yes |
 
 Better Auth extra secrets (for example `GITHUB_CLIENT_ID`) are not generated. Add them to the schema and `.env.example` if you need them.
 

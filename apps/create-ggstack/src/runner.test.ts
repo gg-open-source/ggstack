@@ -4,6 +4,7 @@ import {
   hasApp,
   hasAuth,
   hasPackage,
+  hasPayments,
   hasTooling,
 } from "./runner.js";
 import { ProjectBuilder, type StackConfig } from "./types.js";
@@ -17,6 +18,7 @@ function createTestConfig(overrides: Partial<StackConfig> = {}): StackConfig {
     packages: [],
     auth: { provider: "none" },
     db: { orm: "none" },
+    payments: { provider: "none" },
     tooling: [],
     ...overrides,
   };
@@ -64,6 +66,7 @@ describe("buildProject", () => {
       packages: [{ type: "shadcn" }, { type: "db" }],
       auth: { provider: "clerk" },
       db: { orm: "drizzle" },
+      payments: { provider: "stripe" },
       tooling: [{ type: "oxc" }, { type: "tailwind" }],
     });
 
@@ -89,6 +92,8 @@ describe("buildProject", () => {
     expect(readme).toContain("React Router");
     expect(readme).toContain("pnpm --filter @test-project/mobile start");
     expect(readme).toContain("Clerk");
+    expect(readme).toContain("Stripe");
+    expect(readme).toContain("@test-project/payments");
     expect(readme).toContain("Drizzle ORM + PostgreSQL");
     expect(readme).toContain("@test-project/ui");
     expect(readme).toContain("not mounted automatically");
@@ -687,6 +692,16 @@ describe("helpers", () => {
     const config = createTestConfig({ auth: { provider: "none" } });
     expect(hasAuth(config)).toBe(false);
   });
+
+  it("hasPayments returns true when a payment provider is selected", () => {
+    const config = createTestConfig({ payments: { provider: "stripe" } });
+    expect(hasPayments(config)).toBe(true);
+  });
+
+  it("hasPayments returns false when payment provider is none", () => {
+    const config = createTestConfig({ payments: { provider: "none" } });
+    expect(hasPayments(config)).toBe(false);
+  });
 });
 
 describe("auth package generation", () => {
@@ -1090,7 +1105,7 @@ describe("env package generation", () => {
     );
   });
 
-  it("does not add provider keys when auth and db are none", async () => {
+  it("does not add provider keys when auth, db, and payments are none", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig();
 
@@ -1107,6 +1122,15 @@ describe("env package generation", () => {
     );
     expect(builder.files["packages/env/src/server.ts"]).not.toContain(
       "WORKOS_API_KEY",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "STRIPE_SECRET_KEY",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "POLAR_ACCESS_TOKEN",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "AUTUMN_SECRET_KEY",
     );
     expect(builder.files[".env.example"]).not.toContain("DATABASE_URL");
   });
@@ -1273,6 +1297,74 @@ describe("env package generation", () => {
     );
   });
 
+  it("adds stripe and upstash keys when stripe is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ payments: { provider: "stripe" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "STRIPE_SECRET_KEY",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "STRIPE_WEBHOOK_SECRET",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "STRIPE_PRICE_ID",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "UPSTASH_REDIS_REST_URL",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "UPSTASH_REDIS_REST_TOKEN",
+    );
+    expect(builder.files[".env.example"]).toContain("# Payments");
+    expect(builder.files[".env.example"]).toContain("STRIPE_SECRET_KEY=");
+    expect(builder.files["turbo.json"]).toContain("STRIPE_SECRET_KEY");
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "POLAR_ACCESS_TOKEN",
+    );
+  });
+
+  it("adds polar keys when polar is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ payments: { provider: "polar" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "POLAR_ACCESS_TOKEN",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "POLAR_WEBHOOK_SECRET",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "POLAR_PRODUCT_ID",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      'POLAR_SERVER: z.enum(["sandbox", "production"]).optional()',
+    );
+    expect(builder.files[".env.example"]).toContain("POLAR_ACCESS_TOKEN=");
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "STRIPE_SECRET_KEY",
+    );
+  });
+
+  it("adds autumn keys when autumn is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ payments: { provider: "autumn" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "AUTUMN_SECRET_KEY",
+    );
+    expect(builder.files[".env.example"]).toContain("AUTUMN_SECRET_KEY=");
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "STRIPE_SECRET_KEY",
+    );
+  });
+
   it("lists generated keys on turbo globalEnv", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({
@@ -1299,6 +1391,126 @@ describe("env package generation", () => {
     expect(turbo.globalEnv).not.toContain("NODE_ENV");
     expect(turbo.globalPassThroughEnv).toEqual(
       expect.arrayContaining(["NODE_ENV", "SKIP_ENV_VALIDATION"]),
+    );
+  });
+});
+
+describe("payments package generation", () => {
+  it("does not generate payments package when payment provider is none", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig();
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/payments/package.json"]).toBeUndefined();
+  });
+
+  it("generates a stripe package that follows the KV-sync checkout pattern", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ payments: { provider: "stripe" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/payments/package.json"]).toContain(
+      "@test-project/payments",
+    );
+    expect(builder.files["packages/payments/package.json"]).toContain("stripe");
+    expect(builder.files["packages/payments/package.json"]).toContain(
+      "@upstash/redis",
+    );
+    expect(builder.files["packages/payments/src/sync.ts"]).toContain(
+      "syncStripeDataToKV",
+    );
+    expect(builder.files["packages/payments/src/sync.ts"]).toContain(
+      'status: "all"',
+    );
+    expect(builder.files["packages/payments/src/checkout.ts"]).toContain(
+      "customers.create",
+    );
+    expect(builder.files["packages/payments/src/checkout.ts"]).toContain(
+      "userId: input.userId",
+    );
+    expect(builder.files["packages/payments/src/checkout.ts"]).toContain(
+      "customer: customerId",
+    );
+    expect(builder.files["packages/payments/src/checkout.ts"]).not.toContain(
+      "CHECKOUT_SESSION_ID",
+    );
+    expect(builder.files["packages/payments/src/webhook.ts"]).toContain(
+      "checkout.session.completed",
+    );
+    expect(builder.files["packages/payments/src/webhook.ts"]).toContain(
+      "syncStripeDataToKV",
+    );
+    expect(builder.files["packages/payments/src/index.ts"]).toContain(
+      "syncAfterSuccess",
+    );
+    expect(builder.files["packages/payments/README.md"]).toContain(
+      "t3dotgg/stripe-recommendations",
+    );
+    expect(builder.files["packages/payments/README.md"]).toContain(
+      "Disable Cash App Pay",
+    );
+    expect(builder.files["packages/payments/README.md"]).toContain(
+      "Limit customers to one subscription",
+    );
+    expect(builder.files["README.md"]).toContain("@test-project/payments");
+    expect(builder.files["README.md"]).toContain("not mounted automatically");
+  });
+
+  it("generates a polar package with checkout, portal, and webhooks", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ payments: { provider: "polar" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/payments/package.json"]).toContain(
+      "@polar-sh/sdk",
+    );
+    expect(builder.files["packages/payments/src/checkout.ts"]).toContain(
+      "externalCustomerId: input.userId",
+    );
+    expect(builder.files["packages/payments/src/checkout.ts"]).toContain(
+      "customerSessions.create",
+    );
+    expect(builder.files["packages/payments/src/webhook.ts"]).toContain(
+      "validateEvent",
+    );
+    expect(builder.files["packages/payments/src/customer.ts"]).toContain(
+      "getStateExternal",
+    );
+    expect(builder.files["packages/payments/src/index.ts"]).toContain(
+      "createCheckoutSession",
+    );
+  });
+
+  it("generates an autumn package with plans, attach, and entitlements", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ payments: { provider: "autumn" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/payments/package.json"]).toContain(
+      "autumn-js",
+    );
+    expect(builder.files["packages/payments/package.json"]).toContain("atmn");
+    expect(builder.files["packages/payments/autumn.config.ts"]).toContain(
+      'id: "pro"',
+    );
+    expect(builder.files["packages/payments/src/billing.ts"]).toContain(
+      "billing.attach",
+    );
+    expect(builder.files["packages/payments/src/billing.ts"]).toContain(
+      "customers.getOrCreate",
+    );
+    expect(builder.files["packages/payments/src/billing.ts"]).toContain(
+      "autumn.check",
+    );
+    expect(builder.files["packages/payments/src/billing.ts"]).toContain(
+      "autumn.track",
+    );
+    expect(builder.files["packages/payments/src/index.ts"]).toContain(
+      "attachPlan",
     );
   });
 });

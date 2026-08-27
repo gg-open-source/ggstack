@@ -30,7 +30,7 @@ npx create-ggstack my-app --pnpm
 pnpm dlx create-ggstack my-app
 ```
 
-The CLI prompts for apps, package extras (including a shadcn base and, if you want one, a preset when shadcn/ui is on), tooling, auth, a database ORM, and — when you pick Drizzle or Prisma — which database to use. You can also pass a shadcn preset on the command line with `--preset <code>`. See [CLI](./cli.md).
+The CLI prompts for apps, package extras (including a shadcn base and, if you want one, a preset when shadcn/ui is on), tooling, auth, a database ORM, a payment provider (Stripe, Polar, or Autumn), and — when you pick Drizzle or Prisma — which database to use. You can also pass a shadcn preset on the command line with `--preset <code>`. See [CLI](./cli.md).
 
 ## After the CLI finishes
 

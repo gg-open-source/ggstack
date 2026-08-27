@@ -24,7 +24,7 @@ create-ggstack [project-name] [options]
 pnpm create ggstack my-app --preset b2D0vQ7G4
 ```
 
-Also accepted: `--preset=b2D0vQ7G4`. Apps, other packages, auth, database, and tooling stay interactive. `--preset` skips the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list.
+Also accepted: `--preset=b2D0vQ7G4`. Apps, other packages, auth, database, payments, and tooling stay interactive. `--preset` skips the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list.
 
 `--npm`, `--yarn`, and `--bun` only affect package-manager invocations the CLI runs during scaffold. The generated repo is still a **pnpm workspace**. The CLI warns when the flag is not `--pnpm`. You still need pnpm installed to work in the project.
 
@@ -42,6 +42,7 @@ Also accepted: `--preset=b2D0vQ7G4`. Apps, other packages, auth, database, and t
 10. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).
 11. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.
 12. **Database** — if you chose Drizzle or Prisma: PostgreSQL (default), MySQL, or SQLite. Drizzle hints name the driver (`node-postgres`, `mysql2`, `libsql`). Prisma hints name the `schema.prisma` `provider`.
+13. **Payments** — none (default), Stripe, Polar, or Autumn. Choosing a provider adds `packages/payments`. Stripe prints that it uses Upstash Redis and a single `syncStripeDataToKV` function.
 
 `packages/env`, `tooling/tsconfig`, and a root `.env.example` are always written.
 

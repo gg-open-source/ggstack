@@ -162,6 +162,7 @@ describe("collectConfig", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.mocked(execa).mockResolvedValue({ stdout: "1.0.0" } as never);
+    vi.mocked(prompts.select).mockResolvedValue("none");
   });
 
   it("auto-selects tailwind when shadcn is chosen", async () => {
@@ -879,6 +880,68 @@ describe("collectConfig", () => {
       }),
     );
     expect(config.apps).toEqual([{ type: "next", name: "docs" }]);
+  });
+
+  it("collects the selected payment provider", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("polar");
+
+    const config = await collectConfig([]);
+
+    expect(mockedSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Which payment provider do you want to use?",
+      }),
+    );
+    expect(config.payments).toEqual({ provider: "polar" });
+  });
+
+  it("defaults payments to none", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(config.payments).toEqual({ provider: "none" });
+  });
+
+  it("explains the Stripe KV-sync setup when stripe is selected", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+    const mockedLog = vi.mocked(prompts.log);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("stripe");
+
+    const config = await collectConfig([]);
+
+    expect(config.payments).toEqual({ provider: "stripe" });
+    expect(mockedLog).toHaveBeenCalledWith(
+      expect.stringContaining("syncStripeDataToKV"),
+    );
   });
 
   it("does not add vite options to astro apps", async () => {
