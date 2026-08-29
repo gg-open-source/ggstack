@@ -34,6 +34,15 @@ import {
   PAYMENT_CHOICES,
   TOOLING_CHOICES,
 } from "./config.js";
+import {
+  decodeStack,
+  formatDecodedStack,
+  isStackCode,
+  normalizeStackPreset,
+  sanitizeAppName,
+  StackCodeError,
+  type StackPreset,
+} from "./stack.js";
 import { buildProject } from "./runner.js";
 import type {
   AppConfig,
@@ -74,49 +83,58 @@ export function parsePackageManagerFlag(
   return undefined;
 }
 
+const FLAGS_WITH_VALUES = new Set(["--preset", "--stack"]);
+
 export function getProjectNameArg(args: string[]): string | undefined {
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i];
     if (!arg) continue;
-    if (arg === "--preset") {
+    if (FLAGS_WITH_VALUES.has(arg)) {
       i += 1;
       continue;
     }
+    if (arg.startsWith("--preset=") || arg.startsWith("--stack=")) continue;
     if (!arg.startsWith("-")) return arg;
   }
   return undefined;
 }
 
-export type ParsedPresetFlag =
+export type ParsedStringFlag =
   | { kind: "none" }
   | { kind: "value"; value: string }
   | { kind: "error"; message: string };
 
-export function parsePresetFlag(args: string[]): ParsedPresetFlag {
+export type ParsedPresetFlag = ParsedStringFlag;
+
+export function parseStringFlag(
+  args: string[],
+  name: string,
+  options: {
+    missingMessage: string;
+    invalidMessage: string;
+    validate: (value: string) => boolean;
+  },
+): ParsedStringFlag {
+  const flag = `--${name}`;
+  const prefix = `--${name}=`;
+
   for (let i = 0; i < args.length; i += 1) {
     const arg = args[i] ?? "";
     let value: string | undefined;
 
-    if (arg === "--preset") {
+    if (arg === flag) {
       value = args[i + 1];
       if (!value || value.startsWith("-")) {
-        return {
-          kind: "error",
-          message: "The --preset flag requires a code, e.g. --preset b2D0vQ7G4",
-        };
+        return { kind: "error", message: options.missingMessage };
       }
-    } else if (arg.startsWith("--preset=")) {
-      value = arg.slice("--preset=".length);
+    } else if (arg.startsWith(prefix)) {
+      value = arg.slice(prefix.length);
     } else {
       continue;
     }
 
-    if (!value || !isShadcnPreset(value)) {
-      return {
-        kind: "error",
-        message:
-          "Invalid --preset. Use a named style like nova, or a preset code from ui.shadcn.com/create",
-      };
+    if (!value || !options.validate(value)) {
+      return { kind: "error", message: options.invalidMessage };
     }
 
     return { kind: "value", value };
@@ -125,13 +143,27 @@ export function parsePresetFlag(args: string[]): ParsedPresetFlag {
   return { kind: "none" };
 }
 
-export function sanitizeAppName(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/\s+/g, "-")
-    .replace(/[^a-z0-9-]/g, "")
-    .replace(/^-+|-+$/g, "");
+export function parsePresetFlag(args: string[]): ParsedPresetFlag {
+  return parseStringFlag(args, "preset", {
+    missingMessage:
+      "The --preset flag requires a code, e.g. --preset b2D0vQ7G4",
+    invalidMessage:
+      "Invalid --preset. Use a named style like nova, or a preset code from ui.shadcn.com/create",
+    validate: isShadcnPreset,
+  });
 }
+
+export function parseStackFlag(args: string[]): ParsedStringFlag {
+  return parseStringFlag(args, "stack", {
+    missingMessage:
+      "The --stack flag requires a code from the docs /create page, e.g. --stack g1e30",
+    invalidMessage:
+      "Invalid --stack. Build a code at the docs /create page, then pass --stack <code>",
+    validate: isStackCode,
+  });
+}
+
+export { sanitizeAppName };
 
 export async function isPackageManagerInstalled(
   packageManager: PackageManager,
@@ -155,8 +187,100 @@ export function warnAboutPnpmWorkspace(packageManager: PackageManager): void {
   }
 }
 
+function resolveProjectName(value: string | undefined): string {
+  const sanitized = sanitizeAppName(value ?? "");
+  return sanitized.length > 0 ? sanitized : DEFAULT_PROJECT_NAME;
+}
+
+function applyShadcnPreset(
+  preset: StackPreset,
+  shadcnPreset: string,
+): StackPreset {
+  const packages = preset.packages.filter((pkg) => pkg.type !== "shadcn");
+  const current = preset.packages.find((pkg) => pkg.type === "shadcn");
+  packages.unshift({
+    type: "shadcn",
+    shadcn: {
+      preset: shadcnPreset,
+      base: current?.shadcn?.base ?? DEFAULT_SHADCN_BASE,
+    },
+  });
+  return normalizeStackPreset({ ...preset, packages });
+}
+
+function stackToConfig(preset: StackPreset, projectName: string): StackConfig {
+  const name = resolveProjectName(projectName);
+  return {
+    projectName: name,
+    targetDir: path.resolve(process.cwd(), name),
+    ...preset,
+  };
+}
+
 export async function collectConfig(args: string[]): Promise<StackConfig> {
   intro(pc.bgCyan(pc.black(" create-ggstack ")));
+
+  const stackFlag = parseStackFlag(args);
+  if (stackFlag.kind === "error") {
+    log(pc.red(stackFlag.message));
+    process.exit(1);
+  }
+
+  const presetFlag = parsePresetFlag(args);
+  if (presetFlag.kind === "error") {
+    log(pc.red(presetFlag.message));
+    process.exit(1);
+  }
+
+  if (stackFlag.kind === "value") {
+    let stack: StackPreset;
+    try {
+      stack = decodeStack(stackFlag.value);
+    } catch (error) {
+      const message =
+        error instanceof StackCodeError
+          ? error.message
+          : "Invalid --stack code. Build one at the docs /create page.";
+      log(pc.red(message));
+      process.exit(1);
+    }
+
+    if (presetFlag.kind === "value") {
+      stack = applyShadcnPreset(stack, presetFlag.value);
+    }
+
+    const packageManager =
+      parsePackageManagerFlag(args) ?? stack.packageManager;
+    stack = normalizeStackPreset({ ...stack, packageManager });
+
+    const packageManagerInstalled =
+      await isPackageManagerInstalled(packageManager);
+    if (!packageManagerInstalled) {
+      log(
+        pc.red(
+          `Package manager "${packageManager}" is not installed. Aborting.`,
+        ),
+      );
+      process.exit(1);
+    }
+
+    warnAboutPnpmWorkspace(packageManager);
+
+    if (stack.payments.provider === "stripe") {
+      log(
+        pc.gray(
+          "Stripe uses Upstash Redis as a KV store and a single syncStripeDataToKV function (Theo's pattern).",
+        ),
+      );
+    }
+
+    log(pc.gray(`Using stack ${stackFlag.value}.`));
+
+    return stackToConfig(
+      stack,
+      getProjectNameArg(args) ?? DEFAULT_PROJECT_NAME,
+    );
+  }
 
   const projectNameArg = getProjectNameArg(args);
   const projectName =
@@ -184,12 +308,6 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
   }
 
   warnAboutPnpmWorkspace(packageManager);
-
-  const presetFlag = parsePresetFlag(args);
-  if (presetFlag.kind === "error") {
-    log(pc.red(presetFlag.message));
-    process.exit(1);
-  }
 
   const selectedApps = await multiSelect({
     message: "Which apps do you want to add?",
@@ -447,7 +565,48 @@ export async function createProject(config: StackConfig): Promise<void> {
   }
 }
 
+export function decodeStackFromArgs(args: string[]): string {
+  const stackFlag = parseStackFlag(args);
+  if (stackFlag.kind === "error") {
+    throw new StackCodeError(stackFlag.message);
+  }
+
+  let code = stackFlag.kind === "value" ? stackFlag.value : undefined;
+  if (!code) {
+    const decodeIndex = args.indexOf("--decode");
+    const next = decodeIndex >= 0 ? args[decodeIndex + 1] : undefined;
+    if (next && !next.startsWith("-")) {
+      if (!isStackCode(next)) {
+        throw new StackCodeError(
+          "Invalid --stack. Build a code at the docs /create page, then pass --stack <code>",
+        );
+      }
+      code = next;
+    }
+  }
+
+  if (!code) {
+    throw new StackCodeError(
+      "The --decode flag requires a stack code, e.g. --decode g1e30",
+    );
+  }
+
+  return formatDecodedStack(code, decodeStack(code));
+}
+
 export async function cli(args: string[]): Promise<void> {
+  if (args.includes("--decode")) {
+    try {
+      console.log(decodeStackFromArgs(args));
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Invalid --stack code.";
+      console.error(pc.red(message));
+      process.exit(1);
+    }
+    return;
+  }
+
   const config = await collectConfig(args);
   await createProject(config);
   outro(pc.green("Done! Happy hacking."));

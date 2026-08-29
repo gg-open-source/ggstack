@@ -3,6 +3,9 @@ import llmstxt, {
   copyOrDownloadAsMarkdownButtons,
 } from "vitepress-plugin-llms";
 
+const stackCodec = new URL("../../create-ggstack/src/stack.ts", import.meta.url)
+  .pathname;
+
 const llmsDescription =
   "Interactive CLI (`create-ggstack`) that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style. Pick Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, tRPC, Better Auth / Clerk / WorkOS, and Drizzle or Prisma (PostgreSQL, MySQL, or SQLite). Every project gets a typed `packages/env` and a root `.env.example`.";
 
@@ -15,20 +18,25 @@ Always written: \`packages/env\` (\`@t3-oss/env-core\` + Zod), \`tooling/tsconfi
 Never auto-wired into app templates: auth, database, or tRPC. Import those packages in the app yourself after scaffold. Expo has no \`dev\` script, so it does not join root \`pnpm dev\`.
 
 \`\`\`bash
-pnpm create ggstack my-app
+pnpm create ggstack@latest my-app --stack g1e30
 cd my-app
 cp .env.example .env
 pnpm install
 pnpm dev
 \`\`\`
 
-Prefer the Markdown sources linked below over HTML docs pages. Each guide also has a \`.md\` URL next to its HTML page.`;
+\`--stack\` codes from \`/create\` pack the full config and skip every prompt. Inspect a code with \`create-ggstack --decode <code>\`. Prefer the Markdown sources linked below over HTML docs pages. Each guide also has a \`.md\` URL next to its HTML page.`;
 
 export default defineConfig({
   title: "ggstack",
   description:
     "CLI that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style.",
   vite: {
+    resolve: {
+      alias: {
+        "create-ggstack/stack": stackCodec,
+      },
+    },
     plugins: [
       llmstxt({
         title: "ggstack",
@@ -79,7 +87,7 @@ export default defineConfig({
   },
   themeConfig: {
     nav: [
-      { text: "Home", link: "/" },
+      { text: "Create", link: "/create" },
       { text: "Guide", link: "/guide/getting-started" },
       { text: "CLI", link: "/guide/cli" },
     ],
@@ -87,6 +95,7 @@ export default defineConfig({
       {
         text: "Guide",
         items: [
+          { text: "Create", link: "/create" },
           { text: "Getting Started", link: "/guide/getting-started" },
           { text: "CLI", link: "/guide/cli" },
           { text: "Project", link: "/guide/project" },

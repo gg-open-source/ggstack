@@ -17,7 +17,12 @@ create-ggstack [project-name] [options]
 
 Scaffold a pnpm monorepo in the T3/Turbo style.
 
+Build a stack visually on the docs /create page, copy the command, and paste it
+in a terminal. --stack applies that config with no prompts.
+
 Options:
+  --stack <code>                 Full stack from the docs /create page. Skips prompts
+  --decode [code]                Print the decoded --stack config and exit
   --preset <code>                shadcn/ui preset (named style or code from ui.shadcn.com/create)
   --pnpm, --npm, --yarn, --bun   Package manager to use for running external CLIs
   -h, --help                     Show this help message
@@ -26,7 +31,9 @@ Options:
 Examples:
   pnpm create ggstack
   pnpm create ggstack my-app
+  pnpm create ggstack@latest my-app --stack g1e30
   pnpm create ggstack my-app --preset b2D0vQ7G4
+  pnpm create ggstack --decode g1e30
   npx create-ggstack my-app --pnpm
   pnpm dlx create-ggstack my-app
 `);

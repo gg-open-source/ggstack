@@ -9,6 +9,16 @@ Interactive CLI that scaffolds a **pnpm + Turborepo** monorepo in the T3/Turbo s
 
 ## Usage
 
+Build a stack visually, copy the command, paste it in a terminal:
+
+```bash
+pnpm create ggstack@latest my-app --stack g1e30
+```
+
+The `--stack` code comes from the docs [Create](./apps/docs/create.md) page. It applies that exact config with no prompts. Inspect one with `pnpm create ggstack --decode g1e30`.
+
+Or run the CLI interactively:
+
 ```bash
 pnpm create ggstack my-app
 ```

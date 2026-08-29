@@ -1,8 +1,10 @@
 import type {
+  AppType,
   AuthProvider,
   DbDialect,
   DbOrm,
   PackageManager,
+  PackageType,
   PaymentProvider,
   ShadcnBase,
   ShadcnOptions,
@@ -136,6 +138,22 @@ export const TOOLING_CHOICES = [
   { value: "prettier", label: "Prettier", hint: "formatter (stub)" },
   { value: "eslint", label: "ESLint", hint: "linter (stub)" },
 ] as const;
+
+export function isAppType(value: string): value is AppType {
+  return APP_CHOICES.some((choice) => choice.value === value);
+}
+
+export function isPackageManager(value: string): value is PackageManager {
+  return (
+    value === "pnpm" || value === "npm" || value === "yarn" || value === "bun"
+  );
+}
+
+export function isPackageType(value: string): value is PackageType {
+  return (
+    value === "shadcn" || value === "auth" || value === "db" || value === "trpc"
+  );
+}
 
 export function isToolingType(
   value: string,

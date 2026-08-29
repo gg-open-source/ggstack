@@ -7,12 +7,14 @@ hero:
   tagline: Interactive CLI for a T3/Turbo-style workspace — Vite, Next.js, Astro, Expo, Electron, Express, Fastify, TanStack Start, React Router, typed env, optional tRPC, auth, payments, and a database.
   actions:
     - theme: brand
+      text: Create
+      link: /create
+    - theme: alt
       text: Get Started
       link: /guide/getting-started
-    - theme: alt
-      text: View on GitHub
-      link: https://github.com/gg-open-source/ggstack
 features:
+  - title: Visual stack builder
+    details: Pick apps, packages, auth, database, payments, and tooling on /create. Copy a --stack command, paste it in a terminal, and get that exact workspace with no prompts.
   - title: Multi-app workspace
     details: Pick Vite (Vanilla, Vue, React, Preact, Lit, Svelte, Solid, or Qwik), Next.js, Astro, Expo Router, Electron + Vite, Express, Fastify, TanStack Start, and React Router. Name each app. The repo is always a pnpm + Turborepo monorepo.
   - title: Typed environment

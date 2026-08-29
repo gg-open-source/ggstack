@@ -11,19 +11,20 @@ Always written: `packages/env` (`@t3-oss/env-core` + Zod), `tooling/tsconfig`, a
 Never auto-wired into app templates: auth, database, or tRPC. Import those packages in the app yourself after scaffold. Expo has no `dev` script, so it does not join root `pnpm dev`.
 
 ```bash
-pnpm create ggstack my-app
+pnpm create ggstack@latest my-app --stack g1e30
 cd my-app
 cp .env.example .env
 pnpm install
 pnpm dev
 ```
 
-Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`. Prefer the Markdown sources linked below over HTML docs pages.
+`--stack` codes come from the visual builder (`apps/docs/create.md`). They pack the full config (apps, packages, auth, database, payments, tooling, shadcn) and skip every prompt. Inspect a code with `pnpm create ggstack --decode <code>`. Interactive mode is still `pnpm create ggstack my-app`. Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`. Prefer the Markdown sources linked below over HTML docs pages.
 
 ## Docs
 
+- [Create](./apps/docs/create.md): Visual stack builder. Generates a `--stack` command you paste in a terminal.
 - [Getting started](./apps/docs/guide/getting-started.md): Requirements, how to run the CLI, and the post-scaffold steps.
-- [CLI](./apps/docs/guide/cli.md): Flags (`--preset`, `--pnpm`/`--npm`/`--yarn`/`--bun`), the full interactive prompt order, name sanitizing, and abort conditions.
+- [CLI](./apps/docs/guide/cli.md): Flags (`--stack`, `--decode`, `--preset`, `--pnpm`/`--npm`/`--yarn`/`--bun`), the full interactive prompt order, name sanitizing, and abort conditions.
 - [Generated project](./apps/docs/guide/project.md): Workspace layout, root scripts, Turbo `globalEnv`, `.gitignore` rules, and `@<project>/<folder>` package names.
 - [Apps](./apps/docs/guide/apps.md): Per-app templates, scripts, default ports, env wiring, Vite frameworks (TypeScript only), and Expo/NativeWind notes.
 - [Packages](./apps/docs/guide/packages.md): `env`, shadcn/ui (bases, presets, `cn()` only — no pre-generated components), tRPC, auth providers, and Drizzle/Prisma.

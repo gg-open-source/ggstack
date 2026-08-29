@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
   collectConfig,
+  decodeStackFromArgs,
   getProjectNameArg,
   isPackageManagerInstalled,
   parsePackageManagerFlag,
   parsePresetFlag,
+  parseStackFlag,
   sanitizeAppName,
   warnAboutPnpmWorkspace,
 } from "./cli.js";
+import { encodeStack, StackCodeError } from "./stack.js";
 import * as prompts from "./utils/prompts.js";
 
 vi.mock("./utils/prompts.js", async (importOriginal) => {
@@ -71,6 +74,12 @@ describe("CLI argument parsing", () => {
       expect(getProjectNameArg(["my-app", "--preset", "nova"])).toBe("my-app");
       expect(getProjectNameArg(["--preset=nova", "my-app"])).toBe("my-app");
     });
+
+    it("skips the --stack value when finding the project name", () => {
+      expect(getProjectNameArg(["--stack", "g1e30", "my-app"])).toBe("my-app");
+      expect(getProjectNameArg(["my-app", "--stack", "g1e30"])).toBe("my-app");
+      expect(getProjectNameArg(["--stack=g1e30", "my-app"])).toBe("my-app");
+    });
   });
 
   describe("parsePresetFlag", () => {
@@ -112,6 +121,50 @@ describe("CLI argument parsing", () => {
         kind: "error",
         message: expect.stringContaining("Invalid --preset"),
       });
+    });
+  });
+
+  describe("parseStackFlag", () => {
+    it("returns none when --stack is not passed", () => {
+      expect(parseStackFlag(["my-app", "--pnpm"])).toEqual({ kind: "none" });
+    });
+
+    it("reads --stack <code> and --stack=<code>", () => {
+      expect(parseStackFlag(["--stack", "g1e30"])).toEqual({
+        kind: "value",
+        value: "g1e30",
+      });
+      expect(parseStackFlag(["--stack=g1e30"])).toEqual({
+        kind: "value",
+        value: "g1e30",
+      });
+    });
+
+    it("errors when --stack has no value or an invalid code", () => {
+      expect(parseStackFlag(["--stack"])).toEqual({
+        kind: "error",
+        message: expect.stringContaining("requires a code"),
+      });
+      expect(parseStackFlag(["--stack", "nova"])).toEqual({
+        kind: "error",
+        message: expect.stringContaining("Invalid --stack"),
+      });
+    });
+  });
+
+  describe("decodeStackFromArgs", () => {
+    it("decodes --decode <code> and --stack <code> --decode", () => {
+      const fromBare = decodeStackFromArgs(["--decode", "g1e30"]);
+      expect(fromBare).toContain("Stack");
+      expect(fromBare).toContain("g1e30");
+      expect(fromBare).toContain("pnpm");
+
+      const fromFlag = decodeStackFromArgs(["--stack", "g1e30", "--decode"]);
+      expect(fromFlag).toContain("g1e30");
+    });
+
+    it("throws when --decode has no code", () => {
+      expect(() => decodeStackFromArgs(["--decode"])).toThrow(StackCodeError);
     });
   });
 
@@ -965,5 +1018,68 @@ describe("collectConfig", () => {
       }),
     );
     expect(config.apps).toEqual([{ type: "astro", name: "site" }]);
+  });
+
+  it("applies --stack without prompting", async () => {
+    const code = encodeStack({
+      packageManager: "pnpm",
+      apps: [{ type: "next", name: "docs" }],
+      packages: [{ type: "trpc" }],
+      auth: { provider: "clerk" },
+      db: { orm: "drizzle", dialect: "postgresql" },
+      payments: { provider: "polar" },
+      tooling: [{ type: "oxc" }],
+    });
+
+    const config = await collectConfig(["my-app", "--stack", code]);
+
+    expect(prompts.text).not.toHaveBeenCalled();
+    expect(prompts.multiSelect).not.toHaveBeenCalled();
+    expect(prompts.select).not.toHaveBeenCalled();
+    expect(prompts.confirm).not.toHaveBeenCalled();
+    expect(config.projectName).toBe("my-app");
+    expect(config.apps).toEqual([{ type: "next", name: "docs" }]);
+    expect(config.packages).toEqual([{ type: "trpc" }, { type: "db" }]);
+    expect(config.auth).toEqual({ provider: "clerk" });
+    expect(config.db).toEqual({ orm: "drizzle", dialect: "postgresql" });
+    expect(config.payments).toEqual({ provider: "polar" });
+    expect(config.tooling).toEqual([{ type: "oxc" }]);
+    expect(prompts.log).toHaveBeenCalledWith(
+      expect.stringContaining(`Using stack ${code}`),
+    );
+  });
+
+  it("uses the default project name when --stack has no positional name", async () => {
+    const config = await collectConfig(["--stack", "g1e30"]);
+
+    expect(prompts.text).not.toHaveBeenCalled();
+    expect(config.projectName).toBe("project");
+  });
+
+  it("lets --preset and a package manager flag override --stack", async () => {
+    const code = encodeStack({
+      packageManager: "pnpm",
+      apps: [],
+      packages: [{ type: "shadcn", shadcn: { preset: "nova", base: "aria" } }],
+      auth: { provider: "none" },
+      db: { orm: "none" },
+      payments: { provider: "none" },
+      tooling: [],
+    });
+
+    const config = await collectConfig([
+      "shop",
+      "--stack",
+      code,
+      "--preset",
+      "luma",
+      "--bun",
+    ]);
+
+    expect(config.packageManager).toBe("bun");
+    expect(config.packages).toEqual([
+      { type: "shadcn", shadcn: { preset: "luma", base: "aria" } },
+    ]);
+    expect(config.tooling).toContainEqual({ type: "tailwind" });
   });
 });

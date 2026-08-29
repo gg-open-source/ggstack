@@ -12,7 +12,9 @@ create-ggstack [project-name] [options]
 
 | Flag | Description |
 | --- | --- |
-| `--preset <code>` | shadcn/ui preset: a named style (`nova`, `luma`, …) or a code from [ui.shadcn.com/create](https://ui.shadcn.com/create). Enables shadcn/ui. |
+| `--stack <code>` | Full stack from the [Create](/create) page. Skips every prompt. |
+| `--decode [code]` | Print the decoded `--stack` config and exit. Accepts `--decode <code>` or `--stack <code> --decode`. |
+| `--preset <code>` | shadcn/ui preset: a named style (`nova`, `luma`, …) or a code from [ui.shadcn.com/create](https://ui.shadcn.com/create). Enables shadcn/ui. Combined with `--stack`, this overrides the stack’s shadcn preset. |
 | `--pnpm` | Use pnpm to run official app CLIs (default) |
 | `--npm` | Use npm to run official app CLIs |
 | `--yarn` | Use yarn to run official app CLIs |
@@ -21,10 +23,12 @@ create-ggstack [project-name] [options]
 | `-v`, `--version` | Print the package version |
 
 ```bash
+pnpm create ggstack@latest my-app --stack g1e30
 pnpm create ggstack my-app --preset b2D0vQ7G4
+pnpm create ggstack --decode g1e30
 ```
 
-Also accepted: `--preset=b2D0vQ7G4`. Apps, other packages, auth, database, payments, and tooling stay interactive. `--preset` skips the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list.
+Also accepted: `--stack=g1e30` and `--preset=b2D0vQ7G4`. Build `--stack` codes visually on [Create](/create). The code packs apps (including Vite framework/variant and folder names), packages, shadcn base/preset, tooling, auth, database, payments, and the package manager used to run official app CLIs. Project name stays a positional argument. `--preset` without `--stack` still skips only the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list. `--npm`, `--yarn`, and `--bun` override the package manager stored in a `--stack` code.
 
 `--npm`, `--yarn`, and `--bun` only affect package-manager invocations the CLI runs during scaffold. The generated repo is still a **pnpm workspace**. The CLI warns when the flag is not `--pnpm`. You still need pnpm installed to work in the project.
 
@@ -55,5 +59,6 @@ Project and app names go through the same sanitizer: lowercase, spaces become hy
 The CLI exits without writing files when:
 
 - The chosen package manager is not installed
+- `--stack` is passed with no value, or with a value that is not a `g1…` stack code
 - `--preset` is passed with no value, or with a value that is not a named style or preset code
 - The target directory already exists
