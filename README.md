@@ -39,7 +39,7 @@ Also: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`.
 User guide lives in [`apps/docs`](./apps/docs) (VitePress). From this repo:
 
 ```bash
-pnpm --filter @ggstack/docs dev
+pnpm --filter @apps/docs dev
 ```
 
 - [Getting started](./apps/docs/guide/getting-started.md)

@@ -13,19 +13,18 @@ export function generateTrpcPackage(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
   const dbOrm = getDbOrm(config);
 
   builder.addFile(
     "packages/api/package.json",
-    JSON.stringify(getPackageJson(projectName, dbOrm), null, 2),
+    JSON.stringify(getPackageJson(dbOrm), null, 2),
   );
 
   builder.addFile(
     "packages/api/tsconfig.json",
     JSON.stringify(
       {
-        extends: `@${projectName}/tsconfig/base.json`,
+        extends: "@tooling/tsconfig/base.json",
         compilerOptions: {
           outDir: "dist",
           rootDir: "src",
@@ -37,20 +36,19 @@ export function generateTrpcPackage(
     ),
   );
 
-  builder.addFile("packages/api/src/trpc.ts", generateTrpc(projectName, dbOrm));
+  builder.addFile("packages/api/src/trpc.ts", generateTrpc(dbOrm));
   builder.addFile("packages/api/src/router/hello.ts", generateHelloRouter());
   builder.addFile("packages/api/src/root.ts", generateRoot());
   builder.addFile("packages/api/src/client.ts", generateClient());
   builder.addFile("packages/api/src/index.ts", generateIndex());
-  builder.addFile("packages/api/README.md", generateReadme(projectName, dbOrm));
+  builder.addFile("packages/api/README.md", generateReadme(dbOrm));
 }
 
 function getPackageJson(
-  projectName: string,
   dbOrm: SupportedDbOrm | undefined,
 ): Record<string, unknown> {
   return {
-    name: `@${projectName}/api`,
+    name: "@packages/api",
     version: "0.0.0",
     private: true,
     type: "module",
@@ -70,22 +68,19 @@ function getPackageJson(
       "@trpc/client": "^11.0.0",
       "@trpc/server": "^11.0.0",
       zod: "^3.24.0",
-      ...(dbOrm ? { [`@${projectName}/db`]: "workspace:*" } : {}),
+      ...(dbOrm ? { "@packages/db": "workspace:*" } : {}),
     },
     devDependencies: {
-      [`@${projectName}/tsconfig`]: "workspace:*",
+      "@tooling/tsconfig": "workspace:*",
       typescript: "^5.8.0",
     },
   };
 }
 
-function generateTrpc(
-  projectName: string,
-  dbOrm: SupportedDbOrm | undefined,
-): string {
+function generateTrpc(dbOrm: SupportedDbOrm | undefined): string {
   if (dbOrm === "drizzle") {
     return `import { initTRPC } from "@trpc/server";
-import { db } from "@${projectName}/db";
+import { db } from "@packages/db";
 
 export async function createTRPCContext() {
   return { db };
@@ -103,7 +98,7 @@ export const createCallerFactory = t.createCallerFactory;
 
   if (dbOrm === "prisma") {
     return `import { initTRPC } from "@trpc/server";
-import { prisma } from "@${projectName}/db";
+import { prisma } from "@packages/db";
 
 export async function createTRPCContext() {
   return { prisma };
@@ -181,17 +176,14 @@ export { createTRPCContext } from "./trpc";
 `;
 }
 
-function generateReadme(
-  projectName: string,
-  dbOrm: SupportedDbOrm | undefined,
-): string {
+function generateReadme(dbOrm: SupportedDbOrm | undefined): string {
   const dbSection = dbOrm
     ? `When a database ORM is selected, context includes \`${dbOrm === "prisma" ? "prisma" : "db"}\`. Add procedures after you define your own schema.
 
 `
     : "";
 
-  return `# @${projectName}/api
+  return `# @packages/api
 
 Shared tRPC router and client for the monorepo.
 
@@ -200,7 +192,7 @@ Shared tRPC router and client for the monorepo.
 Call procedures from a server (no HTTP) with \`createCaller\`:
 
 \`\`\`ts
-import { createCaller, createTRPCContext } from "@${projectName}/api";
+import { createCaller, createTRPCContext } from "@packages/api";
 
 const caller = createCaller(await createTRPCContext());
 const { greeting } = await caller.hello.greet({ name: "Ada" });
@@ -209,7 +201,7 @@ const { greeting } = await caller.hello.greet({ name: "Ada" });
 Or from any app with the vanilla client:
 
 \`\`\`ts
-import { createApiClient } from "@${projectName}/api/client";
+import { createApiClient } from "@packages/api/client";
 
 const api = createApiClient("http://localhost:3000/api/trpc");
 const { greeting } = await api.hello.greet.query({ name: "Ada" });
@@ -218,7 +210,7 @@ const { greeting } = await api.hello.greet.query({ name: "Ada" });
 React Query stays in the app. Type-only import the router:
 
 \`\`\`ts
-import type { AppRouter } from "@${projectName}/api";
+import type { AppRouter } from "@packages/api";
 import { createTRPCReact } from "@trpc/react-query";
 
 export const api = createTRPCReact<AppRouter>();
@@ -233,7 +225,7 @@ App templates do not mount this package. Add a host after scaffold.
 \`\`\`ts
 // app/api/trpc/[trpc]/route.ts
 import { fetchRequestHandler } from "@trpc/server/adapters/fetch";
-import { appRouter, createTRPCContext } from "@${projectName}/api";
+import { appRouter, createTRPCContext } from "@packages/api";
 
 const handler = (req: Request) =>
   fetchRequestHandler({
@@ -250,7 +242,7 @@ export { handler as GET, handler as POST };
 
 \`\`\`ts
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { appRouter, createTRPCContext } from "@${projectName}/api";
+import { appRouter, createTRPCContext } from "@packages/api";
 
 app.use(
   "/trpc",
@@ -265,7 +257,7 @@ app.use(
 
 \`\`\`ts
 import { fastifyTRPCPlugin } from "@trpc/server/adapters/fastify";
-import { appRouter, createTRPCContext } from "@${projectName}/api";
+import { appRouter, createTRPCContext } from "@packages/api";
 
 await app.register(fastifyTRPCPlugin, {
   prefix: "/trpc",

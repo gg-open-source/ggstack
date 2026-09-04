@@ -299,14 +299,13 @@ export function generateEnvPackage(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
   const specs = getEnvVarSpecs(config);
 
   builder.addFile(
     "packages/env/package.json",
     JSON.stringify(
       {
-        name: `@${projectName}/env`,
+        name: "@packages/env",
         version: "0.0.0",
         private: true,
         type: "module",
@@ -328,7 +327,7 @@ export function generateEnvPackage(
           zod: "^3.24.0",
         },
         devDependencies: {
-          [`@${projectName}/tsconfig`]: "workspace:*",
+          "@tooling/tsconfig": "workspace:*",
           "@types/node": "^22.0.0",
           typescript: "^5.8.0",
         },
@@ -342,7 +341,7 @@ export function generateEnvPackage(
     "packages/env/tsconfig.json",
     JSON.stringify(
       {
-        extends: `@${projectName}/tsconfig/base.json`,
+        extends: "@tooling/tsconfig/base.json",
         compilerOptions: {
           outDir: "dist",
           rootDir: "src",
@@ -360,7 +359,7 @@ export function generateEnvPackage(
     generateClientFile(config, specs),
   );
   builder.addFile("packages/env/src/index.ts", generateIndexFile());
-  builder.addFile("packages/env/README.md", generateReadme(projectName));
+  builder.addFile("packages/env/README.md", generateReadme());
   builder.addFile(".env.example", generateEnvExample(specs));
   patchTurboJson(builder, specs);
 }
@@ -557,15 +556,15 @@ function patchTurboJson(builder: ProjectBuilder, specs: EnvVarSpec[]): void {
   builder.addFile("turbo.json", JSON.stringify(turbo, null, 2));
 }
 
-function generateReadme(projectName: string): string {
-  return `# @${projectName}/env
+function generateReadme(): string {
+  return `# @packages/env
 
 Typed environment variables via \`@t3-oss/env-core\`.
 
 Copy the repo-root \`.env.example\` to \`.env\` and fill in values. Add new variables to the Zod schema in this package and to \`.env.example\`.
 
 \`\`\`ts
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 const url = serverEnv.DATABASE_URL;
 \`\`\`

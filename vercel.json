@@ -1,6 +1,6 @@
 {
   "installCommand": "pnpm install --frozen-lockfile",
-  "buildCommand": "pnpm run build --filter=@ggstack/docs",
+  "buildCommand": "pnpm run build --filter=@apps/docs",
   "outputDirectory": "apps/docs/.vitepress/dist",
   "headers": [
     {

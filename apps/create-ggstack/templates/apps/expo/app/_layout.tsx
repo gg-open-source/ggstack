@@ -1,4 +1,4 @@
-import { expoEnv } from "@{{PROJECT_NAME}}/env/client";
+import { expoEnv } from "@packages/env/client";
 import { Stack } from "expo-router";
 
 void expoEnv;

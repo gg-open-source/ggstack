@@ -1,4 +1,4 @@
-import { serverEnv } from "@{{PROJECT_NAME}}/env/server";
+import { serverEnv } from "@packages/env/server";
 import { app, BrowserWindow } from "electron";
 import path from "node:path";
 

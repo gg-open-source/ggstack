@@ -1,4 +1,4 @@
-import { createViteEnv } from "@{{PROJECT_NAME}}/env/client";
+import { createViteEnv } from "@packages/env/client";
 import preact from "@preact/preset-vite";
 import { defineConfig } from "vite";
 

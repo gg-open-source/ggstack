@@ -1,4 +1,4 @@
-import { createViteEnv } from "@{{PROJECT_NAME}}/env/client";
+import { createViteEnv } from "@packages/env/client";
 import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
 

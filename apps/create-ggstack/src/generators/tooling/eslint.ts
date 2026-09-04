@@ -4,13 +4,11 @@ export function generateEslintTooling(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
-
   builder.addFile(
     "tooling/eslint/package.json",
     JSON.stringify(
       {
-        name: `@${projectName}/eslint`,
+        name: "@tooling/eslint",
         version: "0.0.0",
         private: true,
         files: ["eslint.config.js"],

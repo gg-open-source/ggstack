@@ -1,4 +1,4 @@
-import { createViteEnv } from "@{{PROJECT_NAME}}/env/client";
+import { createViteEnv } from "@packages/env/client";
 import vue from "@vitejs/plugin-vue";
 import { defineConfig } from "vite";
 

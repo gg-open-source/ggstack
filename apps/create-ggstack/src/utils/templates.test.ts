@@ -31,7 +31,7 @@ describe("copyTemplate", () => {
       builder,
     );
 
-    expect(builder.files["apps/web/package.json"]).toContain("@acme/web");
+    expect(builder.files["apps/web/package.json"]).toContain("@apps/web");
     expect(builder.files["apps/web/src/main.ts"]).toContain("web");
     expect(builder.files["apps/web/vite.config.ts"]).toBeDefined();
   });
@@ -56,7 +56,7 @@ describe("copyTemplate", () => {
         builder,
       );
 
-      expect(builder.files["apps/web/package.json"]).toContain("@acme/web");
+      expect(builder.files["apps/web/package.json"]).toContain("@apps/web");
       expect(builder.files[`apps/web/${entry}`]).toContain("web");
       expect(builder.files["apps/web/vite.config.ts"]).toBeDefined();
     },
@@ -72,7 +72,7 @@ describe("copyTemplate", () => {
       builder,
     );
 
-    expect(builder.files["apps/site/package.json"]).toContain("@acme/site");
+    expect(builder.files["apps/site/package.json"]).toContain("@apps/site");
     expect(builder.files["apps/site/src/pages/index.astro"]).toContain("site");
     expect(builder.files["apps/site/astro.config.ts"]).toBeDefined();
   });
@@ -87,7 +87,7 @@ describe("copyTemplate", () => {
       builder,
     );
 
-    expect(builder.files["apps/start/package.json"]).toContain("@acme/start");
+    expect(builder.files["apps/start/package.json"]).toContain("@apps/start");
     expect(builder.files["apps/start/src/routes/index.tsx"]).toContain("start");
     expect(builder.files["apps/start/vite.config.ts"]).toBeDefined();
   });
@@ -102,7 +102,7 @@ describe("copyTemplate", () => {
       builder,
     );
 
-    expect(builder.files["apps/web/package.json"]).toContain("@acme/web");
+    expect(builder.files["apps/web/package.json"]).toContain("@apps/web");
     expect(builder.files["apps/web/app/routes/home.tsx"]).toContain("web");
     expect(builder.files["apps/web/react-router.config.ts"]).toBeDefined();
   });

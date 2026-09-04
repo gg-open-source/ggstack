@@ -1,4 +1,4 @@
-import { createViteEnv } from "@{{PROJECT_NAME}}/env/client";
+import { createViteEnv } from "@packages/env/client";
 import { svelte } from "@sveltejs/vite-plugin-svelte";
 import { defineConfig } from "vite";
 

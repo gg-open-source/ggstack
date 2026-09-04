@@ -1,5 +1,5 @@
 {
-  "extends": "@ggstack/tsconfig/base.json",
+  "extends": "@tooling/tsconfig/base.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src"

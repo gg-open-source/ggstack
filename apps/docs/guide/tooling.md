@@ -8,13 +8,13 @@ description: Shared TypeScript config, Tailwind v4, Oxc lint/format, and Prettie
 
 ## TypeScript
 
-`@<project>/tsconfig` ships `base.json`: `ES2022`, `moduleResolution: bundler`, `strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`. Apps and packages extend it.
+`@tooling/tsconfig` ships `base.json`: `ES2022`, `moduleResolution: bundler`, `strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`. Apps and packages extend it.
 
 ## Tailwind CSS
 
 Creates `tooling/tailwind` with Tailwind CSS v4 (`^4.3.3`) and a shared PostCSS plugin. `tailwindcss` is declared only in that package. Forced on when shadcn/ui is selected (the prompt pre-selects it and the generator keeps it even if you deselect it).
 
-Frontend apps (Vite, Next.js, Astro, Electron, TanStack Start, React Router) get a `postcss.config.mjs` that re-exports `@<project>/tailwind/postcss` and an `@import "@<project>/tailwind"` in their CSS entry. They depend on `@<project>/tailwind`, not `tailwindcss`. Express and Fastify are left alone.
+Frontend apps (Vite, Next.js, Astro, Electron, TanStack Start, React Router) get a `postcss.config.mjs` that re-exports `@tooling/tailwind/postcss` and an `@import "@tooling/tailwind"` in their CSS entry. They depend on `@tooling/tailwind`, not `tailwindcss`. Express and Fastify are left alone.
 
 Expo is wired with NativeWind v5 on top of the same package: `withNativewind` in `metro.config.js`, `global.css` imported from `app/_layout.tsx`, and `lightningcss` pinned to `1.30.1` at the workspace root.
 

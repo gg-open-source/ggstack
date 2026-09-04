@@ -24,13 +24,12 @@ export function generateShadcnPackage(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
   const options = getShadcnOptions(config) ?? {
     preset: DEFAULT_SHADCN_PRESET,
     base: DEFAULT_SHADCN_BASE,
   };
   const style = resolveShadcnStyle(options.base, options.preset);
-  const packageName = `@${projectName}/ui`;
+  const packageName = "@packages/ui";
 
   builder.addFile(
     "packages/ui/package.json",
@@ -65,8 +64,8 @@ export function generateShadcnPackage(
           "tailwind-merge": TAILWIND_MERGE,
         },
         devDependencies: {
-          [`@${projectName}/tailwind`]: "workspace:*",
-          [`@${projectName}/tsconfig`]: "workspace:*",
+          "@tooling/tailwind": "workspace:*",
+          "@tooling/tsconfig": "workspace:*",
           typescript: "^5.8.0",
         },
       },
@@ -79,7 +78,7 @@ export function generateShadcnPackage(
     "packages/ui/tsconfig.json",
     JSON.stringify(
       {
-        extends: `@${projectName}/tsconfig/base.json`,
+        extends: "@tooling/tsconfig/base.json",
         compilerOptions: {
           outDir: "dist",
           rootDir: "src",
@@ -128,13 +127,13 @@ export function generateShadcnPackage(
 
   builder.addFile(
     "packages/ui/postcss.config.mjs",
-    `export { default } from "@${projectName}/tailwind/postcss";
+    `export { default } from "@tooling/tailwind/postcss";
 `,
   );
 
   builder.addFile(
     "packages/ui/src/globals.css",
-    `@import "@${projectName}/tailwind";
+    `@import "@tooling/tailwind";
 @source ".";
 `,
   );
@@ -177,10 +176,9 @@ function generateShadcnReadme(
   options: ShadcnOptions,
   style: string,
 ): string {
-  const name = config.projectName;
-  const filter = `pnpm --filter @${name}/ui`;
+  const filter = `pnpm --filter @packages/ui`;
 
-  return `# @${name}/ui
+  return `# @packages/ui
 
 shadcn/ui workspace package. Style \`${style}\`, preset \`${options.preset}\`, base \`${options.base}\`.
 

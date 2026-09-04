@@ -85,8 +85,8 @@ Install and run scripts with **pnpm**. The generated `package.json` pins `packag
 Filter a single package:
 
 ```bash
-pnpm --filter @my-app/next dev
-pnpm --filter @my-app/db db:studio
+pnpm --filter @apps/next dev
+pnpm --filter @packages/db db:studio
 ```
 
-Workspace package names are `@<project-name>/<folder>`.
+Workspace package names follow the folder they live in: `@apps/<folder>`, `@packages/<folder>`, and `@tooling/<folder>`. The project name is not used as a scope.

@@ -1,5 +1,5 @@
 {
-  "name": "@{{PROJECT_NAME}}/{{APP_NAME}}",
+  "name": "@apps/{{APP_NAME}}",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,11 +12,11 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@{{PROJECT_NAME}}/env": "workspace:*",
+    "@packages/env": "workspace:*",
     "express": "^5.2.1"
   },
   "devDependencies": {
-    "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
+    "@tooling/tsconfig": "workspace:*",
     "@types/express": "^5.0.0",
     "@types/node": "^26.1.2",
     "tsx": "^4.23.12",

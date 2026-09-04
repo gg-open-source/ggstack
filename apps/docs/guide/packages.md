@@ -10,14 +10,14 @@ Typed env via `@t3-oss/env-core` and Zod. Exports:
 
 | Import | Use |
 | --- | --- |
-| `@<project>/env/server` | `serverEnv` — Node/server variables |
-| `@<project>/env/client` | `nextEnv`, `astroEnv`, `expoEnv`, and/or `createViteEnv`, plus `getPublicAuthConfig()` for Clerk/WorkOS |
-| `@<project>/env` | Re-exports server and client |
+| `@packages/env/server` | `serverEnv` — Node/server variables |
+| `@packages/env/client` | `nextEnv`, `astroEnv`, `expoEnv`, and/or `createViteEnv`, plus `getPublicAuthConfig()` for Clerk/WorkOS |
+| `@packages/env` | Re-exports server and client |
 
 Add new variables in the Zod schemas **and** in the root `.env.example`. Full matrix: [Environment](./environment.md).
 
 ```ts
-import { serverEnv } from "@my-app/env/server";
+import { serverEnv } from "@packages/env/server";
 
 const url = serverEnv.DATABASE_URL;
 ```
@@ -37,7 +37,7 @@ What you get:
 - `components.json` using the current schema: `{base}-{style}` (not the deprecated `default` style), CSS variables, `baseColor: neutral`, `iconLibrary: lucide`, aliases for `components` / `ui` / `utils` / `lib` / `hooks`, Tailwind v4 with empty `config`
 - Theme CSS path points at `tooling/tailwind/src/theme.css` so tokens stay shared
 - `src/lib/utils.ts` with `cn()`
-- `src/globals.css` importing `@<project>/tailwind`
+- `src/globals.css` importing `@tooling/tailwind`
 - `src/index.ts` re-exports `cn()` — no components are pre-generated
 
 If you paste a custom preset code (not a named style), scaffold runs `shadcn@latest apply --preset <code> --yes` in `packages/ui` so the official CLI writes the theme.
@@ -45,7 +45,7 @@ If you paste a custom preset code (not a named style), scaffold runs `shadcn@lat
 Add components from the repo root:
 
 ```bash
-pnpm --filter @my-app/ui add button
+pnpm --filter @packages/ui add button
 ```
 
 Or:
@@ -54,7 +54,7 @@ Or:
 pnpm dlx shadcn@latest add button -c packages/ui
 ```
 
-Then export them from `src/index.ts`. Switch themes later with `pnpm --filter @my-app/ui apply --preset <code>`. Partial apply (`--only theme` or `--only theme,font`) keeps your components and only updates tokens or fonts.
+Then export them from `src/index.ts`. Switch themes later with `pnpm --filter @packages/ui apply --preset <code>`. Partial apply (`--only theme` or `--only theme,font`) keeps your components and only updates tokens or fonts.
 
 ## `packages/api` (tRPC)
 
@@ -62,22 +62,22 @@ Created when you select tRPC. Exports:
 
 | Import | Use |
 | --- | --- |
-| `@<project>/api` | `appRouter`, `AppRouter`, `createTRPCContext`, `createCaller` |
-| `@<project>/api/client` | `createApiClient(url)` — vanilla HTTP client |
+| `@packages/api` | `appRouter`, `AppRouter`, `createTRPCContext`, `createCaller` |
+| `@packages/api/client` | `createApiClient(url)` — vanilla HTTP client |
 
 Starter procedure: `hello.greet({ name?: string })` → `{ greeting }`.
 
 If you also picked Drizzle or Prisma, context includes `db` / `prisma`. Add procedures after you define your own schema.
 
 ```ts
-import { createCaller, createTRPCContext } from "@my-app/api";
+import { createCaller, createTRPCContext } from "@packages/api";
 
 const caller = createCaller(await createTRPCContext());
 const { greeting } = await caller.hello.greet({ name: "Ada" });
 ```
 
 ```ts
-import { createApiClient } from "@my-app/api/client";
+import { createApiClient } from "@packages/api/client";
 
 const api = createApiClient("http://localhost:3000/api/trpc");
 const { greeting } = await api.hello.greet.query({ name: "Ada" });
@@ -86,7 +86,7 @@ const { greeting } = await api.hello.greet.query({ name: "Ada" });
 React Query is not included. Type-only import `AppRouter` and create the React client in the app:
 
 ```ts
-import type { AppRouter } from "@my-app/api";
+import type { AppRouter } from "@packages/api";
 import { createTRPCReact } from "@trpc/react-query";
 
 export const api = createTRPCReact<AppRouter>();
@@ -99,7 +99,7 @@ export const api = createTRPCReact<AppRouter>();
 Created when the auth provider is not `none`. Unified surface:
 
 ```tsx
-import { AuthProvider, AuthDemo, useAuth } from "@my-app/auth";
+import { AuthProvider, AuthDemo, useAuth } from "@packages/auth";
 
 export default function App() {
   return (
@@ -122,20 +122,20 @@ export default function App() {
 
 ## `packages/payments` (optional)
 
-Created when the payment provider is not `none`. Shared checkout helpers live in `@<project>/payments`. **Not auto-wired** — mount the routes after scaffold. See the generated `packages/payments/README.md` for snippets.
+Created when the payment provider is not `none`. Shared checkout helpers live in `@packages/payments`. **Not auto-wired** — mount the routes after scaffold. See the generated `packages/payments/README.md` for snippets.
 
 | Provider | SDK | What you get |
 | --- | --- | --- |
 | Stripe | `stripe` + `@upstash/redis` | [Theo's Stripe recommendations](https://github.com/t3dotgg/stripe-recommendations): create the customer **before** checkout, store `userId ↔ customerId` in Upstash Redis, and keep subscription state in a single `syncStripeDataToKV(customerId)` used by both the success route and the webhook. Do not use `CHECKOUT_SESSION_ID`. Disable Cash App Pay and enable **Limit customers to one subscription** in the Stripe Dashboard. |
 | Polar | `@polar-sh/sdk` | Merchant of record. Checkout and customer portal bind your auth user id via `externalCustomerId`. Verify webhooks with `validateEvent`. Query live state with `getCustomerState(userId)`. |
-| Autumn | `autumn-js` + `atmn` | Entitlements layer on Stripe. Starter `autumn.config.ts` (Free + Pro, metered `messages`). Use your auth user id as `customerId`. `attachPlan` returns a Stripe payment URL; `checkFeature` / `trackUsage` gate metered features. Push plans with `pnpm --filter @<project>/payments autumn:push`. |
+| Autumn | `autumn-js` + `atmn` | Entitlements layer on Stripe. Starter `autumn.config.ts` (Free + Pro, metered `messages`). Use your auth user id as `customerId`. `attachPlan` returns a Stripe payment URL; `checkFeature` / `trackUsage` gate metered features. Push plans with `pnpm --filter @packages/payments autumn:push`. |
 
-Pass your authenticated `userId` into these helpers. The package does not import `@<project>/auth`.
+Pass your authenticated `userId` into these helpers. The package does not import `@packages/auth`.
 
 Stripe and Polar:
 
 ```ts
-import { createCheckoutSession } from "@my-app/payments";
+import { createCheckoutSession } from "@packages/payments";
 
 const { url } = await createCheckoutSession({
   userId: user.id,
@@ -147,21 +147,21 @@ const { url } = await createCheckoutSession({
 Autumn:
 
 ```ts
-import { attachPlan } from "@my-app/payments";
+import { attachPlan } from "@packages/payments";
 
 const checkout = await attachPlan({ customerId: user.id, planId: "pro" });
 ```
 
 ## `packages/email` (optional)
 
-Created when the email provider is not `none`. Shared React Email templates and a Resend sender live in `@<project>/email`. **Not auto-wired** — call the helpers from a server route or job after scaffold. See the generated `packages/email/README.md` for snippets.
+Created when the email provider is not `none`. Shared React Email templates and a Resend sender live in `@packages/email`. **Not auto-wired** — call the helpers from a server route or job after scaffold. See the generated `packages/email/README.md` for snippets.
 
 | Provider | SDK | What you get |
 | --- | --- | --- |
 | Resend | `resend` + `react-email` | Starter `WelcomeEmail` template, `sendEmail` / `sendWelcomeEmail` helpers, and `email:dev` preview on port 3001. |
 
 ```ts
-import { sendWelcomeEmail } from "@my-app/email";
+import { sendWelcomeEmail } from "@packages/email";
 
 await sendWelcomeEmail({
   to: user.email,
@@ -172,7 +172,7 @@ await sendWelcomeEmail({
 Preview templates:
 
 ```bash
-pnpm --filter @my-app/email email:dev
+pnpm --filter @packages/email email:dev
 ```
 
 Pass templates as a function call (`WelcomeEmail({ name })`), not as JSX. Add new files under `src/emails` with a default export to see them in the preview sidebar.
@@ -192,7 +192,7 @@ Exports `db`. The CLI asks which database to use and scaffolds the matching driv
 | SQLite | `@libsql/client` + `drizzle-orm/libsql` |
 
 ```ts
-import { db } from "@my-app/db";
+import { db } from "@packages/db";
 ```
 
 ### Prisma
@@ -200,7 +200,7 @@ import { db } from "@my-app/db";
 Exports `prisma`. The CLI asks which database to use and sets `datasource.provider` in `schema.prisma` (`postgresql`, `mysql`, or `sqlite`). No starter models — add them in `prisma/schema.prisma`.
 
 ```ts
-import { prisma } from "@my-app/db";
+import { prisma } from "@packages/db";
 ```
 
 Scripts (run from the repo root with a filter, or inside `packages/db`):
@@ -213,7 +213,7 @@ Scripts (run from the repo root with a filter, or inside `packages/db`):
 | `db:studio` | Drizzle Studio | Prisma Studio |
 
 ```bash
-pnpm --filter @my-app/db db:push
+pnpm --filter @packages/db db:push
 ```
 
-Set `DATABASE_URL` first. **Not auto-wired** into app templates — import `@<project>/db` where you need a query.
+Set `DATABASE_URL` first. **Not auto-wired** into app templates — import `@packages/db` where you need a query.

@@ -14,7 +14,7 @@ The Zod schema is generated from the apps, auth provider, payment provider, emai
 
 ## Server vs client
 
-- **Server** vars live on `serverEnv` (`@<project>/env/server`) and are read from `process.env`.
+- **Server** vars live on `serverEnv` (`@packages/env/server`) and are read from `process.env`.
 - **Client** vars use the prefix of each selected app family and are validated separately.
 
 | App type | Client prefix | Client export |
@@ -23,7 +23,7 @@ The Zod schema is generated from the apps, auth provider, payment provider, emai
 | Astro | `PUBLIC_` | `astroEnv` |
 | Expo | `EXPO_PUBLIC_` | `expoEnv` |
 | Vite, Electron, TanStack Start, or React Router | `VITE_` | `createViteEnv(runtimeEnv)` — pass `import.meta.env` |
-| Express or Fastify | — | no client export; they import `@<project>/env/server` on boot |
+| Express or Fastify | — | no client export; they import `@packages/env/server` on boot |
 
 Clerk and WorkOS also generate `getPublicAuthConfig()`, which reads the publishable key / client id from whichever of those prefixed names is set.
 

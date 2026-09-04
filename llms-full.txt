@@ -226,11 +226,11 @@ Install and run scripts with **pnpm**. The generated `package.json` pins `packag
 Filter a single package:
 
 ```bash
-pnpm --filter @my-app/next dev
-pnpm --filter @my-app/db db:studio
+pnpm --filter @apps/next dev
+pnpm --filter @packages/db db:studio
 ```
 
-Workspace package names are `@<project-name>/<folder>`.
+Workspace package names follow the folder they live in: `@apps/<folder>`, `@packages/<folder>`, and `@tooling/<folder>`. The project name is not used as a scope.
 
 ---
 
@@ -238,7 +238,7 @@ Workspace package names are `@<project-name>/<folder>`.
 
 Apps are optional. You can scaffold packages and tooling with no apps.
 
-Each selected app is copied from a static template shipped with the CLI. Every app depends on `@<project>/env`.
+Each selected app is copied from a static template shipped with the CLI. Every app depends on `@packages/env`.
 
 ## Vite
 
@@ -262,7 +262,7 @@ Scripts: `dev`, `build`, `preview`. Vue uses `vue-tsc --noEmit` for `check-types
 `vite.config.ts` calls `createViteEnv(import.meta.env)` so client vars with the `VITE_` prefix are validated at config load.
 
 ```bash
-pnpm --filter @my-app/vite dev
+pnpm --filter @apps/vite dev
 ```
 
 Default port: `5173`. Default folder name is still `vite`; the framework only changes the files inside that app.
@@ -271,10 +271,10 @@ Default port: `5173`. Default folder name is still `vite`; the framework only ch
 
 Astro 7 + TypeScript. Scripts: `dev` (`astro dev`), `build` (`astro build`), `preview`, `check-types` (`astro check`).
 
-`astro.config.ts` imports `@<project>/env/server` so server env is validated when Astro starts. Client vars use the `PUBLIC_` prefix (`astroEnv`).
+`astro.config.ts` imports `@packages/env/server` so server env is validated when Astro starts. Client vars use the `PUBLIC_` prefix (`astroEnv`).
 
 ```bash
-pnpm --filter @my-app/astro dev
+pnpm --filter @apps/astro dev
 ```
 
 Default port: `4321`.
@@ -283,22 +283,22 @@ Default port: `4321`.
 
 Next.js 16 + React 19 App Router. Scripts: `dev`, `build`, `start`.
 
-`next.config.ts` imports `@<project>/env/server` so server env is validated when Next starts.
+`next.config.ts` imports `@packages/env/server` so server env is validated when Next starts.
 
 ```bash
-pnpm --filter @my-app/next dev
+pnpm --filter @apps/next dev
 ```
 
 ## Expo Router
 
 Expo SDK 57 + Expo Router. Scripts: `start`, `ios`, `android`, `web`. There is **no** `dev` script, so this app does not join root `pnpm dev`.
 
-`app/_layout.tsx` imports `expoEnv` from `@<project>/env/client`.
+`app/_layout.tsx` imports `expoEnv` from `@packages/env/client`.
 
-When Tailwind is selected, NativeWind v5 is added to the Expo app. Styling comes from the shared `@<project>/tailwind` package (`tailwindcss` is not installed in the Expo app). `app/_layout.tsx` imports `../global.css`, Metro is wrapped with `withNativewind`, and the home screen uses `className`.
+When Tailwind is selected, NativeWind v5 is added to the Expo app. Styling comes from the shared `@tooling/tailwind` package (`tailwindcss` is not installed in the Expo app). `app/_layout.tsx` imports `../global.css`, Metro is wrapped with `withNativewind`, and the home screen uses `className`.
 
 ```bash
-pnpm --filter @my-app/expo start
+pnpm --filter @apps/expo start
 ```
 
 ## Electron + Vite
@@ -308,37 +308,37 @@ Electron + Vite + vanilla TypeScript. Scripts: `dev` (Vite), `build` (`tsc && vi
 The main process reads optional `VITE_DEV_SERVER_URL` from `serverEnv`. Vite injects that URL during desktop `dev`.
 
 ```bash
-pnpm --filter @my-app/electron dev
+pnpm --filter @apps/electron dev
 ```
 
 ## Express
 
 Express 5 + TypeScript. Scripts: `dev` (`tsx watch`), `start` (`tsx`), `build` (`tsc --noEmit`).
 
-`src/index.ts` imports `@<project>/env/server` so server env is validated when the process starts. Default port: `3001` (`process.env.PORT` overrides it). Routes: `GET /`, `GET /health`.
+`src/index.ts` imports `@packages/env/server` so server env is validated when the process starts. Default port: `3001` (`process.env.PORT` overrides it). Routes: `GET /`, `GET /health`.
 
 ```bash
-pnpm --filter @my-app/express dev
+pnpm --filter @apps/express dev
 ```
 
 ## Fastify
 
 Fastify 5 + TypeScript. Scripts: `dev` (`tsx watch`), `start` (`tsx`), `build` (`tsc --noEmit`).
 
-`src/index.ts` imports `@<project>/env/server` so server env is validated when the process starts. Default port: `3002` (`process.env.PORT` overrides it). Routes: `GET /`, `GET /health`.
+`src/index.ts` imports `@packages/env/server` so server env is validated when the process starts. Default port: `3002` (`process.env.PORT` overrides it). Routes: `GET /`, `GET /health`.
 
 ```bash
-pnpm --filter @my-app/fastify dev
+pnpm --filter @apps/fastify dev
 ```
 
 ## TanStack Start
 
 TanStack Start + Vite + React 19. Scripts: `dev` (`vite dev`), `build` (`vite build`), `preview`.
 
-`vite.config.ts` imports `@<project>/env/server` and calls `createViteEnv(import.meta.env)` so both server and `VITE_` client vars are validated at config load.
+`vite.config.ts` imports `@packages/env/server` and calls `createViteEnv(import.meta.env)` so both server and `VITE_` client vars are validated at config load.
 
 ```bash
-pnpm --filter @my-app/tanstack-start dev
+pnpm --filter @apps/tanstack-start dev
 ```
 
 Default port: `3003`.
@@ -347,17 +347,17 @@ Default port: `3003`.
 
 React Router 8 framework mode + Vite + React 19. Scripts: `dev` (`react-router dev`), `build` (`react-router build`), `start` (`react-router-serve`).
 
-`vite.config.ts` imports `@<project>/env/server` and calls `createViteEnv(import.meta.env)` so both server and `VITE_` client vars are validated at config load.
+`vite.config.ts` imports `@packages/env/server` and calls `createViteEnv(import.meta.env)` so both server and `VITE_` client vars are validated at config load.
 
 ```bash
-pnpm --filter @my-app/react-router dev
+pnpm --filter @apps/react-router dev
 ```
 
 Default port: `5174`.
 
 ## Auth and database
 
-App templates do **not** wrap `AuthProvider` or import `@<project>/db`. After you add those packages, import them in the app yourself. See Packages.
+App templates do **not** wrap `AuthProvider` or import `@packages/db`. After you add those packages, import them in the app yourself. See Packages.
 
 ---
 
@@ -369,14 +369,14 @@ Typed env via `@t3-oss/env-core` and Zod. Exports:
 
 | Import | Use |
 | --- | --- |
-| `@<project>/env/server` | `serverEnv` — Node/server variables |
-| `@<project>/env/client` | `nextEnv`, `astroEnv`, `expoEnv`, and/or `createViteEnv`, plus `getPublicAuthConfig()` for Clerk/WorkOS |
-| `@<project>/env` | Re-exports server and client |
+| `@packages/env/server` | `serverEnv` — Node/server variables |
+| `@packages/env/client` | `nextEnv`, `astroEnv`, `expoEnv`, and/or `createViteEnv`, plus `getPublicAuthConfig()` for Clerk/WorkOS |
+| `@packages/env` | Re-exports server and client |
 
 Add new variables in the Zod schemas **and** in the root `.env.example`. Full matrix: Environment.
 
 ```ts
-import { serverEnv } from "@my-app/env/server";
+import { serverEnv } from "@packages/env/server";
 
 const url = serverEnv.DATABASE_URL;
 ```
@@ -396,7 +396,7 @@ What you get:
 - `components.json` using the current schema: `{base}-{style}` (not the deprecated `default` style), CSS variables, `baseColor: neutral`, `iconLibrary: lucide`, aliases for `components` / `ui` / `utils` / `lib` / `hooks`, Tailwind v4 with empty `config`
 - Theme CSS path points at `tooling/tailwind/src/theme.css` so tokens stay shared
 - `src/lib/utils.ts` with `cn()`
-- `src/globals.css` importing `@<project>/tailwind`
+- `src/globals.css` importing `@tooling/tailwind`
 - `src/index.ts` re-exports `cn()` — no components are pre-generated
 
 If you paste a custom preset code (not a named style), scaffold runs `shadcn@latest apply --preset <code> --yes` in `packages/ui` so the official CLI writes the theme.
@@ -404,7 +404,7 @@ If you paste a custom preset code (not a named style), scaffold runs `shadcn@lat
 Add components from the repo root:
 
 ```bash
-pnpm --filter @my-app/ui add button
+pnpm --filter @packages/ui add button
 ```
 
 Or:
@@ -413,7 +413,7 @@ Or:
 pnpm dlx shadcn@latest add button -c packages/ui
 ```
 
-Then export them from `src/index.ts`. Switch themes later with `pnpm --filter @my-app/ui apply --preset <code>`. Partial apply (`--only theme` or `--only theme,font`) keeps your components and only updates tokens or fonts.
+Then export them from `src/index.ts`. Switch themes later with `pnpm --filter @packages/ui apply --preset <code>`. Partial apply (`--only theme` or `--only theme,font`) keeps your components and only updates tokens or fonts.
 
 ## `packages/api` (tRPC)
 
@@ -421,22 +421,22 @@ Created when you select tRPC. Exports:
 
 | Import | Use |
 | --- | --- |
-| `@<project>/api` | `appRouter`, `AppRouter`, `createTRPCContext`, `createCaller` |
-| `@<project>/api/client` | `createApiClient(url)` — vanilla HTTP client |
+| `@packages/api` | `appRouter`, `AppRouter`, `createTRPCContext`, `createCaller` |
+| `@packages/api/client` | `createApiClient(url)` — vanilla HTTP client |
 
 Starter procedure: `hello.greet({ name?: string })` → `{ greeting }`.
 
 If you also picked Drizzle or Prisma, context includes `db` / `prisma`. Add procedures after you define your own schema.
 
 ```ts
-import { createCaller, createTRPCContext } from "@my-app/api";
+import { createCaller, createTRPCContext } from "@packages/api";
 
 const caller = createCaller(await createTRPCContext());
 const { greeting } = await caller.hello.greet({ name: "Ada" });
 ```
 
 ```ts
-import { createApiClient } from "@my-app/api/client";
+import { createApiClient } from "@packages/api/client";
 
 const api = createApiClient("http://localhost:3000/api/trpc");
 const { greeting } = await api.hello.greet.query({ name: "Ada" });
@@ -445,7 +445,7 @@ const { greeting } = await api.hello.greet.query({ name: "Ada" });
 React Query is not included. Type-only import `AppRouter` and create the React client in the app:
 
 ```ts
-import type { AppRouter } from "@my-app/api";
+import type { AppRouter } from "@packages/api";
 import { createTRPCReact } from "@trpc/react-query";
 
 export const api = createTRPCReact<AppRouter>();
@@ -458,7 +458,7 @@ export const api = createTRPCReact<AppRouter>();
 Created when the auth provider is not `none`. Unified surface:
 
 ```tsx
-import { AuthProvider, AuthDemo, useAuth } from "@my-app/auth";
+import { AuthProvider, AuthDemo, useAuth } from "@packages/auth";
 
 export default function App() {
   return (
@@ -481,14 +481,14 @@ export default function App() {
 
 ## `packages/email` (optional)
 
-Created when the email provider is not `none`. Shared React Email templates and a Resend sender live in `@<project>/email`. **Not auto-wired** — call the helpers from a server route or job after scaffold. See the generated `packages/email/README.md` for snippets.
+Created when the email provider is not `none`. Shared React Email templates and a Resend sender live in `@packages/email`. **Not auto-wired** — call the helpers from a server route or job after scaffold. See the generated `packages/email/README.md` for snippets.
 
 | Provider | SDK | What you get |
 | --- | --- | --- |
 | Resend | `resend` + `react-email` | Starter `WelcomeEmail` template, `sendEmail` / `sendWelcomeEmail` helpers, and `email:dev` preview on port 3001. |
 
 ```ts
-import { sendWelcomeEmail } from "@my-app/email";
+import { sendWelcomeEmail } from "@packages/email";
 
 await sendWelcomeEmail({
   to: user.email,
@@ -499,7 +499,7 @@ await sendWelcomeEmail({
 Preview templates:
 
 ```bash
-pnpm --filter @my-app/email email:dev
+pnpm --filter @packages/email email:dev
 ```
 
 Pass templates as a function call (`WelcomeEmail({ name })`), not as JSX. Add new files under `src/emails` with a default export to see them in the preview sidebar.
@@ -519,7 +519,7 @@ Exports `db`. The CLI asks which database to use and scaffolds the matching driv
 | SQLite | `@libsql/client` + `drizzle-orm/libsql` |
 
 ```ts
-import { db } from "@my-app/db";
+import { db } from "@packages/db";
 ```
 
 ### Prisma
@@ -527,7 +527,7 @@ import { db } from "@my-app/db";
 Exports `prisma`. The CLI asks which database to use and sets `datasource.provider` in `schema.prisma` (`postgresql`, `mysql`, or `sqlite`). No starter models — add them in `prisma/schema.prisma`.
 
 ```ts
-import { prisma } from "@my-app/db";
+import { prisma } from "@packages/db";
 ```
 
 Scripts (run from the repo root with a filter, or inside `packages/db`):
@@ -540,10 +540,10 @@ Scripts (run from the repo root with a filter, or inside `packages/db`):
 | `db:studio` | Drizzle Studio | Prisma Studio |
 
 ```bash
-pnpm --filter @my-app/db db:push
+pnpm --filter @packages/db db:push
 ```
 
-Set `DATABASE_URL` first. **Not auto-wired** into app templates — import `@<project>/db` where you need a query.
+Set `DATABASE_URL` first. **Not auto-wired** into app templates — import `@packages/db` where you need a query.
 
 ---
 
@@ -559,7 +559,7 @@ The Zod schema is generated from the apps, auth provider, payment provider, emai
 
 ## Server vs client
 
-- **Server** vars live on `serverEnv` (`@<project>/env/server`) and are read from `process.env`.
+- **Server** vars live on `serverEnv` (`@packages/env/server`) and are read from `process.env`.
 - **Client** vars use the prefix of each selected app family and are validated separately.
 
 | App type | Client prefix | Client export |
@@ -568,7 +568,7 @@ The Zod schema is generated from the apps, auth provider, payment provider, emai
 | Astro | `PUBLIC_` | `astroEnv` |
 | Expo | `EXPO_PUBLIC_` | `expoEnv` |
 | Vite, Electron, TanStack Start, or React Router | `VITE_` | `createViteEnv(runtimeEnv)` — pass `import.meta.env` |
-| Express or Fastify | — | no client export; they import `@<project>/env/server` on boot |
+| Express or Fastify | — | no client export; they import `@packages/env/server` on boot |
 
 Clerk and WorkOS also generate `getPublicAuthConfig()`, which reads the publishable key / client id from whichever of those prefixed names is set.
 
@@ -616,13 +616,13 @@ Those names, plus `NODE_ENV`, `VERCEL`, `VERCEL_ENV`, and `VERCEL_URL`, are list
 
 ## TypeScript
 
-`@<project>/tsconfig` ships `base.json`: `ES2022`, `moduleResolution: bundler`, `strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`. Apps and packages extend it.
+`@tooling/tsconfig` ships `base.json`: `ES2022`, `moduleResolution: bundler`, `strict`, `noUncheckedIndexedAccess`, `verbatimModuleSyntax`. Apps and packages extend it.
 
 ## Tailwind CSS
 
 Creates `tooling/tailwind` with Tailwind CSS v4 (`^4.3.3`) and a shared PostCSS plugin. `tailwindcss` is declared only in that package. Forced on when shadcn/ui is selected (the prompt pre-selects it and the generator keeps it even if you deselect it).
 
-Frontend apps (Vite, Next.js, Astro, Electron, TanStack Start, React Router) get a `postcss.config.mjs` that re-exports `@<project>/tailwind/postcss` and an `@import "@<project>/tailwind"` in their CSS entry. They depend on `@<project>/tailwind`, not `tailwindcss`. Express and Fastify are left alone.
+Frontend apps (Vite, Next.js, Astro, Electron, TanStack Start, React Router) get a `postcss.config.mjs` that re-exports `@tooling/tailwind/postcss` and an `@import "@tooling/tailwind"` in their CSS entry. They depend on `@tooling/tailwind`, not `tailwindcss`. Express and Fastify are left alone.
 
 Expo is wired with NativeWind v5 on top of the same package: `withNativewind` in `metro.config.js`, `global.css` imported from `app/_layout.tsx`, and `lightningcss` pinned to `1.30.1` at the workspace root.
 

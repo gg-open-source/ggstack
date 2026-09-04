@@ -53,7 +53,7 @@
     "picocolors": "^1.1.0"
   },
   "devDependencies": {
-    "@ggstack/tsconfig": "workspace:*",
+    "@tooling/tsconfig": "workspace:*",
     "@types/node": "catalog:tooling",
     "typescript": "catalog:tooling",
     "vitest": "^3.1.0"

@@ -41,11 +41,11 @@ describe("buildProject", () => {
     expect(builder.rootPackageJson.name).toBe("test-project");
     expect(builder.files[".env.example"]).toContain("NODE_ENV=development");
     expect(builder.files["packages/env/package.json"]).toContain(
-      "@test-project/env",
+      "@packages/env",
     );
     expect(builder.files["README.md"]).toContain("# test-project");
     expect(builder.files["README.md"]).toContain("cp .env.example .env");
-    expect(builder.files["README.md"]).toContain("@test-project/env");
+    expect(builder.files["README.md"]).toContain("@packages/env");
   });
 
   it("generates a root README with selected stack details", async () => {
@@ -93,14 +93,17 @@ describe("buildProject", () => {
     expect(readme).toContain("TanStack Start");
     expect(readme).toContain("apps/rr");
     expect(readme).toContain("React Router");
-    expect(readme).toContain("pnpm --filter @test-project/mobile start");
+    expect(readme).toContain("pnpm --filter @apps/mobile start");
     expect(readme).toContain("Clerk");
     expect(readme).toContain("Stripe");
-    expect(readme).toContain("@test-project/payments");
-    expect(readme).toContain("@test-project/email");
+    expect(readme).toContain("@packages/payments");
+    expect(readme).toContain("@packages/email");
     expect(readme).toContain("Resend + React Email");
     expect(readme).toContain("Drizzle ORM + PostgreSQL");
-    expect(readme).toContain("@test-project/ui");
+    expect(readme).toContain("@packages/ui");
+    expect(readme).toContain(
+      "Workspace packages are named `@apps/<folder>`, `@packages/<folder>`, and `@tooling/<folder>`.",
+    );
     expect(readme).toContain("not mounted automatically");
     expect(readme).toContain("Oxc");
   });
@@ -112,7 +115,7 @@ describe("buildProject", () => {
     await buildProject(config, builder);
 
     expect(builder.files["tooling/tsconfig/package.json"]).toContain(
-      "@test-project/tsconfig",
+      "@tooling/tsconfig",
     );
     expect(builder.files["tooling/tsconfig/base.json"]).toContain("ES2022");
   });
@@ -123,9 +126,7 @@ describe("buildProject", () => {
 
     await buildProject(config, builder);
 
-    expect(builder.files["apps/vite/package.json"]).toContain(
-      "@test-project/vite",
-    );
+    expect(builder.files["apps/vite/package.json"]).toContain("@apps/vite");
     expect(builder.files["apps/vite/index.html"]).toContain("vite");
     expect(builder.files["apps/vite/src/main.ts"]).toBeDefined();
     expect(builder.files["apps/vite/package.json"]).toContain(
@@ -161,9 +162,7 @@ describe("buildProject", () => {
 
       expect(builder.files[`apps/web/${entry}`]).toBeDefined();
       expect(builder.files[`apps/web/${entry}`]).toContain("web");
-      expect(builder.files["apps/web/package.json"]).toContain(
-        "@test-project/web",
-      );
+      expect(builder.files["apps/web/package.json"]).toContain("@apps/web");
       expect(builder.files["apps/web/package.json"]).toContain(marker);
       expect(builder.files["apps/web/vite.config.ts"]).toContain(
         "createViteEnv",
@@ -231,9 +230,7 @@ describe("buildProject", () => {
 
     await buildProject(config, builder);
 
-    expect(builder.files["apps/next/package.json"]).toContain(
-      "@test-project/next",
-    );
+    expect(builder.files["apps/next/package.json"]).toContain("@apps/next");
     expect(builder.files["apps/next/app/page.tsx"]).toContain("Next.js");
     expect(builder.files["apps/next/app/page.tsx"]).toContain('{"next"}');
     expect(builder.files["apps/next/app/page.tsx"]).not.toContain("APP_NAME");
@@ -250,9 +247,7 @@ describe("buildProject", () => {
 
     await buildProject(config, builder);
 
-    expect(builder.files["apps/astro/package.json"]).toContain(
-      "@test-project/astro",
-    );
+    expect(builder.files["apps/astro/package.json"]).toContain("@apps/astro");
     expect(builder.files["apps/astro/src/pages/index.astro"]).toContain(
       "astro",
     );
@@ -260,7 +255,7 @@ describe("buildProject", () => {
       "APP_NAME",
     );
     expect(builder.files["apps/astro/astro.config.ts"]).toContain(
-      "@test-project/env/server",
+      "@packages/env/server",
     );
     expect(builder.files["apps/astro/package.json"]).toContain(
       '"astro": "^7.2.2"',
@@ -275,9 +270,7 @@ describe("buildProject", () => {
 
     await buildProject(config, builder);
 
-    expect(builder.files["apps/expo/package.json"]).toContain(
-      "@test-project/expo",
-    );
+    expect(builder.files["apps/expo/package.json"]).toContain("@apps/expo");
     expect(builder.files["apps/expo/app.json"]).toContain("expo");
     expect(builder.files["apps/expo/app/_layout.tsx"]).toBeDefined();
     expect(builder.files["apps/expo/package.json"]).toContain(
@@ -294,7 +287,7 @@ describe("buildProject", () => {
     await buildProject(config, builder);
 
     expect(builder.files["apps/electron/package.json"]).toContain(
-      "@test-project/electron",
+      "@apps/electron",
     );
     expect(builder.files["apps/electron/electron/main.ts"]).toContain(
       "electron",
@@ -314,7 +307,7 @@ describe("buildProject", () => {
     await buildProject(config, builder);
 
     expect(builder.files["apps/express/package.json"]).toContain(
-      "@test-project/express",
+      "@apps/express",
     );
     expect(builder.files["apps/express/src/index.ts"]).toContain("express");
     expect(builder.files["apps/express/src/index.ts"]).toContain(
@@ -337,7 +330,7 @@ describe("buildProject", () => {
     await buildProject(config, builder);
 
     expect(builder.files["apps/fastify/package.json"]).toContain(
-      "@test-project/fastify",
+      "@apps/fastify",
     );
     expect(builder.files["apps/fastify/src/index.ts"]).toContain("Fastify");
     expect(builder.files["apps/fastify/src/index.ts"]).toContain(
@@ -360,7 +353,7 @@ describe("buildProject", () => {
     await buildProject(config, builder);
 
     expect(builder.files["apps/tanstack-start/package.json"]).toContain(
-      "@test-project/tanstack-start",
+      "@apps/tanstack-start",
     );
     expect(builder.files["apps/tanstack-start/src/routes/index.tsx"]).toContain(
       "TanStack Start",
@@ -375,7 +368,7 @@ describe("buildProject", () => {
       "createViteEnv",
     );
     expect(builder.files["apps/tanstack-start/vite.config.ts"]).toContain(
-      "@test-project/env/server",
+      "@packages/env/server",
     );
     expect(builder.files["apps/tanstack-start/package.json"]).toContain(
       '"@tanstack/react-start": "^1.168.44"',
@@ -391,7 +384,7 @@ describe("buildProject", () => {
     await buildProject(config, builder);
 
     expect(builder.files["apps/react-router/package.json"]).toContain(
-      "@test-project/react-router",
+      "@apps/react-router",
     );
     expect(builder.files["apps/react-router/app/routes/home.tsx"]).toContain(
       "React Router",
@@ -406,7 +399,7 @@ describe("buildProject", () => {
       "createViteEnv",
     );
     expect(builder.files["apps/react-router/vite.config.ts"]).toContain(
-      "@test-project/env/server",
+      "@packages/env/server",
     );
     expect(builder.files["apps/react-router/package.json"]).toContain(
       '"react-router": "^8.3.0"',
@@ -447,9 +440,7 @@ describe("buildProject", () => {
 
     await buildProject(config, builder);
 
-    expect(builder.files["packages/ui/package.json"]).toContain(
-      "@test-project/ui",
-    );
+    expect(builder.files["packages/ui/package.json"]).toContain("@packages/ui");
     expect(builder.files["packages/ui/package.json"]).toContain(
       '"shadcn": "^4.18.0"',
     );
@@ -546,7 +537,7 @@ describe("buildProject", () => {
       '"tailwindcss"',
     );
     expect(builder.files["packages/ui/src/globals.css"]).toContain(
-      '@import "@test-project/tailwind"',
+      '@import "@tooling/tailwind"',
     );
   });
 
@@ -574,25 +565,25 @@ describe("buildProject", () => {
       '@import "tailwindcss/theme.css"',
     );
     expect(builder.files["apps/web/package.json"]).toContain(
-      '"@test-project/tailwind": "workspace:*"',
+      '"@tooling/tailwind": "workspace:*"',
     );
     expect(builder.files["apps/web/package.json"]).not.toContain(
       '"tailwindcss"',
     );
     expect(builder.files["apps/web/postcss.config.mjs"]).toContain(
-      "@test-project/tailwind/postcss",
+      "@tooling/tailwind/postcss",
     );
     expect(builder.files["apps/web/app/globals.css"]).toContain(
-      '@import "@test-project/tailwind"',
+      '@import "@tooling/tailwind"',
     );
     expect(builder.files["apps/web/app/layout.tsx"]).toContain(
       'import "./globals.css"',
     );
     expect(builder.files["apps/vite/src/style.css"]).toContain(
-      '@import "@test-project/tailwind"',
+      '@import "@tooling/tailwind"',
     );
     expect(builder.files["apps/api/package.json"]).not.toContain(
-      "@test-project/tailwind",
+      "@tooling/tailwind",
     );
     expect(builder.files["apps/api/postcss.config.mjs"]).toBeUndefined();
   });
@@ -625,7 +616,7 @@ describe("buildProject", () => {
       '"nativewind": "5.0.0-preview.4"',
     );
     expect(builder.files["apps/mobile/package.json"]).toContain(
-      '"@test-project/tailwind": "workspace:*"',
+      '"@tooling/tailwind": "workspace:*"',
     );
     expect(builder.files["apps/mobile/package.json"]).not.toContain(
       '"tailwindcss"',
@@ -634,7 +625,7 @@ describe("buildProject", () => {
       "withNativewind",
     );
     expect(builder.files["apps/mobile/global.css"]).toContain(
-      '@import "@test-project/tailwind"',
+      '@import "@tooling/tailwind"',
     );
     expect(builder.files["apps/mobile/global.css"]).toContain(
       '@import "nativewind/theme"',
@@ -785,7 +776,7 @@ describe("auth package generation", () => {
       "useWorkOSAuth",
     );
     expect(builder.files["packages/auth/src/provider.tsx"]).toContain(
-      'from "@test-project/env/client"',
+      'from "@packages/env/client"',
     );
     expect(builder.files["packages/auth/src/provider.tsx"]).toContain(
       "getPublicAuthConfig",
@@ -987,7 +978,7 @@ describe("trpc package generation", () => {
     await buildProject(config, builder);
 
     expect(builder.files["packages/api/package.json"]).toContain(
-      "@test-project/api",
+      "@packages/api",
     );
     expect(builder.files["packages/api/package.json"]).toContain(
       "@trpc/server",
@@ -996,13 +987,13 @@ describe("trpc package generation", () => {
       "@trpc/client",
     );
     expect(builder.files["packages/api/package.json"]).not.toContain(
-      "@test-project/db",
+      "@packages/db",
     );
     expect(builder.files["packages/api/src/root.ts"]).toContain("hello");
     expect(builder.files["packages/api/src/root.ts"]).not.toContain("users");
     expect(builder.files["packages/api/src/trpc.ts"]).toContain("return {};");
     expect(builder.files["packages/api/src/trpc.ts"]).not.toContain(
-      "@test-project/db",
+      "@packages/db",
     );
     expect(builder.files["packages/api/src/client.ts"]).toContain(
       "createApiClient",
@@ -1021,10 +1012,10 @@ describe("trpc package generation", () => {
     await buildProject(config, builder);
 
     expect(builder.files["packages/api/package.json"]).toContain(
-      "@test-project/db",
+      "@packages/db",
     );
     expect(builder.files["packages/api/src/trpc.ts"]).toContain(
-      'from "@test-project/db"',
+      'from "@packages/db"',
     );
     expect(builder.files["packages/api/src/trpc.ts"]).toContain(
       "return { db };",
@@ -1043,7 +1034,7 @@ describe("trpc package generation", () => {
     await buildProject(config, builder);
 
     expect(builder.files["packages/api/package.json"]).toContain(
-      "@test-project/db",
+      "@packages/db",
     );
     expect(builder.files["packages/api/src/trpc.ts"]).toContain(
       "return { prisma };",
@@ -1059,9 +1050,9 @@ describe("trpc package generation", () => {
     await buildProject(config, builder);
 
     const readme = builder.files["README.md"];
-    expect(readme).toContain("@test-project/api");
+    expect(readme).toContain("@packages/api");
     expect(readme).toContain("not mounted automatically");
-    expect(readme).toContain("mount `@test-project/api`");
+    expect(readme).toContain("mount `@packages/api`");
   });
 });
 
@@ -1227,7 +1218,7 @@ describe("env package generation", () => {
       "getPublicAuthConfig",
     );
     expect(builder.files["apps/next/next.config.ts"]).toContain(
-      "@test-project/env/server",
+      "@packages/env/server",
     );
     expect(builder.files["apps/vite/vite.config.ts"]).toContain(
       "createViteEnv",
@@ -1261,7 +1252,7 @@ describe("env package generation", () => {
       "export const nextEnv",
     );
     expect(builder.files["apps/site/astro.config.ts"]).toContain(
-      "@test-project/env/server",
+      "@packages/env/server",
     );
     expect(builder.files["packages/env/src/client.ts"]).toContain(
       "PUBLIC_CLERK_PUBLISHABLE_KEY",
@@ -1449,7 +1440,7 @@ describe("payments package generation", () => {
     await buildProject(config, builder);
 
     expect(builder.files["packages/payments/package.json"]).toContain(
-      "@test-project/payments",
+      "@packages/payments",
     );
     expect(builder.files["packages/payments/package.json"]).toContain("stripe");
     expect(builder.files["packages/payments/package.json"]).toContain(
@@ -1491,7 +1482,7 @@ describe("payments package generation", () => {
     expect(builder.files["packages/payments/README.md"]).toContain(
       "Limit customers to one subscription",
     );
-    expect(builder.files["README.md"]).toContain("@test-project/payments");
+    expect(builder.files["README.md"]).toContain("@packages/payments");
     expect(builder.files["README.md"]).toContain("not mounted automatically");
   });
 
@@ -1569,7 +1560,7 @@ describe("email package generation", () => {
     await buildProject(config, builder);
 
     expect(builder.files["packages/email/package.json"]).toContain(
-      "@test-project/email",
+      "@packages/email",
     );
     expect(builder.files["packages/email/package.json"]).toContain("resend");
     expect(builder.files["packages/email/package.json"]).toContain(
@@ -1607,7 +1598,7 @@ describe("email package generation", () => {
     expect(builder.files["packages/email/README.md"]).toContain("React Email");
     expect(builder.files["packages/email/README.md"]).toContain("Resend");
     expect(builder.files["packages/email/README.md"]).toContain("email:dev");
-    expect(builder.files["README.md"]).toContain("@test-project/email");
+    expect(builder.files["README.md"]).toContain("@packages/email");
     expect(builder.files["README.md"]).toContain("not mounted automatically");
   });
 });

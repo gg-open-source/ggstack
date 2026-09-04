@@ -1,5 +1,5 @@
 {
-  "name": "@{{PROJECT_NAME}}/{{APP_NAME}}",
+  "name": "@apps/{{APP_NAME}}",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,12 +12,12 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@{{PROJECT_NAME}}/env": "workspace:*",
+    "@packages/env": "workspace:*",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
+    "@tooling/tsconfig": "workspace:*",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^6.0.5",

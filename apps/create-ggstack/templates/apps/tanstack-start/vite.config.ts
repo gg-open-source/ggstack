@@ -1,5 +1,5 @@
-import "@{{PROJECT_NAME}}/env/server";
-import { createViteEnv } from "@{{PROJECT_NAME}}/env/client";
+import "@packages/env/server";
+import { createViteEnv } from "@packages/env/client";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";

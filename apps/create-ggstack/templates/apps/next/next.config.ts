@@ -1,4 +1,4 @@
-import "@{{PROJECT_NAME}}/env/server";
+import "@packages/env/server";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {

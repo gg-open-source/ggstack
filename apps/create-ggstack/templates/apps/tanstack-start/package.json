@@ -1,5 +1,5 @@
 {
-  "name": "@{{PROJECT_NAME}}/{{APP_NAME}}",
+  "name": "@apps/{{APP_NAME}}",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,14 +12,14 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@{{PROJECT_NAME}}/env": "workspace:*",
+    "@packages/env": "workspace:*",
     "@tanstack/react-router": "^1.170.27",
     "@tanstack/react-start": "^1.168.44",
     "react": "^19.2.8",
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
-    "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
+    "@tooling/tsconfig": "workspace:*",
     "@types/node": "^26.1.2",
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",

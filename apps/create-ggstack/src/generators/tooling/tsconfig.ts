@@ -1,16 +1,14 @@
 import type { ProjectBuilder, StackConfig } from "../../types.js";
 
 export function generateTsconfigTooling(
-  config: StackConfig,
+  _config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
-
   builder.addFile(
     "tooling/tsconfig/package.json",
     JSON.stringify(
       {
-        name: `@${projectName}/tsconfig`,
+        name: "@tooling/tsconfig",
         version: "0.0.0",
         private: true,
         main: "base.json",

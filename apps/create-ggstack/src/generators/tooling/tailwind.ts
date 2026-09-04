@@ -31,7 +31,6 @@ export function generateTailwindTooling(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
   const hasShadcn = config.packages.some((pkg) => pkg.type === "shadcn");
   const hasExpo = config.apps.some((app) => app.type === "expo");
 
@@ -39,7 +38,7 @@ export function generateTailwindTooling(
     "tooling/tailwind/package.json",
     JSON.stringify(
       {
-        name: `@${projectName}/tailwind`,
+        name: "@tooling/tailwind",
         version: "0.0.0",
         private: true,
         type: "module",
@@ -135,12 +134,8 @@ function applySharedTailwind(
   hasShadcn: boolean,
 ): void {
   const appDir = `apps/${app.name}`;
-  addWorkspaceTailwindDep(
-    builder,
-    `${appDir}/package.json`,
-    config.projectName,
-  );
-  addPostcssConfig(builder, appDir, config.projectName);
+  addWorkspaceTailwindDep(builder, `${appDir}/package.json`);
+  addPostcssConfig(builder, appDir);
 
   if (app.type === "expo") {
     applyNativewind(config, builder, app, hasShadcn);
@@ -148,7 +143,7 @@ function applySharedTailwind(
   }
 
   const cssPath = cssPathForApp(app);
-  const preamble = cssPreamble(config.projectName, cssPath, hasShadcn);
+  const preamble = cssPreamble(cssPath, hasShadcn);
 
   if (app.type === "astro") {
     builder.addFile(cssPath, preamble);
@@ -164,7 +159,7 @@ function applySharedTailwind(
   }
 
   const existingCss = builder.files[cssPath] ?? "";
-  if (!existingCss.includes(`@import "@${config.projectName}/tailwind"`)) {
+  if (!existingCss.includes(`@import "@tooling/tailwind"`)) {
     builder.addFile(cssPath, `${preamble}${existingCss}`);
   }
 
@@ -188,13 +183,13 @@ function applyNativewind(
 
   builder.addFile(
     cssPath,
-    `${cssPreamble(config.projectName, cssPath, hasShadcn)}@import "nativewind/theme";
+    `${cssPreamble(cssPath, hasShadcn)}@import "nativewind/theme";
 `,
   );
 
   builder.addFile(
     `${appDir}/postcss.config.mjs`,
-    `export { default } from "@${config.projectName}/tailwind/postcss";
+    `export { default } from "@tooling/tailwind/postcss";
 `,
   );
 
@@ -271,25 +266,20 @@ export default function HomeScreen() {
 function addWorkspaceTailwindDep(
   builder: ProjectBuilder,
   packageJsonPath: string,
-  projectName: string,
 ): void {
   updateJsonFile<PackageJson>(builder, packageJsonPath, (pkg) => ({
     ...pkg,
     devDependencies: {
       ...pkg.devDependencies,
-      [`@${projectName}/tailwind`]: "workspace:*",
+      "@tooling/tailwind": "workspace:*",
     },
   }));
 }
 
-function addPostcssConfig(
-  builder: ProjectBuilder,
-  appDir: string,
-  projectName: string,
-): void {
+function addPostcssConfig(builder: ProjectBuilder, appDir: string): void {
   builder.addFile(
     `${appDir}/postcss.config.mjs`,
-    `export { default } from "@${projectName}/tailwind/postcss";
+    `export { default } from "@tooling/tailwind/postcss";
 `,
   );
 }
@@ -311,20 +301,13 @@ function cssPathForApp(app: AppConfig): string {
   }
 }
 
-function cssPreamble(
-  projectName: string,
-  cssPath: string,
-  hasShadcn: boolean,
-): string {
+function cssPreamble(cssPath: string, hasShadcn: boolean): string {
   const cssDir = path.posix.dirname(cssPath);
   const appRoot = cssPath.startsWith("packages/")
     ? cssDir
     : cssDir.split("/").slice(0, 2).join("/");
   const sourceToApp = path.posix.relative(cssDir, appRoot) || ".";
-  const lines = [
-    `@import "@${projectName}/tailwind";`,
-    `@source "${sourceToApp}";`,
-  ];
+  const lines = [`@import "@tooling/tailwind";`, `@source "${sourceToApp}";`];
 
   if (hasShadcn && !cssPath.startsWith("packages/ui/")) {
     lines.push(`@source "${path.posix.relative(cssDir, "packages/ui/src")}";`);

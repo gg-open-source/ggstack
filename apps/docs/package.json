@@ -1,5 +1,5 @@
 {
-  "name": "@ggstack/docs",
+  "name": "@apps/docs",
   "version": "0.0.0",
   "private": true,
   "type": "module",
@@ -12,7 +12,7 @@
     "check-types": "tsc --noEmit"
   },
   "devDependencies": {
-    "@ggstack/tsconfig": "workspace:*",
+    "@tooling/tsconfig": "workspace:*",
     "typescript": "catalog:tooling",
     "vitepress": "catalog:app",
     "vitepress-plugin-llms": "^1.13.5"

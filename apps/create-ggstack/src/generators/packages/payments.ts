@@ -16,7 +16,6 @@ export function generatePaymentsPackage(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
   const provider = config.payments.provider;
 
   if (!isSupportedPaymentProvider(provider)) {
@@ -25,14 +24,14 @@ export function generatePaymentsPackage(
 
   builder.addFile(
     "packages/payments/package.json",
-    JSON.stringify(getPackageJson(projectName, provider), null, 2),
+    JSON.stringify(getPackageJson(provider), null, 2),
   );
 
   builder.addFile(
     "packages/payments/tsconfig.json",
     JSON.stringify(
       {
-        extends: `@${projectName}/tsconfig/base.json`,
+        extends: "@tooling/tsconfig/base.json",
         compilerOptions: {
           outDir: "dist",
           rootDir: "src",
@@ -46,23 +45,22 @@ export function generatePaymentsPackage(
 
   switch (provider) {
     case "stripe":
-      generateStripeFiles(projectName, builder);
+      generateStripeFiles(builder);
       break;
     case "polar":
-      generatePolarFiles(projectName, builder);
+      generatePolarFiles(builder);
       break;
     case "autumn":
-      generateAutumnFiles(projectName, builder);
+      generateAutumnFiles(builder);
       break;
   }
 }
 
 function getPackageJson(
-  projectName: string,
   provider: SupportedPaymentProvider,
 ): Record<string, unknown> {
   return {
-    name: `@${projectName}/payments`,
+    name: "@packages/payments",
     version: "0.0.0",
     private: true,
     type: "module",
@@ -76,11 +74,11 @@ function getPackageJson(
       ...(provider === "autumn" ? { "autumn:push": "atmn push" } : {}),
     },
     dependencies: {
-      [`@${projectName}/env`]: "workspace:*",
+      "@packages/env": "workspace:*",
       ...getSdkDependencies(provider),
     },
     devDependencies: {
-      [`@${projectName}/tsconfig`]: "workspace:*",
+      "@tooling/tsconfig": "workspace:*",
       typescript: "^5.8.0",
     },
   };
@@ -105,43 +103,31 @@ function getSdkDependencies(
   }
 }
 
-function generateStripeFiles(
-  projectName: string,
-  builder: ProjectBuilder,
-): void {
-  builder.addFile(
-    "packages/payments/src/client.ts",
-    generateStripeClient(projectName),
-  );
-  builder.addFile("packages/payments/src/kv.ts", generateStripeKv(projectName));
+function generateStripeFiles(builder: ProjectBuilder): void {
+  builder.addFile("packages/payments/src/client.ts", generateStripeClient());
+  builder.addFile("packages/payments/src/kv.ts", generateStripeKv());
   builder.addFile("packages/payments/src/types.ts", generateStripeTypes());
   builder.addFile("packages/payments/src/sync.ts", generateStripeSync());
   builder.addFile(
     "packages/payments/src/checkout.ts",
-    generateStripeCheckout(projectName),
+    generateStripeCheckout(),
   );
-  builder.addFile(
-    "packages/payments/src/webhook.ts",
-    generateStripeWebhook(projectName),
-  );
+  builder.addFile("packages/payments/src/webhook.ts", generateStripeWebhook());
   builder.addFile("packages/payments/src/index.ts", generateStripeIndex());
-  builder.addFile(
-    "packages/payments/README.md",
-    generateStripeReadme(projectName),
-  );
+  builder.addFile("packages/payments/README.md", generateStripeReadme());
 }
 
-function generateStripeClient(projectName: string): string {
+function generateStripeClient(): string {
   return `import Stripe from "stripe";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 export const stripe = new Stripe(serverEnv.STRIPE_SECRET_KEY);
 `;
 }
 
-function generateStripeKv(projectName: string): string {
+function generateStripeKv(): string {
   return `import { Redis } from "@upstash/redis";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 export const kv = new Redis({
   url: serverEnv.UPSTASH_REDIS_REST_URL,
@@ -277,8 +263,8 @@ export async function syncAfterSuccess(
 `;
 }
 
-function generateStripeCheckout(projectName: string): string {
-  return `import { serverEnv } from "@${projectName}/env/server";
+function generateStripeCheckout(): string {
+  return `import { serverEnv } from "@packages/env/server";
 import { stripe } from "./client";
 import { kv, stripeUserKey } from "./kv";
 
@@ -353,9 +339,9 @@ export async function createBillingPortalSession(input: {
 `;
 }
 
-function generateStripeWebhook(projectName: string): string {
+function generateStripeWebhook(): string {
   return `import type Stripe from "stripe";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 import { stripe } from "./client";
 import { syncStripeDataToKV } from "./sync";
 
@@ -453,8 +439,8 @@ export { handleStripeWebhook, processEvent } from "./webhook";
 `;
 }
 
-function generateStripeReadme(projectName: string): string {
-  return `# @${projectName}/payments
+function generateStripeReadme(): string {
+  return `# @packages/payments
 
 Shared Stripe package using [Theo's Stripe recommendations](https://github.com/t3dotgg/stripe-recommendations): create the customer **before** checkout, store \`userId ↔ customerId\` in KV, and keep subscription state in sync with a single \`syncStripeDataToKV(customerId)\` function. Do not branch on \`CHECKOUT_SESSION_ID\` or individual webhook payloads.
 
@@ -493,7 +479,7 @@ import {
   getSubscription,
   handleStripeWebhook,
   syncAfterSuccess,
-} from "@${projectName}/payments";
+} from "@packages/payments";
 \`\`\`
 
 App templates do not mount this package. Add the routes after scaffold.
@@ -502,7 +488,7 @@ App templates do not mount this package. Add the routes after scaffold.
 
 \`\`\`ts
 // app/api/stripe/checkout/route.ts
-import { createCheckoutSession } from "@${projectName}/payments";
+import { createCheckoutSession } from "@packages/payments";
 
 export async function GET(req: Request) {
   const user = await auth(req); // your auth
@@ -519,7 +505,7 @@ export async function GET(req: Request) {
 
 \`\`\`ts
 // app/success/route.ts
-import { syncAfterSuccess } from "@${projectName}/payments";
+import { syncAfterSuccess } from "@packages/payments";
 
 export async function GET(req: Request) {
   const user = await auth(req);
@@ -530,7 +516,7 @@ export async function GET(req: Request) {
 
 \`\`\`ts
 // app/api/stripe/route.ts
-import { handleStripeWebhook } from "@${projectName}/payments";
+import { handleStripeWebhook } from "@packages/payments";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -548,7 +534,7 @@ import {
   createCheckoutSession,
   handleStripeWebhook,
   syncAfterSuccess,
-} from "@${projectName}/payments";
+} from "@packages/payments";
 
 app.get("/api/stripe/checkout", async (req, res) => {
   const user = await auth(req);
@@ -588,33 +574,18 @@ Price IDs per environment, exposing sub data to the client, usage metering, and 
 `;
 }
 
-function generatePolarFiles(
-  projectName: string,
-  builder: ProjectBuilder,
-): void {
-  builder.addFile(
-    "packages/payments/src/client.ts",
-    generatePolarClient(projectName),
-  );
-  builder.addFile(
-    "packages/payments/src/checkout.ts",
-    generatePolarCheckout(projectName),
-  );
+function generatePolarFiles(builder: ProjectBuilder): void {
+  builder.addFile("packages/payments/src/client.ts", generatePolarClient());
+  builder.addFile("packages/payments/src/checkout.ts", generatePolarCheckout());
   builder.addFile("packages/payments/src/customer.ts", generatePolarCustomer());
-  builder.addFile(
-    "packages/payments/src/webhook.ts",
-    generatePolarWebhook(projectName),
-  );
+  builder.addFile("packages/payments/src/webhook.ts", generatePolarWebhook());
   builder.addFile("packages/payments/src/index.ts", generatePolarIndex());
-  builder.addFile(
-    "packages/payments/README.md",
-    generatePolarReadme(projectName),
-  );
+  builder.addFile("packages/payments/README.md", generatePolarReadme());
 }
 
-function generatePolarClient(projectName: string): string {
+function generatePolarClient(): string {
   return `import { Polar } from "@polar-sh/sdk";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 export const polar = new Polar({
   accessToken: serverEnv.POLAR_ACCESS_TOKEN,
@@ -623,8 +594,8 @@ export const polar = new Polar({
 `;
 }
 
-function generatePolarCheckout(projectName: string): string {
-  return `import { serverEnv } from "@${projectName}/env/server";
+function generatePolarCheckout(): string {
+  return `import { serverEnv } from "@packages/env/server";
 import { polar } from "./client";
 
 export async function createCheckoutSession(input: {
@@ -670,12 +641,12 @@ export async function getCustomerState(userId: string) {
 `;
 }
 
-function generatePolarWebhook(projectName: string): string {
+function generatePolarWebhook(): string {
   return `import {
   validateEvent,
   WebhookVerificationError,
 } from "@polar-sh/sdk/webhooks";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 function webhookHeaders(
   headers: Headers | Record<string, string | string[] | undefined>,
@@ -726,8 +697,8 @@ export { handlePolarWebhook } from "./webhook";
 `;
 }
 
-function generatePolarReadme(projectName: string): string {
-  return `# @${projectName}/payments
+function generatePolarReadme(): string {
+  return `# @packages/payments
 
 Shared Polar payments package. Polar is the merchant of record: bind your user id with \`externalCustomerId\`, then query Polar for customer state instead of mirroring webhooks into your database.
 
@@ -753,7 +724,7 @@ import {
   createCustomerPortalSession,
   getCustomerState,
   handlePolarWebhook,
-} from "@${projectName}/payments";
+} from "@packages/payments";
 \`\`\`
 
 App templates do not mount this package. Add the routes after scaffold.
@@ -762,7 +733,7 @@ App templates do not mount this package. Add the routes after scaffold.
 
 \`\`\`ts
 // app/api/checkout/route.ts
-import { createCheckoutSession } from "@${projectName}/payments";
+import { createCheckoutSession } from "@packages/payments";
 
 export async function GET(req: Request) {
   const user = await auth(req);
@@ -778,7 +749,7 @@ export async function GET(req: Request) {
 
 \`\`\`ts
 // app/api/portal/route.ts
-import { createCustomerPortalSession } from "@${projectName}/payments";
+import { createCustomerPortalSession } from "@packages/payments";
 
 export async function GET(req: Request) {
   const user = await auth(req);
@@ -789,7 +760,7 @@ export async function GET(req: Request) {
 
 \`\`\`ts
 // app/api/webhook/polar/route.ts
-import { handlePolarWebhook } from "@${projectName}/payments";
+import { handlePolarWebhook } from "@packages/payments";
 
 export async function POST(req: Request) {
   const body = await req.text();
@@ -802,26 +773,17 @@ Read live entitlements with \`getCustomerState(userId)\`.
 `;
 }
 
-function generateAutumnFiles(
-  projectName: string,
-  builder: ProjectBuilder,
-): void {
-  builder.addFile(
-    "packages/payments/src/client.ts",
-    generateAutumnClient(projectName),
-  );
+function generateAutumnFiles(builder: ProjectBuilder): void {
+  builder.addFile("packages/payments/src/client.ts", generateAutumnClient());
   builder.addFile("packages/payments/src/billing.ts", generateAutumnBilling());
   builder.addFile("packages/payments/src/index.ts", generateAutumnIndex());
   builder.addFile("packages/payments/autumn.config.ts", generateAutumnConfig());
-  builder.addFile(
-    "packages/payments/README.md",
-    generateAutumnReadme(projectName),
-  );
+  builder.addFile("packages/payments/README.md", generateAutumnReadme());
 }
 
-function generateAutumnClient(projectName: string): string {
+function generateAutumnClient(): string {
   return `import { Autumn } from "autumn-js";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 export const autumn = new Autumn({
   secretKey: serverEnv.AUTUMN_SECRET_KEY,
@@ -944,8 +906,8 @@ export const pro = plan({
 `;
 }
 
-function generateAutumnReadme(projectName: string): string {
-  return `# @${projectName}/payments
+function generateAutumnReadme(): string {
+  return `# @packages/payments
 
 Shared Autumn billing package. Autumn sits on Stripe and is the source of truth for plans, entitlements, and usage. Use your auth user id as \`customerId\` — you do not store extra Stripe ids.
 
@@ -956,7 +918,7 @@ Shared Autumn billing package. Autumn sits on Stripe and is the source of truth 
 3. Edit \`autumn.config.ts\` (starter Free + Pro plans with a metered \`messages\` feature), then push:
 
 \`\`\`bash
-pnpm --filter @${projectName}/payments autumn:push
+pnpm --filter @packages/payments autumn:push
 \`\`\`
 
 4. Call \`getOrCreateCustomer\` on signup/login with your auth user id.
@@ -974,7 +936,7 @@ import {
   getOrCreateCustomer,
   openCustomerPortal,
   trackUsage,
-} from "@${projectName}/payments";
+} from "@packages/payments";
 
 await getOrCreateCustomer({
   customerId: user.id,

@@ -12,7 +12,6 @@ export function generateAuthPackage(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
   const provider = config.auth.provider;
 
   if (!isSupportedAuthProvider(provider)) {
@@ -23,7 +22,7 @@ export function generateAuthPackage(
     "packages/auth/package.json",
     JSON.stringify(
       {
-        name: `@${projectName}/auth`,
+        name: "@packages/auth",
         version: "0.0.0",
         private: true,
         type: "module",
@@ -39,11 +38,11 @@ export function generateAuthPackage(
           react: "^19.2.8",
         },
         dependencies: {
-          [`@${projectName}/env`]: "workspace:*",
+          "@packages/env": "workspace:*",
           ...getSdkDependencies(provider),
         },
         devDependencies: {
-          [`@${projectName}/tsconfig`]: "workspace:*",
+          "@tooling/tsconfig": "workspace:*",
           "@types/react": "^19.2.18",
           typescript: "^5.8.0",
         },
@@ -57,7 +56,7 @@ export function generateAuthPackage(
     "packages/auth/tsconfig.json",
     JSON.stringify(
       {
-        extends: `@${projectName}/tsconfig/base.json`,
+        extends: "@tooling/tsconfig/base.json",
         compilerOptions: {
           outDir: "dist",
           rootDir: "src",
@@ -71,17 +70,11 @@ export function generateAuthPackage(
   );
 
   builder.addFile("packages/auth/src/index.ts", generateIndex(provider));
-  builder.addFile(
-    "packages/auth/src/provider.tsx",
-    generateProvider(projectName, provider),
-  );
+  builder.addFile("packages/auth/src/provider.tsx", generateProvider(provider));
   builder.addFile("packages/auth/src/client.ts", generateClient(provider));
   builder.addFile("packages/auth/src/use-auth.ts", generateUseAuth(provider));
   builder.addFile("packages/auth/src/demo.tsx", generateDemo());
-  builder.addFile(
-    "packages/auth/README.md",
-    generateReadme(projectName, provider),
-  );
+  builder.addFile("packages/auth/README.md", generateReadme(provider));
 }
 
 function getSdkDependencies(
@@ -115,7 +108,6 @@ ${sdkExports[provider]}
 }
 
 function generateProvider(
-  projectName: string,
   provider: "better-auth" | "clerk" | "workos",
 ): string {
   const header = 'import type { ReactNode } from "react";\n';
@@ -128,7 +120,7 @@ function generateProvider(
 `;
     case "clerk": {
       return `${header}import { ClerkProvider } from "@clerk/clerk-react";
-import { getPublicAuthConfig } from "@${projectName}/env/client";
+import { getPublicAuthConfig } from "@packages/env/client";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const { clerkPublishableKey } = getPublicAuthConfig();
@@ -140,7 +132,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     case "workos": {
       return `${header}import { AuthProvider as WorkOSAuthProvider } from "@workos-inc/authkit-react";
-import { getPublicAuthConfig } from "@${projectName}/env/client";
+import { getPublicAuthConfig } from "@packages/env/client";
 
 const { workosClientId } = getPublicAuthConfig();
 
@@ -273,10 +265,7 @@ export function AuthDemo() {
 `;
 }
 
-function generateReadme(
-  projectName: string,
-  provider: "better-auth" | "clerk" | "workos",
-): string {
+function generateReadme(provider: "better-auth" | "clerk" | "workos"): string {
   const sections: Record<string, string> = {
     "better-auth": `## Better Auth
 
@@ -286,7 +275,7 @@ This package wraps \`better-auth\` with a unified client-only API.
 
 1. Add a server route to your Next.js app (e.g. \`app/api/auth/[...all]/route.ts\`).
 2. Copy the repo-root \`.env.example\` to \`.env\` and fill in the Better Auth values.
-3. Import \`AuthProvider\` from \`@${projectName}/auth\` and wrap your app root.
+3. Import \`AuthProvider\` from \`@packages/auth\` and wrap your app root.
 4. Use \`useAuth()\` in components to access session state.
 
 ### Env vars
@@ -301,7 +290,7 @@ This package wraps \`@clerk/clerk-react\` with a unified API.
 ### Setup
 
 1. Copy the repo-root \`.env.example\` to \`.env\` and set \`CLERK_SECRET_KEY\` plus the publishable key for your app (\`NEXT_PUBLIC_\`, \`VITE_\`, \`EXPO_PUBLIC_\`, or \`PUBLIC_\`).
-2. Import \`AuthProvider\` from \`@${projectName}/auth\` and wrap your app root.
+2. Import \`AuthProvider\` from \`@packages/auth\` and wrap your app root.
 3. Use \`useAuth()\` in components to access session state.
 
 ### Env vars
@@ -315,7 +304,7 @@ This package wraps \`@workos-inc/authkit-react\` with a unified API.
 ### Setup
 
 1. Copy the repo-root \`.env.example\` to \`.env\` and set the WorkOS server and client vars.
-2. Import \`AuthProvider\` from \`@${projectName}/auth\` and wrap your app root.
+2. Import \`AuthProvider\` from \`@packages/auth\` and wrap your app root.
 3. Use \`useAuth()\` in components to access session state.
 
 ### Env vars
@@ -325,14 +314,14 @@ This package wraps \`@workos-inc/authkit-react\` with a unified API.
 - \`WORKOS_COOKIE_PASSWORD\` (server-only)`,
   };
 
-  return `# @${projectName}/auth
+  return `# @packages/auth
 
 Shared authentication package for the monorepo.
 
 ## Usage
 
 \`\`\`tsx
-import { AuthProvider, AuthDemo, useAuth } from "@${projectName}/auth";
+import { AuthProvider, AuthDemo, useAuth } from "@packages/auth";
 
 export default function App() {
   return (

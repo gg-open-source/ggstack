@@ -200,7 +200,7 @@ export function generateRootReadme(config: StackConfig): string {
   lines.push(
     "The generated workspace uses **pnpm** even if you passed `--npm`, `--yarn`, or `--bun` to the CLI.",
     "",
-    `Fill in \`.env\` before running anything that imports \`@${name}/env\`. Required values cannot be empty.`,
+    `Fill in \`.env\` before running anything that imports \`@packages/env\`. Required values cannot be empty.`,
   );
 
   if (hasExpo) {
@@ -211,13 +211,13 @@ export function generateRootReadme(config: StackConfig): string {
       "",
     );
     for (const app of expoApps) {
-      lines.push("```bash", `pnpm --filter @${name}/${app.name} start`, "```");
+      lines.push("```bash", `pnpm --filter @apps/${app.name} start`, "```");
     }
 
     if (hasTailwind) {
       lines.push(
         "",
-        `Expo is styled with NativeWind using the shared \`@${name}/tailwind\` package. Tailwind CSS is installed once in \`tooling/tailwind\`.`,
+        `Expo is styled with NativeWind using the shared \`@tooling/tailwind\` package. Tailwind CSS is installed once in \`tooling/tailwind\`.`,
       );
     }
   }
@@ -240,15 +240,13 @@ export function generateRootReadme(config: StackConfig): string {
     lines.push("", "## Apps", "");
     for (const app of config.apps) {
       const label = getAppLabel(app);
-      lines.push(
-        `- \`apps/${app.name}\` — ${label} (\`@${name}/${app.name}\`)`,
-      );
+      lines.push(`- \`apps/${app.name}\` — ${label} (\`@apps/${app.name}\`)`);
     }
   }
 
   lines.push("", "## Packages", "");
   lines.push(
-    `- \`packages/env\` — typed environment variables (\`@${name}/env\`). See that package's README.`,
+    `- \`packages/env\` — typed environment variables (\`@packages/env\`). See that package's README.`,
   );
 
   if (hasShadcn) {
@@ -258,20 +256,20 @@ export function generateRootReadme(config: StackConfig): string {
       : "base-nova";
     const preset = shadcn?.preset ?? "nova";
     lines.push(
-      `- \`packages/ui\` — shadcn/ui (\`@${name}/ui\`), style \`${style}\`, preset \`${preset}\`. Add components with \`pnpm --filter @${name}/ui add button\`. Apply another preset with \`pnpm --filter @${name}/ui apply --preset <code>\`.`,
+      `- \`packages/ui\` — shadcn/ui (\`@packages/ui\`), style \`${style}\`, preset \`${preset}\`. Add components with \`pnpm --filter @packages/ui add button\`. Apply another preset with \`pnpm --filter @packages/ui apply --preset <code>\`.`,
     );
   }
 
   if (hasTrpc) {
     lines.push(
-      `- \`packages/api\` — tRPC router and client (\`@${name}/api\`). See that package's README.`,
+      `- \`packages/api\` — tRPC router and client (\`@packages/api\`). See that package's README.`,
     );
   }
 
   if (hasAuth) {
     const label = AUTH_LABELS[config.auth.provider] ?? config.auth.provider;
     lines.push(
-      `- \`packages/auth\` — ${label} (\`@${name}/auth\`). See that package's README.`,
+      `- \`packages/auth\` — ${label} (\`@packages/auth\`). See that package's README.`,
     );
   }
 
@@ -280,7 +278,7 @@ export function generateRootReadme(config: StackConfig): string {
     const dialect =
       DIALECT_LABELS[config.db.dialect ?? "postgresql"] ?? "PostgreSQL";
     lines.push(
-      `- \`packages/db\` — ${label} + ${dialect} (\`@${name}/db\`). See that package's README.`,
+      `- \`packages/db\` — ${label} + ${dialect} (\`@packages/db\`). See that package's README.`,
     );
   }
 
@@ -288,14 +286,14 @@ export function generateRootReadme(config: StackConfig): string {
     const label =
       PAYMENT_LABELS[config.payments.provider] ?? config.payments.provider;
     lines.push(
-      `- \`packages/payments\` — ${label} (\`@${name}/payments\`). See that package's README.`,
+      `- \`packages/payments\` — ${label} (\`@packages/payments\`). See that package's README.`,
     );
   }
 
   if (hasEmail) {
     const label = EMAIL_LABELS[config.email.provider] ?? config.email.provider;
     lines.push(
-      `- \`packages/email\` — ${label} (\`@${name}/email\`). Preview templates with \`pnpm --filter @${name}/email email:dev\`. See that package's README.`,
+      `- \`packages/email\` — ${label} (\`@packages/email\`). Preview templates with \`pnpm --filter @packages/email email:dev\`. See that package's README.`,
     );
   }
 
@@ -313,10 +311,10 @@ export function generateRootReadme(config: StackConfig): string {
         : `${joinNatural(subjects, "and")} are not mounted automatically`;
     const actions = [
       hasAuth ? "wrap `AuthProvider`" : null,
-      hasDb ? `import \`@${name}/db\`` : null,
-      hasTrpc ? `mount \`@${name}/api\`` : null,
-      hasPayments ? `import \`@${name}/payments\`` : null,
-      hasEmail ? `import \`@${name}/email\`` : null,
+      hasDb ? `import \`@packages/db\`` : null,
+      hasTrpc ? `mount \`@packages/api\`` : null,
+      hasPayments ? `import \`@packages/payments\`` : null,
+      hasEmail ? `import \`@packages/email\`` : null,
     ].filter((value): value is string => value !== null);
 
     lines.push(
@@ -337,7 +335,9 @@ export function generateRootReadme(config: StackConfig): string {
 
   lines.push(
     "",
-    `\`tooling/tsconfig\` is always present. Shared TypeScript packages extend \`@${name}/tsconfig/base.json\`.`,
+    "Workspace packages are named `@apps/<folder>`, `@packages/<folder>`, and `@tooling/<folder>`.",
+    "",
+    `\`tooling/tsconfig\` is always present. Shared TypeScript packages extend \`@tooling/tsconfig/base.json\`.`,
     "",
   );
 

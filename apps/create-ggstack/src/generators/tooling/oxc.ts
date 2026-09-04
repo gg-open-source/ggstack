@@ -1,16 +1,14 @@
 import type { ProjectBuilder, StackConfig } from "../../types.js";
 
 export function generateOxcTooling(
-  config: StackConfig,
+  _config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
-
   builder.addFile(
     "tooling/oxc/package.json",
     JSON.stringify(
       {
-        name: `@${projectName}/oxc`,
+        name: "@tooling/oxc",
         version: "0.0.0",
         private: true,
         files: ["oxlint.json", "oxfmt.json"],

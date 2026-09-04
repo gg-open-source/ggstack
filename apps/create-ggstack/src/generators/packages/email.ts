@@ -16,7 +16,6 @@ export function generateEmailPackage(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
   const provider = config.email.provider;
 
   if (!isSupportedEmailProvider(provider)) {
@@ -25,14 +24,14 @@ export function generateEmailPackage(
 
   builder.addFile(
     "packages/email/package.json",
-    JSON.stringify(getPackageJson(projectName), null, 2),
+    JSON.stringify(getPackageJson(), null, 2),
   );
 
   builder.addFile(
     "packages/email/tsconfig.json",
     JSON.stringify(
       {
-        extends: `@${projectName}/tsconfig/base.json`,
+        extends: "@tooling/tsconfig/base.json",
         compilerOptions: {
           outDir: "dist",
           rootDir: "src",
@@ -45,19 +44,19 @@ export function generateEmailPackage(
     ),
   );
 
-  builder.addFile("packages/email/src/client.ts", generateClient(projectName));
-  builder.addFile("packages/email/src/send.ts", generateSend(projectName));
+  builder.addFile("packages/email/src/client.ts", generateClient());
+  builder.addFile("packages/email/src/send.ts", generateSend());
   builder.addFile(
     "packages/email/src/emails/welcome.tsx",
     generateWelcomeEmail(),
   );
   builder.addFile("packages/email/src/index.ts", generateIndex());
-  builder.addFile("packages/email/README.md", generateReadme(projectName));
+  builder.addFile("packages/email/README.md", generateReadme());
 }
 
-function getPackageJson(projectName: string): Record<string, unknown> {
+function getPackageJson(): Record<string, unknown> {
   return {
-    name: `@${projectName}/email`,
+    name: "@packages/email",
     version: "0.0.0",
     private: true,
     type: "module",
@@ -74,14 +73,14 @@ function getPackageJson(projectName: string): Record<string, unknown> {
       "check-types": "tsc --noEmit",
     },
     dependencies: {
-      [`@${projectName}/env`]: "workspace:*",
+      "@packages/env": "workspace:*",
       react: "^19.2.8",
       "react-dom": "^19.2.8",
       "react-email": "^6.9.3",
       resend: "^6.26.0",
     },
     devDependencies: {
-      [`@${projectName}/tsconfig`]: "workspace:*",
+      "@tooling/tsconfig": "workspace:*",
       "@react-email/ui": "^6.9.3",
       "@types/react": "^19.2.18",
       "@types/react-dom": "^19.2.18",
@@ -90,17 +89,17 @@ function getPackageJson(projectName: string): Record<string, unknown> {
   };
 }
 
-function generateClient(projectName: string): string {
+function generateClient(): string {
   return `import { Resend } from "resend";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 export const resend = new Resend(serverEnv.RESEND_API_KEY);
 `;
 }
 
-function generateSend(projectName: string): string {
+function generateSend(): string {
   return `import type { ReactNode } from "react";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 import { resend } from "./client";
 import { WelcomeEmail } from "./emails/welcome";
 
@@ -265,8 +264,8 @@ export type { WelcomeEmailProps } from "./emails/welcome";
 `;
 }
 
-function generateReadme(projectName: string): string {
-  return `# @${projectName}/email
+function generateReadme(): string {
+  return `# @packages/email
 
 Shared email package using [React Email](https://react.email) templates and [Resend](https://resend.com) to send them. **Not auto-wired** — call the helpers from a server route or job after scaffold.
 
@@ -284,7 +283,7 @@ Shared email package using [React Email](https://react.email) templates and [Res
 ## Preview templates
 
 \`\`\`bash
-pnpm --filter @${projectName}/email email:dev
+pnpm --filter @packages/email email:dev
 \`\`\`
 
 Opens the React Email preview server at http://localhost:3001. Templates live in \`src/emails\`. Add a new \`.tsx\` file with a default export to see it in the sidebar.
@@ -292,7 +291,7 @@ Opens the React Email preview server at http://localhost:3001. Templates live in
 ## Usage
 
 \`\`\`ts
-import { sendEmail, sendWelcomeEmail, WelcomeEmail } from "@${projectName}/email";
+import { sendEmail, sendWelcomeEmail, WelcomeEmail } from "@packages/email";
 
 await sendWelcomeEmail({
   to: user.email,
@@ -309,13 +308,13 @@ await sendEmail({
 
 Pass the template as a function call (\`WelcomeEmail({ name })\`), not as JSX. \`sendEmail\` / \`sendWelcomeEmail\` throw if Resend returns an error.
 
-App templates do not mount this package. Import \`@${projectName}/email\` from a server route, tRPC procedure, or background job.
+App templates do not mount this package. Import \`@packages/email\` from a server route, tRPC procedure, or background job.
 
 ### Next.js App Router
 
 \`\`\`ts
 // app/api/email/welcome/route.ts
-import { sendWelcomeEmail } from "@${projectName}/email";
+import { sendWelcomeEmail } from "@packages/email";
 
 export async function POST(req: Request) {
   const user = await auth(req); // your auth

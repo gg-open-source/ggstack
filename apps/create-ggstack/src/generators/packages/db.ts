@@ -11,7 +11,6 @@ export function generateDbPackage(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
   const orm = config.db.orm;
 
   if (!isSupportedDbOrm(orm)) {
@@ -22,14 +21,14 @@ export function generateDbPackage(
 
   builder.addFile(
     "packages/db/package.json",
-    JSON.stringify(getPackageJson(projectName, orm, dialect), null, 2),
+    JSON.stringify(getPackageJson(orm, dialect), null, 2),
   );
 
   builder.addFile(
     "packages/db/tsconfig.json",
     JSON.stringify(
       {
-        extends: `@${projectName}/tsconfig/base.json`,
+        extends: "@tooling/tsconfig/base.json",
         compilerOptions: {
           outDir: "dist",
           rootDir: "src",
@@ -42,19 +41,18 @@ export function generateDbPackage(
   );
 
   if (orm === "drizzle") {
-    generateDrizzleFiles(projectName, dialect, builder);
+    generateDrizzleFiles(dialect, builder);
   } else {
-    generatePrismaFiles(projectName, dialect, builder);
+    generatePrismaFiles(dialect, builder);
   }
 }
 
 function getPackageJson(
-  projectName: string,
   orm: SupportedDbOrm,
   dialect: DbDialect,
 ): Record<string, unknown> {
   const base = {
-    name: `@${projectName}/db`,
+    name: "@packages/db",
     version: "0.0.0",
     private: true,
     type: "module",
@@ -67,7 +65,7 @@ function getPackageJson(
       "check-types": "tsc --noEmit",
     },
     devDependencies: {
-      [`@${projectName}/tsconfig`]: "workspace:*",
+      "@tooling/tsconfig": "workspace:*",
       typescript: "^5.8.0",
     },
   };
@@ -83,7 +81,7 @@ function getPackageJson(
         "db:studio": "drizzle-kit studio",
       },
       dependencies: {
-        [`@${projectName}/env`]: "workspace:*",
+        "@packages/env": "workspace:*",
         "drizzle-orm": "^0.40.0",
         ...getDrizzleDriverDependencies(dialect),
       },
@@ -105,7 +103,7 @@ function getPackageJson(
       "db:studio": "prisma studio",
     },
     dependencies: {
-      [`@${projectName}/env`]: "workspace:*",
+      "@packages/env": "workspace:*",
       "@prisma/client": "^6.5.0",
     },
     devDependencies: {
@@ -138,14 +136,13 @@ function getDrizzleDriverDevDependencies(
 }
 
 function generateDrizzleFiles(
-  projectName: string,
   dialect: DbDialect,
   builder: ProjectBuilder,
 ): void {
   builder.addFile(
     "packages/db/drizzle.config.ts",
     `import { defineConfig } from "drizzle-kit";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 export default defineConfig({
   dialect: "${dialect}",
@@ -165,24 +162,15 @@ export {};
 `,
   );
 
-  builder.addFile(
-    "packages/db/src/index.ts",
-    getDrizzleClientSource(projectName, dialect),
-  );
+  builder.addFile("packages/db/src/index.ts", getDrizzleClientSource(dialect));
 
-  builder.addFile(
-    "packages/db/README.md",
-    generateDrizzleReadme(projectName, dialect),
-  );
+  builder.addFile("packages/db/README.md", generateDrizzleReadme(dialect));
 }
 
-function getDrizzleClientSource(
-  projectName: string,
-  dialect: DbDialect,
-): string {
+function getDrizzleClientSource(dialect: DbDialect): string {
   if (dialect === "mysql") {
     return `import { drizzle } from "drizzle-orm/mysql2";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 export const db = drizzle(serverEnv.DATABASE_URL, { mode: "default" });
 `;
@@ -191,7 +179,7 @@ export const db = drizzle(serverEnv.DATABASE_URL, { mode: "default" });
   if (dialect === "sqlite") {
     return `import { createClient } from "@libsql/client";
 import { drizzle } from "drizzle-orm/libsql";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 const client = createClient({ url: serverEnv.DATABASE_URL });
 export const db = drizzle(client);
@@ -199,7 +187,7 @@ export const db = drizzle(client);
   }
 
   return `import { drizzle } from "drizzle-orm/node-postgres";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 export const db = drizzle(serverEnv.DATABASE_URL);
 `;
@@ -216,11 +204,8 @@ function dialectLabel(dialect: DbDialect): string {
   }
 }
 
-function generateDrizzleReadme(
-  projectName: string,
-  dialect: DbDialect,
-): string {
-  return `# @${projectName}/db
+function generateDrizzleReadme(dialect: DbDialect): string {
+  return `# @packages/db
 
 Shared database package using **Drizzle ORM** with ${dialectLabel(dialect)}.
 
@@ -232,7 +217,7 @@ Shared database package using **Drizzle ORM** with ${dialectLabel(dialect)}.
 4. Use the exported \`db\` client in your apps:
 
 \`\`\`ts
-import { db } from "@${projectName}/db";
+import { db } from "@packages/db";
 \`\`\`
 
 ## Scripts
@@ -245,7 +230,6 @@ import { db } from "@${projectName}/db";
 }
 
 function generatePrismaFiles(
-  projectName: string,
   dialect: DbDialect,
   builder: ProjectBuilder,
 ): void {
@@ -265,7 +249,7 @@ datasource db {
   builder.addFile(
     "packages/db/src/index.ts",
     `import { PrismaClient } from "@prisma/client";
-import { serverEnv } from "@${projectName}/env/server";
+import { serverEnv } from "@packages/env/server";
 
 void serverEnv.DATABASE_URL;
 
@@ -281,14 +265,11 @@ if (serverEnv.NODE_ENV !== "production") {
 `,
   );
 
-  builder.addFile(
-    "packages/db/README.md",
-    generatePrismaReadme(projectName, dialect),
-  );
+  builder.addFile("packages/db/README.md", generatePrismaReadme(dialect));
 }
 
-function generatePrismaReadme(projectName: string, dialect: DbDialect): string {
-  return `# @${projectName}/db
+function generatePrismaReadme(dialect: DbDialect): string {
+  return `# @packages/db
 
 Shared database package using **Prisma ORM** with ${dialectLabel(dialect)}.
 
@@ -301,7 +282,7 @@ Shared database package using **Prisma ORM** with ${dialectLabel(dialect)}.
 5. Use the exported \`prisma\` client in your apps:
 
 \`\`\`ts
-import { prisma } from "@${projectName}/db";
+import { prisma } from "@packages/db";
 \`\`\`
 
 ## Scripts

@@ -4,13 +4,11 @@ export function generatePrettierTooling(
   config: StackConfig,
   builder: ProjectBuilder,
 ): void {
-  const projectName = config.projectName;
-
   builder.addFile(
     "tooling/prettier/package.json",
     JSON.stringify(
       {
-        name: `@${projectName}/prettier`,
+        name: "@tooling/prettier",
         version: "0.0.0",
         private: true,
         files: [".prettierrc.json"],

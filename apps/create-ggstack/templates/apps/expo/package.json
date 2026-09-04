@@ -1,5 +1,5 @@
 {
-  "name": "@{{PROJECT_NAME}}/{{APP_NAME}}",
+  "name": "@apps/{{APP_NAME}}",
   "version": "0.0.0",
   "private": true,
   "main": "expo-router/entry",
@@ -13,7 +13,7 @@
     "check-types": "tsc --noEmit"
   },
   "dependencies": {
-    "@{{PROJECT_NAME}}/env": "workspace:*",
+    "@packages/env": "workspace:*",
     "expo": "^57.0.9",
     "expo-constants": "~57.0.8",
     "expo-linking": "~57.0.4",
@@ -27,7 +27,7 @@
     "react-native-web": "^0.21.2"
   },
   "devDependencies": {
-    "@{{PROJECT_NAME}}/tsconfig": "workspace:*",
+    "@tooling/tsconfig": "workspace:*",
     "@babel/core": "^7.26.0",
     "@types/react": "^19.2.18",
     "typescript": "^5.8.0"
