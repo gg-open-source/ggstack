@@ -997,6 +997,47 @@ describe("collectConfig", () => {
     );
   });
 
+  it("collects the selected email provider", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("resend");
+
+    const config = await collectConfig([]);
+
+    expect(mockedSelect).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Which email provider do you want to use?",
+      }),
+    );
+    expect(config.email).toEqual({ provider: "resend" });
+  });
+
+  it("defaults email to none", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedSelect.mockResolvedValueOnce("none");
+    mockedSelect.mockResolvedValueOnce("none");
+
+    const config = await collectConfig([]);
+
+    expect(config.email).toEqual({ provider: "none" });
+  });
+
   it("does not add vite options to astro apps", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);
@@ -1028,6 +1069,7 @@ describe("collectConfig", () => {
       auth: { provider: "clerk" },
       db: { orm: "drizzle", dialect: "postgresql" },
       payments: { provider: "polar" },
+      email: { provider: "resend" },
       tooling: [{ type: "oxc" }],
     });
 
@@ -1043,6 +1085,7 @@ describe("collectConfig", () => {
     expect(config.auth).toEqual({ provider: "clerk" });
     expect(config.db).toEqual({ orm: "drizzle", dialect: "postgresql" });
     expect(config.payments).toEqual({ provider: "polar" });
+    expect(config.email).toEqual({ provider: "resend" });
     expect(config.tooling).toEqual([{ type: "oxc" }]);
     expect(prompts.log).toHaveBeenCalledWith(
       expect.stringContaining(`Using stack ${code}`),
@@ -1064,6 +1107,7 @@ describe("collectConfig", () => {
       auth: { provider: "none" },
       db: { orm: "none" },
       payments: { provider: "none" },
+      email: { provider: "none" },
       tooling: [],
     });
 

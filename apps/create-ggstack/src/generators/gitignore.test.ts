@@ -12,6 +12,7 @@ function createTestConfig(overrides: Partial<StackConfig> = {}): StackConfig {
     auth: { provider: "none" },
     db: { orm: "none" },
     payments: { provider: "none" },
+    email: { provider: "none" },
     tooling: [],
     ...overrides,
   };

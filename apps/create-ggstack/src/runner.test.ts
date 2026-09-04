@@ -3,6 +3,7 @@ import {
   buildProject,
   hasApp,
   hasAuth,
+  hasEmail,
   hasPackage,
   hasPayments,
   hasTooling,
@@ -19,6 +20,7 @@ function createTestConfig(overrides: Partial<StackConfig> = {}): StackConfig {
     auth: { provider: "none" },
     db: { orm: "none" },
     payments: { provider: "none" },
+    email: { provider: "none" },
     tooling: [],
     ...overrides,
   };
@@ -67,6 +69,7 @@ describe("buildProject", () => {
       auth: { provider: "clerk" },
       db: { orm: "drizzle" },
       payments: { provider: "stripe" },
+      email: { provider: "resend" },
       tooling: [{ type: "oxc" }, { type: "tailwind" }],
     });
 
@@ -94,6 +97,8 @@ describe("buildProject", () => {
     expect(readme).toContain("Clerk");
     expect(readme).toContain("Stripe");
     expect(readme).toContain("@test-project/payments");
+    expect(readme).toContain("@test-project/email");
+    expect(readme).toContain("Resend + React Email");
     expect(readme).toContain("Drizzle ORM + PostgreSQL");
     expect(readme).toContain("@test-project/ui");
     expect(readme).toContain("not mounted automatically");
@@ -702,6 +707,16 @@ describe("helpers", () => {
     const config = createTestConfig({ payments: { provider: "none" } });
     expect(hasPayments(config)).toBe(false);
   });
+
+  it("hasEmail returns true when an email provider is selected", () => {
+    const config = createTestConfig({ email: { provider: "resend" } });
+    expect(hasEmail(config)).toBe(true);
+  });
+
+  it("hasEmail returns false when email provider is none", () => {
+    const config = createTestConfig({ email: { provider: "none" } });
+    expect(hasEmail(config)).toBe(false);
+  });
 });
 
 describe("auth package generation", () => {
@@ -1105,7 +1120,7 @@ describe("env package generation", () => {
     );
   });
 
-  it("does not add provider keys when auth, db, and payments are none", async () => {
+  it("does not add provider keys when auth, db, payments, and email are none", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig();
 
@@ -1131,6 +1146,9 @@ describe("env package generation", () => {
     );
     expect(builder.files["packages/env/src/server.ts"]).not.toContain(
       "AUTUMN_SECRET_KEY",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "RESEND_API_KEY",
     );
     expect(builder.files[".env.example"]).not.toContain("DATABASE_URL");
   });
@@ -1365,6 +1383,25 @@ describe("env package generation", () => {
     );
   });
 
+  it("adds resend keys when resend is selected", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ email: { provider: "resend" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/env/src/server.ts"]).toContain(
+      "RESEND_API_KEY",
+    );
+    expect(builder.files["packages/env/src/server.ts"]).toContain("EMAIL_FROM");
+    expect(builder.files[".env.example"]).toContain("# Email");
+    expect(builder.files[".env.example"]).toContain("RESEND_API_KEY=");
+    expect(builder.files[".env.example"]).toContain("EMAIL_FROM=");
+    expect(builder.files["turbo.json"]).toContain("RESEND_API_KEY");
+    expect(builder.files["packages/env/src/server.ts"]).not.toContain(
+      "STRIPE_SECRET_KEY",
+    );
+  });
+
   it("lists generated keys on turbo globalEnv", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({
@@ -1512,5 +1549,65 @@ describe("payments package generation", () => {
     expect(builder.files["packages/payments/src/index.ts"]).toContain(
       "attachPlan",
     );
+  });
+});
+
+describe("email package generation", () => {
+  it("does not generate email package when email provider is none", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig();
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/email/package.json"]).toBeUndefined();
+  });
+
+  it("generates a resend package with React Email templates", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({ email: { provider: "resend" } });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["packages/email/package.json"]).toContain(
+      "@test-project/email",
+    );
+    expect(builder.files["packages/email/package.json"]).toContain("resend");
+    expect(builder.files["packages/email/package.json"]).toContain(
+      "react-email",
+    );
+    expect(builder.files["packages/email/package.json"]).toContain(
+      "@react-email/ui",
+    );
+    expect(builder.files["packages/email/package.json"]).toContain("email:dev");
+    expect(builder.files["packages/email/src/client.ts"]).toContain(
+      "serverEnv.RESEND_API_KEY",
+    );
+    expect(builder.files["packages/email/src/send.ts"]).toContain("sendEmail");
+    expect(builder.files["packages/email/src/send.ts"]).toContain(
+      "sendWelcomeEmail",
+    );
+    expect(builder.files["packages/email/src/send.ts"]).toContain(
+      "WelcomeEmail({ name: input.name, url: input.url })",
+    );
+    expect(builder.files["packages/email/src/send.ts"]).toContain(
+      "serverEnv.EMAIL_FROM",
+    );
+    expect(builder.files["packages/email/src/emails/welcome.tsx"]).toContain(
+      "WelcomeEmail",
+    );
+    expect(builder.files["packages/email/src/emails/welcome.tsx"]).toContain(
+      'from "react-email"',
+    );
+    expect(builder.files["packages/email/src/emails/welcome.tsx"]).toContain(
+      "export default WelcomeEmail",
+    );
+    expect(builder.files["packages/email/src/index.ts"]).toContain(
+      "sendWelcomeEmail",
+    );
+    expect(builder.files["packages/email/README.md"]).toContain("React Email");
+    expect(builder.files["packages/email/README.md"]).toContain("Resend");
+    expect(builder.files["packages/email/README.md"]).toContain("email:dev");
+    expect(builder.files["README.md"]).toContain("@test-project/email");
+    expect(builder.files["README.md"]).toContain("not mounted automatically");
   });
 });

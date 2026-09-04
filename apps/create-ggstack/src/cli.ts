@@ -12,6 +12,7 @@ import {
   DEFAULT_AUTH_PROVIDER,
   DEFAULT_DB_DIALECT,
   DEFAULT_DB_ORM,
+  DEFAULT_EMAIL_PROVIDER,
   DEFAULT_PACKAGE_MANAGER,
   DEFAULT_PAYMENT_PROVIDER,
   DEFAULT_PROJECT_NAME,
@@ -22,6 +23,7 @@ import {
   isAuthProvider,
   isDbDialect,
   isDbOrm,
+  isEmailProvider,
   isPaymentProvider,
   isShadcnBase,
   isShadcnPreset,
@@ -30,6 +32,7 @@ import {
   SHADCN_BASE_CHOICES,
   VITE_FRAMEWORK_CHOICES,
   VITE_REACT_VARIANT_CHOICES,
+  EMAIL_CHOICES,
   PACKAGE_CHOICES,
   PAYMENT_CHOICES,
   TOOLING_CHOICES,
@@ -48,6 +51,7 @@ import type {
   AppConfig,
   AuthConfig,
   DbConfig,
+  EmailConfig,
   PackageConfig,
   PackageManager,
   PackageType,
@@ -519,6 +523,18 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     );
   }
 
+  const selectedEmail = await select({
+    message: "Which email provider do you want to use?",
+    options: EMAIL_CHOICES.map((choice) => ({ ...choice })),
+    initialValue: DEFAULT_EMAIL_PROVIDER,
+  });
+
+  const email: EmailConfig = {
+    provider: isEmailProvider(selectedEmail)
+      ? selectedEmail
+      : DEFAULT_EMAIL_PROVIDER,
+  };
+
   return {
     projectName: sanitizeAppName(projectName),
     targetDir: path.resolve(process.cwd(), projectName),
@@ -528,6 +544,7 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     auth,
     db,
     payments,
+    email,
     tooling,
   };
 }

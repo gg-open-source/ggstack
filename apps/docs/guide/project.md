@@ -33,7 +33,8 @@ my-app/
 │   ├── api/              # optional tRPC
 │   ├── auth/             # optional, when an auth provider is selected
 │   ├── db/               # optional, when Drizzle or Prisma is selected
-│   └── payments/         # optional, when Stripe, Polar, or Autumn is selected
+│   ├── payments/         # optional, when Stripe, Polar, or Autumn is selected
+│   └── email/            # optional, when Resend is selected
 └── tooling/
     ├── tsconfig/         # always
     ├── tailwind/         # optional
@@ -62,7 +63,7 @@ Stack-specific paths are added only when that choice is on:
 | Prettier | `.prettiercache` |
 | Drizzle + SQLite | `*.db`, `*.db-journal`, `*.db-wal`, `*.db-shm` |
 
-Vite, Express, Fastify, shadcn/ui, tRPC, auth, payments, PostgreSQL/MySQL Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section. Drizzle + SQLite also ignores `*.db`, `*.db-journal`, `*.db-wal`, and `*.db-shm`. Astro build output is `dist`; only the generated `.astro` types directory is extra.
+Vite, Express, Fastify, shadcn/ui, tRPC, auth, payments, email, PostgreSQL/MySQL Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section. Drizzle + SQLite also ignores `*.db`, `*.db-journal`, `*.db-wal`, and `*.db-shm`. Astro build output is `dist`; only the generated `.astro` types directory is extra.
 
 ## Root scripts
 

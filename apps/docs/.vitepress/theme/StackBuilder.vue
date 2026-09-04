@@ -17,6 +17,7 @@ import {
   encodeStack,
   formatCreateCommand,
   isShadcnPreset,
+  EMAIL_CHOICES,
   PACKAGE_CHOICES,
   PAYMENT_CHOICES,
   sanitizeAppName,
@@ -250,6 +251,7 @@ function assignPreset(next: StackPreset): void {
   preset.auth = next.auth;
   preset.db = next.db;
   preset.payments = next.payments;
+  preset.email = next.email;
   preset.tooling = next.tooling;
   const current = next.packages.find((pkg) => pkg.type === "shadcn")?.shadcn
     ?.preset;
@@ -588,6 +590,24 @@ watch(
               :class="{ on: preset.payments.provider === choice.value }"
               :aria-checked="preset.payments.provider === choice.value"
               @click="preset.payments = { provider: choice.value }"
+            >
+              {{ choice.label }}
+            </button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>Email</h2>
+          <div class="chips" role="radiogroup" aria-label="Email">
+            <button
+              v-for="choice in EMAIL_CHOICES"
+              :key="choice.value"
+              type="button"
+              class="chip"
+              role="radio"
+              :class="{ on: preset.email.provider === choice.value }"
+              :aria-checked="preset.email.provider === choice.value"
+              @click="preset.email = { provider: choice.value }"
             >
               {{ choice.label }}
             </button>

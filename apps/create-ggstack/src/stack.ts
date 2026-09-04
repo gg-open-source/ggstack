@@ -4,6 +4,7 @@ import {
   DEFAULT_AUTH_PROVIDER,
   DEFAULT_DB_DIALECT,
   DEFAULT_DB_ORM,
+  DEFAULT_EMAIL_PROVIDER,
   DEFAULT_PACKAGE_MANAGER,
   DEFAULT_PAYMENT_PROVIDER,
   DEFAULT_PROJECT_NAME,
@@ -15,6 +16,7 @@ import {
   isAuthProvider,
   isDbDialect,
   isDbOrm,
+  isEmailProvider,
   isPackageManager,
   isPaymentProvider,
   isShadcnBase,
@@ -47,6 +49,7 @@ export {
   DEFAULT_AUTH_PROVIDER,
   DEFAULT_DB_DIALECT,
   DEFAULT_DB_ORM,
+  DEFAULT_EMAIL_PROVIDER,
   DEFAULT_PACKAGE_MANAGER,
   DEFAULT_PAYMENT_PROVIDER,
   DEFAULT_PROJECT_NAME,
@@ -54,6 +57,7 @@ export {
   DEFAULT_SHADCN_PRESET,
   DEFAULT_VITE_FRAMEWORK,
   DEFAULT_VITE_VARIANT,
+  EMAIL_CHOICES,
   PACKAGE_CHOICES,
   PAYMENT_CHOICES,
   SHADCN_BASE_CHOICES,
@@ -72,6 +76,7 @@ export type {
   AuthProvider,
   DbDialect,
   DbOrm,
+  EmailProvider,
   PackageManager,
   PackageType,
   PaymentProvider,
@@ -106,6 +111,7 @@ interface EncodedStackV1 {
   db?: StackPreset["db"]["orm"];
   dd?: StackPreset["db"]["dialect"];
   py?: StackPreset["payments"]["provider"];
+  em?: StackPreset["email"]["provider"];
   tl?: ToolingType[];
   pm?: PackageManager;
 }
@@ -133,6 +139,7 @@ export function createDefaultStackPreset(): StackPreset {
     auth: { provider: DEFAULT_AUTH_PROVIDER },
     db: { orm: DEFAULT_DB_ORM },
     payments: { provider: DEFAULT_PAYMENT_PROVIDER },
+    email: { provider: DEFAULT_EMAIL_PROVIDER },
     tooling: [],
   };
 }
@@ -248,6 +255,11 @@ export function normalizeStackPreset(preset: StackPreset): StackPreset {
       provider: isPaymentProvider(preset.payments.provider)
         ? preset.payments.provider
         : DEFAULT_PAYMENT_PROVIDER,
+    },
+    email: {
+      provider: isEmailProvider(preset.email.provider)
+        ? preset.email.provider
+        : DEFAULT_EMAIL_PROVIDER,
     },
     tooling,
   };
@@ -365,6 +377,7 @@ export function describeStack(
           : `${normalized.db.orm} / ${normalized.db.dialect ?? DEFAULT_DB_DIALECT}`,
     },
     { label: "payments", value: normalized.payments.provider },
+    { label: "email", value: normalized.email.provider },
   );
 
   return rows;
@@ -442,6 +455,10 @@ function toEncoded(preset: StackPreset): EncodedStackV1 {
     encoded.py = preset.payments.provider;
   }
 
+  if (preset.email.provider !== DEFAULT_EMAIL_PROVIDER) {
+    encoded.em = preset.email.provider;
+  }
+
   const tooling = preset.tooling.map((item) => item.type);
   if (tooling.length > 0) {
     encoded.tl = tooling;
@@ -502,6 +519,10 @@ function fromEncoded(encoded: EncodedStackV1): StackPreset {
 
   if (encoded.py) {
     preset.payments = { provider: encoded.py };
+  }
+
+  if (encoded.em) {
+    preset.email = { provider: encoded.em };
   }
 
   if (encoded.tl) {
@@ -586,6 +607,13 @@ function parseEncoded(value: unknown): EncodedStackV1 {
       throw new StackCodeError("Invalid --stack payment provider.");
     }
     encoded.py = record.py;
+  }
+
+  if (record.em !== undefined) {
+    if (typeof record.em !== "string" || !isEmailProvider(record.em)) {
+      throw new StackCodeError("Invalid --stack email provider.");
+    }
+    encoded.em = record.em;
   }
 
   if (record.tl !== undefined) {

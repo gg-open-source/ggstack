@@ -5,6 +5,7 @@ import type {
   DbOrm,
   PackageManager,
   PackageType,
+  EmailProvider,
   PaymentProvider,
   ShadcnBase,
   ShadcnOptions,
@@ -19,6 +20,7 @@ export const DEFAULT_AUTH_PROVIDER: AuthProvider = "none";
 export const DEFAULT_DB_ORM: DbOrm = "none";
 export const DEFAULT_DB_DIALECT: DbDialect = "postgresql";
 export const DEFAULT_PAYMENT_PROVIDER: PaymentProvider = "none";
+export const DEFAULT_EMAIL_PROVIDER: EmailProvider = "none";
 export const DEFAULT_VITE_FRAMEWORK: ViteFramework = "vanilla";
 export const DEFAULT_VITE_VARIANT: ViteVariant = "ts";
 export const DEFAULT_SHADCN_PRESET = "nova";
@@ -116,6 +118,15 @@ export const PAYMENT_CHOICES = [
   },
 ] as const;
 
+export const EMAIL_CHOICES = [
+  { value: "none", label: "None", hint: "no email" },
+  {
+    value: "resend",
+    label: "Resend",
+    hint: "React Email + Resend",
+  },
+] as const;
+
 export const VITE_FRAMEWORK_CHOICES = [
   { value: "vanilla", label: "Vanilla", hint: "TypeScript" },
   { value: "vue", label: "Vue", hint: "TypeScript" },
@@ -175,6 +186,10 @@ export function isDbDialect(value: string): value is DbDialect {
 
 export function isPaymentProvider(value: string): value is PaymentProvider {
   return ["none", "stripe", "polar", "autumn"].includes(value);
+}
+
+export function isEmailProvider(value: string): value is EmailProvider {
+  return ["none", "resend"].includes(value);
 }
 
 export function resolveDbDialect(dialect: DbDialect | undefined): DbDialect {

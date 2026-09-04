@@ -1,6 +1,6 @@
 # create-ggstack
 
-Interactive CLI that scaffolds a pnpm + Turborepo monorepo (T3/Turbo style): Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, React Router, shadcn/ui, tRPC, typed env, optional auth, Stripe / Polar / Autumn, Drizzle or Prisma (PostgreSQL, MySQL, or SQLite).
+Interactive CLI that scaffolds a pnpm + Turborepo monorepo (T3/Turbo style): Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, React Router, shadcn/ui, tRPC, typed env, optional auth, Stripe / Polar / Autumn, Resend + React Email, Drizzle or Prisma (PostgreSQL, MySQL, or SQLite).
 
 ## Usage
 
@@ -29,7 +29,7 @@ pnpm dlx create-ggstack my-app
 | `-h, --help` | Show help |
 | `-v, --version` | Show version |
 
-Apps, packages, tooling, auth, database, and payments are chosen interactively. `--preset` enables shadcn/ui and skips the preset-code prompt. `--npm` / `--yarn` / `--bun` only affect external CLIs during scaffold; you still need pnpm to work in the generated repo.
+Apps, packages, tooling, auth, database, payments, and email are chosen interactively. `--preset` enables shadcn/ui and skips the preset-code prompt. `--npm` / `--yarn` / `--bun` only affect external CLIs during scaffold; you still need pnpm to work in the generated repo.
 
 ## Docs
 

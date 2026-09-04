@@ -12,6 +12,7 @@ export type EnvVarGroup =
   | "database"
   | "auth"
   | "payments"
+  | "email"
   | "electron";
 
 export interface EnvVarSpec {
@@ -241,6 +242,28 @@ export function getEnvVarSpecs(config: StackConfig): EnvVarSpec[] {
       group: "payments",
       comment: "am_sk_test_... from the Autumn dashboard",
     });
+  }
+
+  if (config.email.provider === "resend") {
+    specs.push(
+      {
+        name: "RESEND_API_KEY",
+        kind: "server",
+        required: true,
+        schema: "string",
+        group: "email",
+        comment: "re_... from the Resend Dashboard",
+      },
+      {
+        name: "EMAIL_FROM",
+        kind: "server",
+        required: true,
+        schema: "string",
+        group: "email",
+        comment:
+          "Name <address@yourdomain.com> — onboarding@resend.dev is for testing only",
+      },
+    );
   }
 
   if (config.apps.some((app) => app.type === "electron")) {
@@ -496,6 +519,7 @@ function generateEnvExample(specs: EnvVarSpec[]): string {
     { group: "database", heading: "Database" },
     { group: "auth", heading: "Authentication" },
     { group: "payments", heading: "Payments" },
+    { group: "email", heading: "Email" },
     { group: "electron", heading: "Electron" },
   ];
 

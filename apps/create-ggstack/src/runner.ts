@@ -1,6 +1,7 @@
 import type { ProjectBuilder, StackConfig } from "./types.js";
 import { generateApp } from "./generators/apps/index.js";
 import { generateAuthPackage } from "./generators/packages/auth.js";
+import { generateEmailPackage } from "./generators/packages/email.js";
 import { generateEnvPackage } from "./generators/packages/env.js";
 import { generatePackage } from "./generators/packages/index.js";
 import { generatePaymentsPackage } from "./generators/packages/payments.js";
@@ -32,6 +33,10 @@ export async function buildProject(
     generatePaymentsPackage(config, builder);
   }
 
+  if (config.email.provider !== "none") {
+    generateEmailPackage(config, builder);
+  }
+
   for (const tooling of config.tooling) {
     generateTooling(config, builder, tooling);
   }
@@ -55,4 +60,8 @@ export function hasAuth(config: StackConfig): boolean {
 
 export function hasPayments(config: StackConfig): boolean {
   return config.payments.provider !== "none";
+}
+
+export function hasEmail(config: StackConfig): boolean {
+  return config.email.provider !== "none";
 }

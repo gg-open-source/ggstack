@@ -42,6 +42,26 @@ describe("stack codec", () => {
     );
   });
 
+  it("encodes a non-default email provider", () => {
+    const code = encodeStack({
+      ...createDefaultStackPreset(),
+      email: { provider: "resend" },
+    });
+
+    expect(JSON.parse(atob(code.slice(STACK_CODE_PREFIX.length)))).toEqual({
+      em: "resend",
+    });
+    expect(
+      roundTrip({
+        ...createDefaultStackPreset(),
+        email: { provider: "resend" },
+      }),
+    ).toEqual({
+      ...createDefaultStackPreset(),
+      email: { provider: "resend" },
+    });
+  });
+
   it("omits default app names, vite vanilla, and default enums", () => {
     const code = encodeStack({
       packageManager: "pnpm",
@@ -57,6 +77,7 @@ describe("stack codec", () => {
       auth: { provider: "none" },
       db: { orm: "none" },
       payments: { provider: "none" },
+      email: { provider: "none" },
       tooling: [],
     });
 
@@ -84,6 +105,7 @@ describe("stack codec", () => {
       auth: { provider: "better-auth" },
       db: { orm: "drizzle", dialect: "mysql" },
       payments: { provider: "stripe" },
+      email: { provider: "resend" },
       tooling: [{ type: "tailwind" }, { type: "oxc" }],
     };
 
@@ -98,6 +120,7 @@ describe("stack codec", () => {
       auth: { provider: "none" },
       db: { orm: "prisma", dialect: "sqlite" },
       payments: { provider: "none" },
+      email: { provider: "none" },
       tooling: [],
     });
 
@@ -162,6 +185,7 @@ describe("stack codec", () => {
       auth: { provider: "none" },
       db: { orm: "none" },
       payments: { provider: "none" },
+      email: { provider: "none" },
       tooling: [{ type: "eslint" }, { type: "oxc" }, { type: "prettier" }],
     });
 
@@ -196,6 +220,12 @@ describe("stack codec", () => {
           ),
       ),
     ).toThrow(/Duplicate app types/);
+    expect(() =>
+      decodeStack(
+        STACK_CODE_PREFIX +
+          btoa(JSON.stringify({ em: "sendgrid" })).replace(/=+$/g, ""),
+      ),
+    ).toThrow(/email provider/);
   });
 
   it("rejects duplicate app names after sanitizing", () => {
@@ -236,6 +266,9 @@ describe("stack codec", () => {
     expect(text).toContain("clerk");
     expect(text).toContain("next (next)");
     expect(describeStack(preset).some((row) => row.label === "auth")).toBe(
+      true,
+    );
+    expect(describeStack(preset).some((row) => row.label === "email")).toBe(
       true,
     );
   });

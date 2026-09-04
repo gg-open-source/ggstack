@@ -28,7 +28,7 @@ pnpm create ggstack my-app --preset b2D0vQ7G4
 pnpm create ggstack --decode g1e30
 ```
 
-Also accepted: `--stack=g1e30` and `--preset=b2D0vQ7G4`. Build `--stack` codes visually on [Create](/create). The code packs apps (including Vite framework/variant and folder names), packages, shadcn base/preset, tooling, auth, database, payments, and the package manager used to run official app CLIs. Project name stays a positional argument. `--preset` without `--stack` still skips only the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list. `--npm`, `--yarn`, and `--bun` override the package manager stored in a `--stack` code.
+Also accepted: `--stack=g1e30` and `--preset=b2D0vQ7G4`. Build `--stack` codes visually on [Create](/create). The code packs apps (including Vite framework/variant and folder names), packages, shadcn base/preset, tooling, auth, database, payments, email, and the package manager used to run official app CLIs. Project name stays a positional argument. `--preset` without `--stack` still skips only the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list. `--npm`, `--yarn`, and `--bun` override the package manager stored in a `--stack` code.
 
 `--npm`, `--yarn`, and `--bun` only affect package-manager invocations the CLI runs during scaffold. The generated repo is still a **pnpm workspace**. The CLI warns when the flag is not `--pnpm`. You still need pnpm installed to work in the project.
 
@@ -47,6 +47,7 @@ Also accepted: `--stack=g1e30` and `--preset=b2D0vQ7G4`. Build `--stack` codes v
 11. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.
 12. **Database** — if you chose Drizzle or Prisma: PostgreSQL (default), MySQL, or SQLite. Drizzle hints name the driver (`node-postgres`, `mysql2`, `libsql`). Prisma hints name the `schema.prisma` `provider`.
 13. **Payments** — none (default), Stripe, Polar, or Autumn. Choosing a provider adds `packages/payments`. Stripe prints that it uses Upstash Redis and a single `syncStripeDataToKV` function.
+14. **Email** — none (default) or Resend. Choosing Resend adds `packages/email` with React Email templates and a Resend sender.
 
 `packages/env`, `tooling/tsconfig`, and a root `.env.example` are always written.
 

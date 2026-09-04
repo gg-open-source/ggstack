@@ -135,6 +135,10 @@ const PAYMENT_LABELS: Record<string, string> = {
   autumn: "Autumn",
 };
 
+const EMAIL_LABELS: Record<string, string> = {
+  resend: "Resend + React Email",
+};
+
 const ORM_LABELS: Record<string, string> = {
   drizzle: "Drizzle ORM",
   prisma: "Prisma",
@@ -173,6 +177,7 @@ export function generateRootReadme(config: StackConfig): string {
   const hasAuth = config.auth.provider !== "none";
   const hasDb = config.db.orm !== "none";
   const hasPayments = config.payments.provider !== "none";
+  const hasEmail = config.email.provider !== "none";
   const hasTailwind = config.tooling.some((tool) => tool.type === "tailwind");
 
   const lines: string[] = [
@@ -287,12 +292,20 @@ export function generateRootReadme(config: StackConfig): string {
     );
   }
 
-  if (hasAuth || hasDb || hasTrpc || hasPayments) {
+  if (hasEmail) {
+    const label = EMAIL_LABELS[config.email.provider] ?? config.email.provider;
+    lines.push(
+      `- \`packages/email\` — ${label} (\`@${name}/email\`). Preview templates with \`pnpm --filter @${name}/email email:dev\`. See that package's README.`,
+    );
+  }
+
+  if (hasAuth || hasDb || hasTrpc || hasPayments || hasEmail) {
     const subjects = [
       hasAuth ? "Auth" : null,
       hasDb ? "database" : null,
       hasTrpc ? "API" : null,
       hasPayments ? "payments" : null,
+      hasEmail ? "email" : null,
     ].filter((value): value is string => value !== null);
     const heading =
       subjects.length === 1
@@ -303,6 +316,7 @@ export function generateRootReadme(config: StackConfig): string {
       hasDb ? `import \`@${name}/db\`` : null,
       hasTrpc ? `mount \`@${name}/api\`` : null,
       hasPayments ? `import \`@${name}/payments\`` : null,
+      hasEmail ? `import \`@${name}/email\`` : null,
     ].filter((value): value is string => value !== null);
 
     lines.push(

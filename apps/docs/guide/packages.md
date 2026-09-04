@@ -1,5 +1,5 @@
 ---
-description: env, shadcn/ui, tRPC, auth, payments, and Drizzle or Prisma. Auth, db, tRPC, and payments are not auto-wired into apps.
+description: env, shadcn/ui, tRPC, auth, payments, email, and Drizzle or Prisma. Auth, db, tRPC, payments, and email are not auto-wired into apps.
 ---
 
 # Packages
@@ -151,6 +151,31 @@ import { attachPlan } from "@my-app/payments";
 
 const checkout = await attachPlan({ customerId: user.id, planId: "pro" });
 ```
+
+## `packages/email` (optional)
+
+Created when the email provider is not `none`. Shared React Email templates and a Resend sender live in `@<project>/email`. **Not auto-wired** — call the helpers from a server route or job after scaffold. See the generated `packages/email/README.md` for snippets.
+
+| Provider | SDK | What you get |
+| --- | --- | --- |
+| Resend | `resend` + `react-email` | Starter `WelcomeEmail` template, `sendEmail` / `sendWelcomeEmail` helpers, and `email:dev` preview on port 3001. |
+
+```ts
+import { sendWelcomeEmail } from "@my-app/email";
+
+await sendWelcomeEmail({
+  to: user.email,
+  name: user.name,
+});
+```
+
+Preview templates:
+
+```bash
+pnpm --filter @my-app/email email:dev
+```
+
+Pass templates as a function call (`WelcomeEmail({ name })`), not as JSX. Add new files under `src/emails` with a default export to see them in the preview sidebar.
 
 ## `packages/db` (optional)
 

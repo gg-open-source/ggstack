@@ -7,7 +7,7 @@ const stackCodec = new URL("../../create-ggstack/src/stack.ts", import.meta.url)
   .pathname;
 
 const llmsDescription =
-  "Interactive CLI (`create-ggstack`) that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style. Pick Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, tRPC, Better Auth / Clerk / WorkOS, and Drizzle or Prisma (PostgreSQL, MySQL, or SQLite). Every project gets a typed `packages/env` and a root `.env.example`.";
+  "Interactive CLI (`create-ggstack`) that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style. Pick Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, tRPC, Better Auth / Clerk / WorkOS, Stripe / Polar / Autumn, Resend + React Email, and Drizzle or Prisma (PostgreSQL, MySQL, or SQLite). Every project gets a typed `packages/env` and a root `.env.example`.";
 
 const llmsDetails = `create-ggstack is the published npm package. This repository contains the CLI source and these docs. It is not a generated app.
 
@@ -15,7 +15,7 @@ Requirements: Node.js >= 22 and pnpm. The generated workspace is always a pnpm m
 
 Always written: \`packages/env\` (\`@t3-oss/env-core\` + Zod), \`tooling/tsconfig\`, and a root \`.env.example\`.
 
-Never auto-wired into app templates: auth, database, or tRPC. Import those packages in the app yourself after scaffold. Expo has no \`dev\` script, so it does not join root \`pnpm dev\`.
+Never auto-wired into app templates: auth, database, tRPC, payments, or email. Import those packages in the app yourself after scaffold. Expo has no \`dev\` script, so it does not join root \`pnpm dev\`.
 
 \`\`\`bash
 pnpm create ggstack@latest my-app --stack g1e30

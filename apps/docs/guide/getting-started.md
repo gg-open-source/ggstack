@@ -16,7 +16,7 @@ description: Requirements, how to run create-ggstack, and the post-scaffold step
 The fastest path is the visual builder: pick your stack, copy the command, paste it in a terminal.
 
 1. Open [Create](/create)
-2. Choose apps, packages, auth, database, payments, and tooling
+2. Choose apps, packages, auth, database, payments, email, and tooling
 3. Copy the generated command. It looks like this:
 
 ```bash
@@ -44,7 +44,7 @@ npx create-ggstack my-app --pnpm
 pnpm dlx create-ggstack my-app
 ```
 
-Without `--stack`, the CLI prompts for apps, package extras (including a shadcn base and, if you want one, a preset when shadcn/ui is on), tooling, auth, a database ORM, a payment provider (Stripe, Polar, or Autumn), and — when you pick Drizzle or Prisma — which database to use. You can also pass a shadcn preset on the command line with `--preset <code>`. See [CLI](./cli.md).
+Without `--stack`, the CLI prompts for apps, package extras (including a shadcn base and, if you want one, a preset when shadcn/ui is on), tooling, auth, a database ORM, a payment provider (Stripe, Polar, or Autumn), an email provider (Resend), and — when you pick Drizzle or Prisma — which database to use. You can also pass a shadcn preset on the command line with `--preset <code>`. See [CLI](./cli.md).
 
 ## After the CLI finishes
 

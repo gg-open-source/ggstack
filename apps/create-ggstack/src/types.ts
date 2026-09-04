@@ -67,6 +67,12 @@ export interface PaymentConfig {
   provider: PaymentProvider;
 }
 
+export type EmailProvider = "none" | "resend";
+
+export interface EmailConfig {
+  provider: EmailProvider;
+}
+
 export type ToolingType = "tailwind" | "oxc" | "prettier" | "eslint";
 
 export interface ToolingConfig {
@@ -82,6 +88,7 @@ export interface StackConfig {
   auth: AuthConfig;
   db: DbConfig;
   payments: PaymentConfig;
+  email: EmailConfig;
   tooling: ToolingConfig[];
 }
 

@@ -1,6 +1,6 @@
 # ggstack
 
-> Interactive CLI (`create-ggstack`) that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style. Pick Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, tRPC, Better Auth / Clerk / WorkOS, and Drizzle or Prisma (PostgreSQL, MySQL, or SQLite). Every project gets a typed `packages/env` and a root `.env.example`.
+> Interactive CLI (`create-ggstack`) that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style. Pick Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, tRPC, Better Auth / Clerk / WorkOS, Stripe / Polar / Autumn, Resend + React Email, and Drizzle or Prisma (PostgreSQL, MySQL, or SQLite). Every project gets a typed `packages/env` and a root `.env.example`.
 
 This file is the full user guide concatenated for language models. Prefer it over HTML docs pages. Source of each section: `apps/docs/guide/`. The docs site also serves each page as Markdown at the same path with a `.md` suffix, plus `/llms.txt` (index) and `/llms-full.txt` (this bundle).
 
@@ -34,7 +34,7 @@ Build `--stack` codes at `/create`. Inspect one with `pnpm create ggstack --deco
 The fastest path is the visual builder: pick your stack, copy the command, paste it in a terminal.
 
 1. Open `/create`
-2. Choose apps, packages, auth, database, payments, and tooling
+2. Choose apps, packages, auth, database, payments, email, and tooling
 3. Copy the generated command. It looks like this:
 
 ```bash
@@ -62,7 +62,7 @@ npx create-ggstack my-app --pnpm
 pnpm dlx create-ggstack my-app
 ```
 
-Without `--stack`, the CLI prompts for apps, package extras (including a shadcn base and, if you want one, a preset when shadcn/ui is on), tooling, auth, a database ORM, a payment provider (Stripe, Polar, or Autumn), and — when you pick Drizzle or Prisma — which database to use. You can also pass a shadcn preset on the command line with `--preset <code>`. See CLI.
+Without `--stack`, the CLI prompts for apps, package extras (including a shadcn base and, if you want one, a preset when shadcn/ui is on), tooling, auth, a database ORM, a payment provider (Stripe, Polar, or Autumn), an email provider (Resend), and — when you pick Drizzle or Prisma — which database to use. You can also pass a shadcn preset on the command line with `--preset <code>`. See CLI.
 
 ## After the CLI finishes
 
@@ -105,7 +105,7 @@ pnpm create ggstack my-app --preset b2D0vQ7G4
 pnpm create ggstack --decode g1e30
 ```
 
-Also accepted: `--stack=g1e30` and `--preset=b2D0vQ7G4`. Build `--stack` codes visually on `/create`. The code packs apps (including Vite framework/variant and folder names), packages, shadcn base/preset, tooling, auth, database, payments, and the package manager used to run official app CLIs. Project name stays a positional argument. `--preset` without `--stack` still skips only the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list. `--npm`, `--yarn`, and `--bun` override the package manager stored in a `--stack` code.
+Also accepted: `--stack=g1e30` and `--preset=b2D0vQ7G4`. Build `--stack` codes visually on `/create`. The code packs apps (including Vite framework/variant and folder names), packages, shadcn base/preset, tooling, auth, database, payments, email, and the package manager used to run official app CLIs. Project name stays a positional argument. `--preset` without `--stack` still skips only the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list. `--npm`, `--yarn`, and `--bun` override the package manager stored in a `--stack` code.
 
 `--npm`, `--yarn`, and `--bun` only affect package-manager invocations the CLI runs during scaffold. The generated repo is still a **pnpm workspace**. The CLI warns when the flag is not `--pnpm`. You still need pnpm installed to work in the project.
 
@@ -123,6 +123,8 @@ Also accepted: `--stack=g1e30` and `--preset=b2D0vQ7G4`. Build `--stack` codes v
 10. **Authentication** — Better Auth, Clerk, WorkOS, or none (default none).
 11. **Database ORM** — none (default), Drizzle, or Prisma. Choosing an ORM adds `packages/db`.
 12. **Database** — if you chose Drizzle or Prisma: PostgreSQL (default), MySQL, or SQLite. Drizzle hints name the driver (`node-postgres`, `mysql2`, `libsql`). Prisma hints name the `schema.prisma` `provider`.
+13. **Payments** — none (default), Stripe, Polar, or Autumn. Choosing a provider adds `packages/payments`.
+14. **Email** — none (default) or Resend. Choosing Resend adds `packages/email` with React Email templates and a Resend sender.
 
 `packages/env`, `tooling/tsconfig`, and a root `.env.example` are always written.
 
@@ -171,7 +173,9 @@ my-app/
 │   ├── ui/               # optional shadcn/ui
 │   ├── api/              # optional tRPC
 │   ├── auth/             # optional, when an auth provider is selected
-│   └── db/               # optional, when Drizzle or Prisma is selected
+│   ├── db/               # optional, when Drizzle or Prisma is selected
+│   ├── payments/         # optional, when Stripe, Polar, or Autumn is selected
+│   └── email/            # optional, when Resend is selected
 └── tooling/
     ├── tsconfig/         # always
     ├── tailwind/         # optional
@@ -200,7 +204,7 @@ Stack-specific paths are added only when that choice is on:
 | Prettier | `.prettiercache` |
 | Drizzle + SQLite | `*.db`, `*.db-journal`, `*.db-wal`, `*.db-shm` |
 
-Vite, Express, Fastify, shadcn/ui, tRPC, auth, PostgreSQL/MySQL Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section. Drizzle + SQLite also ignores `*.db`, `*.db-journal`, `*.db-wal`, and `*.db-shm`. Astro build output is `dist`; only the generated `.astro` types directory is extra.
+Vite, Express, Fastify, shadcn/ui, tRPC, auth, payments, email, PostgreSQL/MySQL Drizzle, Prisma, Tailwind, and Oxc do not add extra ignore paths — they use `dist`, `.env`, or `node_modules` already listed in the workspace section. Drizzle + SQLite also ignores `*.db`, `*.db-journal`, `*.db-wal`, and `*.db-shm`. Astro build output is `dist`; only the generated `.astro` types directory is extra.
 
 ## Root scripts
 
@@ -475,6 +479,31 @@ export default function App() {
 
 **Not auto-wired.** Wrap your app root with `AuthProvider` after scaffold.
 
+## `packages/email` (optional)
+
+Created when the email provider is not `none`. Shared React Email templates and a Resend sender live in `@<project>/email`. **Not auto-wired** — call the helpers from a server route or job after scaffold. See the generated `packages/email/README.md` for snippets.
+
+| Provider | SDK | What you get |
+| --- | --- | --- |
+| Resend | `resend` + `react-email` | Starter `WelcomeEmail` template, `sendEmail` / `sendWelcomeEmail` helpers, and `email:dev` preview on port 3001. |
+
+```ts
+import { sendWelcomeEmail } from "@my-app/email";
+
+await sendWelcomeEmail({
+  to: user.email,
+  name: user.name,
+});
+```
+
+Preview templates:
+
+```bash
+pnpm --filter @my-app/email email:dev
+```
+
+Pass templates as a function call (`WelcomeEmail({ name })`), not as JSX. Add new files under `src/emails` with a default export to see them in the preview sidebar.
+
 ## `packages/db` (optional)
 
 Created when you pick Drizzle or Prisma.
@@ -526,7 +555,7 @@ Every project gets `packages/env` and a root `.env.example`. Copy that file to `
 cp .env.example .env
 ```
 
-The Zod schema is generated from the apps, auth provider, and ORM you selected. Empty required strings fail validation.
+The Zod schema is generated from the apps, auth provider, payment provider, email provider, and ORM you selected. Empty required strings fail validation.
 
 ## Server vs client
 
@@ -564,6 +593,8 @@ Clerk and WorkOS also generate `getPublicAuthConfig()`, which reads the publisha
 | WorkOS + Vite/Electron/TanStack Start/React Router | `VITE_WORKOS_CLIENT_ID` | client | yes |
 | WorkOS + Expo | `EXPO_PUBLIC_WORKOS_CLIENT_ID` | client | yes |
 | Electron | `VITE_DEV_SERVER_URL` | server | no (URL; injected in Electron dev) |
+| Resend | `RESEND_API_KEY` | server | yes |
+| Resend | `EMAIL_FROM` | server | yes (`Name <address@yourdomain.com>`) |
 
 Better Auth extra secrets (for example `GITHUB_CLIENT_ID`) are not generated. Add them to the schema and `.env.example` if you need them.
 

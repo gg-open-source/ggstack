@@ -10,7 +10,7 @@ Every project gets `packages/env` and a root `.env.example`. Copy that file to `
 cp .env.example .env
 ```
 
-The Zod schema is generated from the apps, auth provider, payment provider, and ORM you selected. Empty required strings fail validation.
+The Zod schema is generated from the apps, auth provider, payment provider, email provider, and ORM you selected. Empty required strings fail validation.
 
 ## Server vs client
 
@@ -58,6 +58,8 @@ Clerk and WorkOS also generate `getPublicAuthConfig()`, which reads the publisha
 | Polar | `POLAR_PRODUCT_ID` | server | yes |
 | Polar | `POLAR_SERVER` | server | no (`sandbox` \| `production`; defaults to sandbox in code) |
 | Autumn | `AUTUMN_SECRET_KEY` | server | yes |
+| Resend | `RESEND_API_KEY` | server | yes |
+| Resend | `EMAIL_FROM` | server | yes (`Name <address@yourdomain.com>`) |
 
 Better Auth extra secrets (for example `GITHUB_CLIENT_ID`) are not generated. Add them to the schema and `.env.example` if you need them.
 

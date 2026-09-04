@@ -30,7 +30,10 @@
     "database",
     "stripe",
     "polar",
-    "autumn"
+    "autumn",
+    "resend",
+    "react-email",
+    "email"
   ],
   "bin": {
     "create-ggstack": "./dist/index.js"

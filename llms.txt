@@ -1,6 +1,6 @@
 # ggstack
 
-> Interactive CLI (`create-ggstack`) that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style. Pick Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, tRPC, Better Auth / Clerk / WorkOS, and Drizzle or Prisma (PostgreSQL, MySQL, or SQLite). Every project gets a typed `packages/env` and a root `.env.example`.
+> Interactive CLI (`create-ggstack`) that scaffolds a pnpm + Turborepo monorepo in the T3/Turbo style. Pick Vite, Next.js, Astro, Expo Router, Electron, Express, Fastify, TanStack Start, and/or React Router, then optionally add shadcn/ui, tRPC, Better Auth / Clerk / WorkOS, Stripe / Polar / Autumn, Resend + React Email, and Drizzle or Prisma (PostgreSQL, MySQL, or SQLite). Every project gets a typed `packages/env` and a root `.env.example`.
 
 `create-ggstack` is the published npm package. This repository contains the CLI source (`apps/create-ggstack`) and the VitePress docs (`apps/docs`). It is not a generated app.
 
@@ -8,7 +8,7 @@ Requirements: Node.js >= 22 and pnpm. The generated workspace is always a pnpm m
 
 Always written: `packages/env` (`@t3-oss/env-core` + Zod), `tooling/tsconfig`, and a root `.env.example`.
 
-Never auto-wired into app templates: auth, database, or tRPC. Import those packages in the app yourself after scaffold. Expo has no `dev` script, so it does not join root `pnpm dev`.
+Never auto-wired into app templates: auth, database, tRPC, payments, or email. Import those packages in the app yourself after scaffold. Expo has no `dev` script, so it does not join root `pnpm dev`.
 
 ```bash
 pnpm create ggstack@latest my-app --stack g1e30
@@ -18,7 +18,7 @@ pnpm install
 pnpm dev
 ```
 
-`--stack` codes come from the visual builder (`apps/docs/create.md`). They pack the full config (apps, packages, auth, database, payments, tooling, shadcn) and skip every prompt. Inspect a code with `pnpm create ggstack --decode <code>`. Interactive mode is still `pnpm create ggstack my-app`. Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`. Prefer the Markdown sources linked below over HTML docs pages.
+`--stack` codes come from the visual builder (`apps/docs/create.md`). They pack the full config (apps, packages, auth, database, payments, email, tooling, shadcn) and skip every prompt. Inspect a code with `pnpm create ggstack --decode <code>`. Interactive mode is still `pnpm create ggstack my-app`. Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`. Prefer the Markdown sources linked below over HTML docs pages.
 
 ## Docs
 
@@ -27,8 +27,8 @@ pnpm dev
 - [CLI](./apps/docs/guide/cli.md): Flags (`--stack`, `--decode`, `--preset`, `--pnpm`/`--npm`/`--yarn`/`--bun`), the full interactive prompt order, name sanitizing, and abort conditions.
 - [Generated project](./apps/docs/guide/project.md): Workspace layout, root scripts, Turbo `globalEnv`, `.gitignore` rules, and `@<project>/<folder>` package names.
 - [Apps](./apps/docs/guide/apps.md): Per-app templates, scripts, default ports, env wiring, Vite frameworks (TypeScript only), and Expo/NativeWind notes.
-- [Packages](./apps/docs/guide/packages.md): `env`, shadcn/ui (bases, presets, `cn()` only — no pre-generated components), tRPC, auth providers, and Drizzle/Prisma.
-- [Environment](./apps/docs/guide/environment.md): Server vs client prefixes, the variable matrix (auth, database, Electron), and when validation is skipped (`CI`, `SKIP_ENV_VALIDATION`, lint).
+- [Packages](./apps/docs/guide/packages.md): `env`, shadcn/ui (bases, presets, `cn()` only — no pre-generated components), tRPC, auth providers, payments, Resend + React Email, and Drizzle/Prisma.
+- [Environment](./apps/docs/guide/environment.md): Server vs client prefixes, the variable matrix (auth, database, payments, email, Electron), and when validation is skipped (`CI`, `SKIP_ENV_VALIDATION`, lint).
 - [Tooling](./apps/docs/guide/tooling.md): Shared TypeScript config; Tailwind v4 (forced on with shadcn); Oxc lint/format vs Prettier/ESLint stubs.
 
 ## Optional
