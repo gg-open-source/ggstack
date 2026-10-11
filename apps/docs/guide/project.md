@@ -78,6 +78,18 @@ Vite, Express, Fastify, shadcn/ui, tRPC, auth, payments, email, PostgreSQL/MySQL
 
 Turbo `dev` is uncached and persistent. `check-types` depends on `^build`. Env vars from `packages/env` are listed on `turbo.json` `globalEnv` (except `NODE_ENV`).
 
+## Workspace package scopes
+
+Workspace packages use only the scope that matches their top-level folder:
+
+| Folder | Package name and import pattern |
+| --- | --- |
+| `apps/<name>` | `@apps/<name>` |
+| `packages/<name>` | `@packages/<name>` |
+| `tooling/<name>` | `@tooling/<name>` |
+
+The project name is never used as a package scope. For example, a project named `my-app` imports its database package from `@packages/db`, not `@my-app/db`. Use the same names with pnpm filters and in workspace dependencies.
+
 ## Package manager
 
 Install and run scripts with **pnpm**. The generated `package.json` pins `packageManager` to `pnpm@11.2.2` when you scaffolded with pnpm. Node is declared as `>=22` (`engine-strict` is on).
@@ -88,5 +100,3 @@ Filter a single package:
 pnpm --filter @apps/next dev
 pnpm --filter @packages/db db:studio
 ```
-
-Workspace package names follow the folder they live in: `@apps/<folder>`, `@packages/<folder>`, and `@tooling/<folder>`. The project name is not used as a scope.

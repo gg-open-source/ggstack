@@ -335,7 +335,7 @@ export function generateRootReadme(config: StackConfig): string {
 
   lines.push(
     "",
-    "Workspace packages are named `@apps/<folder>`, `@packages/<folder>`, and `@tooling/<folder>`.",
+    "Workspace packages use only the folder-based scopes `@apps/<folder>`, `@packages/<folder>`, and `@tooling/<folder>`. The project name is never used as a package scope.",
     "",
     `\`tooling/tsconfig\` is always present. Shared TypeScript packages extend \`@tooling/tsconfig/base.json\`.`,
     "",

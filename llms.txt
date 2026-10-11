@@ -25,7 +25,7 @@ pnpm dev
 - [Create](./apps/docs/create.md): Visual stack builder. Generates a `--stack` command you paste in a terminal.
 - [Getting started](./apps/docs/guide/getting-started.md): Requirements, how to run the CLI, and the post-scaffold steps.
 - [CLI](./apps/docs/guide/cli.md): Flags (`--stack`, `--decode`, `--preset`, `--pnpm`/`--npm`/`--yarn`/`--bun`), the full interactive prompt order, name sanitizing, and abort conditions.
-- [Generated project](./apps/docs/guide/project.md): Workspace layout, root scripts, Turbo `globalEnv`, `.gitignore` rules, and `@apps/` / `@packages/` / `@tooling/` package names.
+- [Generated project](./apps/docs/guide/project.md): Workspace layout, root scripts, Turbo `globalEnv`, `.gitignore` rules, and the exclusive `@apps/` / `@packages/` / `@tooling/` package scopes.
 - [Apps](./apps/docs/guide/apps.md): Per-app templates, scripts, default ports, env wiring, Vite frameworks (TypeScript only), and Expo/NativeWind notes.
 - [Packages](./apps/docs/guide/packages.md): `env`, shadcn/ui (bases, presets, `cn()` only — no pre-generated components), tRPC, auth providers, payments, Resend + React Email, and Drizzle/Prisma.
 - [Environment](./apps/docs/guide/environment.md): Server vs client prefixes, the variable matrix (auth, database, payments, email, Electron), and when validation is skipped (`CI`, `SKIP_ENV_VALIDATION`, lint).

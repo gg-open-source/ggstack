@@ -102,10 +102,13 @@ describe("buildProject", () => {
     expect(readme).toContain("Drizzle ORM + PostgreSQL");
     expect(readme).toContain("@packages/ui");
     expect(readme).toContain(
-      "Workspace packages are named `@apps/<folder>`, `@packages/<folder>`, and `@tooling/<folder>`.",
+      "Workspace packages use only the folder-based scopes `@apps/<folder>`, `@packages/<folder>`, and `@tooling/<folder>`.",
     );
     expect(readme).toContain("not mounted automatically");
     expect(readme).toContain("Oxc");
+
+    const generatedOutput = Object.values(builder.files).join("\n");
+    expect(generatedOutput).not.toContain("@test-project/");
   });
 
   it("always generates tsconfig tooling", async () => {
