@@ -1,13 +1,7 @@
 name: Publish
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - apps/create-ggstack/package.json
-  release:
-    types: [published]
-  workflow_dispatch:
+  workflow_call:
 
 # id-token: write is required for npm trusted publishing (OIDC).
 # Do not set NODE_AUTH_TOKEN or registry-url: either overrides OIDC.
