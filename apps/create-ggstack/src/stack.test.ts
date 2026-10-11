@@ -112,6 +112,34 @@ describe("stack codec", () => {
     expect(roundTrip(preset)).toEqual(normalizeStackPreset(preset));
   });
 
+  it("round-trips multiple apps of the same type", () => {
+    const preset: StackPreset = {
+      ...createDefaultStackPreset(),
+      apps: [
+        { type: "next", name: "web" },
+        { type: "next", name: "docs" },
+        {
+          type: "vite",
+          name: "admin",
+          vite: { framework: "react", variant: "ts" },
+        },
+        {
+          type: "vite",
+          name: "marketing",
+          vite: { framework: "vue", variant: "ts" },
+        },
+      ],
+    };
+
+    expect(roundTrip(preset)).toEqual(normalizeStackPreset(preset));
+    expect(roundTrip(preset).apps.map((app) => app.name)).toEqual([
+      "admin",
+      "marketing",
+      "web",
+      "docs",
+    ]);
+  });
+
   it("adds tailwind when shadcn is selected and db when an ORM is selected", () => {
     const preset = roundTrip({
       packageManager: "pnpm",
@@ -211,15 +239,6 @@ describe("stack codec", () => {
           btoa(JSON.stringify({ au: "auth0" })).replace(/=+$/g, ""),
       ),
     ).toThrow(/auth provider/);
-    expect(() =>
-      decodeStack(
-        STACK_CODE_PREFIX +
-          btoa(JSON.stringify({ a: [{ t: "next" }, { t: "next" }] })).replace(
-            /=+$/g,
-            "",
-          ),
-      ),
-    ).toThrow(/Duplicate app types/);
     expect(() =>
       decodeStack(
         STACK_CODE_PREFIX +

@@ -285,6 +285,114 @@ describe("collectConfig", () => {
     ]);
   });
 
+  it("collects duplicate counts and configures every duplicate app", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+    const mockedSelect = vi.mocked(prompts.select);
+    const mockedConfirm = vi.mocked(prompts.confirm);
+
+    mockedText.mockResolvedValueOnce("test-project"); // project name
+    mockedMultiSelect.mockResolvedValueOnce(["vite", "next"]); // apps
+    mockedConfirm.mockResolvedValueOnce(true); // duplicate apps
+    mockedMultiSelect.mockResolvedValueOnce(["vite"]); // apps to duplicate
+    mockedText.mockResolvedValueOnce("2"); // vite duplicate count
+    mockedText.mockResolvedValueOnce("web"); // first vite name
+    mockedSelect.mockResolvedValueOnce("react"); // first vite framework
+    mockedSelect.mockResolvedValueOnce("react-compiler"); // first vite variant
+    mockedText.mockResolvedValueOnce("web-2"); // second vite name
+    mockedSelect.mockResolvedValueOnce("vue"); // second vite framework
+    mockedText.mockResolvedValueOnce("web-3"); // third vite name
+    mockedSelect.mockResolvedValueOnce("vanilla"); // third vite framework
+    mockedText.mockResolvedValueOnce("docs"); // next name
+    mockedMultiSelect.mockResolvedValueOnce([]); // packages
+    mockedMultiSelect.mockResolvedValueOnce([]); // tooling
+
+    const config = await collectConfig([]);
+
+    expect(mockedConfirm).toHaveBeenCalledWith({
+      message: "Do you want to add duplicates of any selected apps?",
+      initialValue: false,
+    });
+    expect(mockedMultiSelect).toHaveBeenCalledWith({
+      message: "Which apps do you want to duplicate?",
+      options: expect.arrayContaining([
+        expect.objectContaining({ value: "vite" }),
+        expect.objectContaining({ value: "next" }),
+      ]),
+      required: true,
+    });
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "How many duplicates of Vite do you want to add?",
+        placeholder: "1",
+        defaultValue: "1",
+      }),
+    );
+    expect(config.apps).toEqual([
+      {
+        type: "vite",
+        name: "web",
+        vite: { framework: "react", variant: "react-compiler" },
+      },
+      {
+        type: "vite",
+        name: "web-2",
+        vite: { framework: "vue", variant: "ts" },
+      },
+      {
+        type: "vite",
+        name: "web-3",
+        vite: { framework: "vanilla", variant: "ts" },
+      },
+      { type: "next", name: "docs" },
+    ]);
+  });
+
+  it("suggests unique names for duplicate apps and validates their count", async () => {
+    const mockedText = vi.mocked(prompts.text);
+    const mockedMultiSelect = vi.mocked(prompts.multiSelect);
+
+    mockedText.mockResolvedValueOnce("test-project");
+    mockedMultiSelect.mockResolvedValueOnce(["next"]);
+    vi.mocked(prompts.confirm).mockResolvedValueOnce(true);
+    mockedMultiSelect.mockResolvedValueOnce(["next"]);
+    mockedText.mockResolvedValueOnce("2");
+    mockedText.mockResolvedValueOnce("web");
+    mockedText.mockResolvedValueOnce("web-2");
+    mockedText.mockResolvedValueOnce("web-3");
+    mockedMultiSelect.mockResolvedValueOnce([]);
+    mockedMultiSelect.mockResolvedValueOnce([]);
+
+    await collectConfig([]);
+
+    const countPrompt = mockedText.mock.calls.find(
+      ([options]) =>
+        options.message ===
+        "How many duplicates of Next.js do you want to add?",
+    )?.[0];
+    expect(countPrompt?.validate?.("0")).toBe(
+      "Enter a whole number between 1 and 20",
+    );
+    expect(countPrompt?.validate?.("1.5")).toBe(
+      "Enter a whole number between 1 and 20",
+    );
+    expect(countPrompt?.validate?.("2")).toBeUndefined();
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for duplicate next app 2 of 3?",
+        placeholder: "web-2",
+        defaultValue: "web-2",
+      }),
+    );
+    expect(mockedText).toHaveBeenCalledWith(
+      expect.objectContaining({
+        message: "Name for duplicate next app 3 of 3?",
+        placeholder: "web-3",
+        defaultValue: "web-3",
+      }),
+    );
+  });
+
   it("uses default app names matching the selected framework", async () => {
     const mockedText = vi.mocked(prompts.text);
     const mockedMultiSelect = vi.mocked(prompts.multiSelect);

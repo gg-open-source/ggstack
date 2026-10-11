@@ -145,7 +145,7 @@ export function createDefaultStackPreset(): StackPreset {
 }
 
 export function normalizeStackPreset(preset: StackPreset): StackPreset {
-  const appsByType = new Map<AppType, AppConfig>();
+  const normalizedApps: AppConfig[] = [];
   for (const app of preset.apps) {
     if (!isAppType(app.type)) continue;
     const defaultName = DEFAULT_APP_NAMES[app.type];
@@ -162,11 +162,11 @@ export function normalizeStackPreset(preset: StackPreset): StackPreset {
       }
       next.vite = { framework, variant };
     }
-    appsByType.set(app.type, next);
+    normalizedApps.push(next);
   }
 
-  const apps = APP_TYPE_ORDER.filter((type) => appsByType.has(type)).map(
-    (type) => appsByType.get(type)!,
+  const apps = APP_TYPE_ORDER.flatMap((type) =>
+    normalizedApps.filter((app) => app.type === type),
   );
 
   const names = new Set<string>();
@@ -547,10 +547,6 @@ function parseEncoded(value: unknown): EncodedStackV1 {
       throw new StackCodeError("Invalid --stack code. Apps must be a list.");
     }
     encoded.a = record.a.map(parseEncodedApp);
-    const types = encoded.a.map((app) => app.t);
-    if (new Set(types).size !== types.length) {
-      throw new StackCodeError("Invalid --stack code. Duplicate app types.");
-    }
   }
 
   if (record.p !== undefined) {

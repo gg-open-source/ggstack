@@ -88,6 +88,7 @@ export function parsePackageManagerFlag(
 }
 
 const FLAGS_WITH_VALUES = new Set(["--preset", "--stack"]);
+const MAX_DUPLICATES_PER_APP = 20;
 
 export function getProjectNameArg(args: string[]): string | undefined {
   for (let i = 0; i < args.length; i += 1) {
@@ -319,52 +320,113 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     required: false,
   });
 
+  const duplicateCounts = new Map<string, number>();
+  if (selectedApps.length > 0) {
+    const wantsDuplicateApps = await confirm({
+      message: "Do you want to add duplicates of any selected apps?",
+      initialValue: false,
+    });
+
+    if (wantsDuplicateApps) {
+      const duplicateAppTypes = await multiSelect({
+        message: "Which apps do you want to duplicate?",
+        options: APP_CHOICES.filter((choice) =>
+          selectedApps.includes(choice.value),
+        ).map((choice) => ({ ...choice })),
+        required: true,
+      });
+
+      for (const appType of duplicateAppTypes) {
+        const appLabel =
+          APP_CHOICES.find((choice) => choice.value === appType)?.label ??
+          appType;
+        const duplicateCount = await text({
+          message: `How many duplicates of ${appLabel} do you want to add?`,
+          placeholder: "1",
+          defaultValue: "1",
+          validate: (value) => {
+            const trimmed = value.trim();
+            const count = Number(trimmed);
+            if (
+              !/^\d+$/.test(trimmed) ||
+              !Number.isSafeInteger(count) ||
+              count < 1 ||
+              count > MAX_DUPLICATES_PER_APP
+            ) {
+              return `Enter a whole number between 1 and ${MAX_DUPLICATES_PER_APP}`;
+            }
+            return undefined;
+          },
+        });
+        duplicateCounts.set(appType, Number(duplicateCount.trim()));
+      }
+    }
+  }
+
   const apps: AppConfig[] = [];
   for (const appType of selectedApps) {
     const defaultName =
       DEFAULT_APP_NAMES[appType as keyof typeof DEFAULT_APP_NAMES] ?? appType;
-    const name = await text({
-      message: `Name for the ${appType} app?`,
-      placeholder: defaultName,
-      defaultValue: defaultName,
-      validate: (value) => {
-        if (value.trim().length === 0) return "App name is required";
-        if (apps.some((a) => a.name === sanitizeAppName(value)))
-          return "App name must be unique";
-        return undefined;
-      },
-    });
-    const app: AppConfig = {
-      type: appType as AppConfig["type"],
-      name: sanitizeAppName(name),
-    };
+    const appCount = 1 + (duplicateCounts.get(appType) ?? 0);
+    let firstAppName: string = defaultName;
 
-    if (app.type === "vite") {
-      const selectedFramework = await select({
-        message: "Select a Vite framework?",
-        options: VITE_FRAMEWORK_CHOICES.map((choice) => ({ ...choice })),
-        initialValue: DEFAULT_VITE_FRAMEWORK,
+    for (let appIndex = 0; appIndex < appCount; appIndex += 1) {
+      const appNumber = appIndex + 1;
+      const suggestedName =
+        appIndex === 0 ? defaultName : `${firstAppName}-${appNumber}`;
+      const name = await text({
+        message:
+          appIndex === 0
+            ? `Name for the ${appType} app?`
+            : `Name for duplicate ${appType} app ${appNumber} of ${appCount}?`,
+        placeholder: suggestedName,
+        defaultValue: suggestedName,
+        validate: (value) => {
+          if (value.trim().length === 0) return "App name is required";
+          if (apps.some((a) => a.name === sanitizeAppName(value)))
+            return "App name must be unique";
+          return undefined;
+        },
       });
-      const framework = isViteFramework(selectedFramework)
-        ? selectedFramework
-        : DEFAULT_VITE_FRAMEWORK;
-
-      let variant: ViteVariant = DEFAULT_VITE_VARIANT;
-      if (framework === "react") {
-        const selectedVariant = await select({
-          message: "Select a variant?",
-          options: VITE_REACT_VARIANT_CHOICES.map((choice) => ({ ...choice })),
-          initialValue: DEFAULT_VITE_VARIANT,
-        });
-        variant = isViteVariant(selectedVariant)
-          ? selectedVariant
-          : DEFAULT_VITE_VARIANT;
+      const sanitizedName = sanitizeAppName(name);
+      if (appIndex === 0) {
+        firstAppName = sanitizedName || defaultName;
       }
 
-      app.vite = { framework, variant };
-    }
+      const app: AppConfig = {
+        type: appType as AppConfig["type"],
+        name: sanitizedName,
+      };
 
-    apps.push(app);
+      if (app.type === "vite") {
+        const selectedFramework = await select({
+          message: "Select a Vite framework?",
+          options: VITE_FRAMEWORK_CHOICES.map((choice) => ({ ...choice })),
+          initialValue: DEFAULT_VITE_FRAMEWORK,
+        });
+        const framework = isViteFramework(selectedFramework)
+          ? selectedFramework
+          : DEFAULT_VITE_FRAMEWORK;
+
+        let variant: ViteVariant = DEFAULT_VITE_VARIANT;
+        if (framework === "react") {
+          const selectedVariant = await select({
+            message: "Select a variant?",
+            options: VITE_REACT_VARIANT_CHOICES.map((choice) => ({
+              ...choice,
+            })),
+            initialValue: DEFAULT_VITE_VARIANT,
+          });
+          variant = isViteVariant(selectedVariant)
+            ? selectedVariant
+            : DEFAULT_VITE_VARIANT;
+        }
+
+        app.vite = { framework, variant };
+      }
+
+      apps.push(app);
+    }
   }
 
   const selectedPackages = await multiSelect({

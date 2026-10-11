@@ -242,6 +242,23 @@ describe("buildProject", () => {
     );
   });
 
+  it("generates multiple apps of the same type in separate folders", async () => {
+    const builder = new ProjectBuilder();
+    const config = createTestConfig({
+      apps: [
+        { type: "next", name: "web" },
+        { type: "next", name: "docs" },
+      ],
+    });
+
+    await buildProject(config, builder);
+
+    expect(builder.files["apps/web/package.json"]).toContain("@apps/web");
+    expect(builder.files["apps/docs/package.json"]).toContain("@apps/docs");
+    expect(builder.files["apps/web/app/page.tsx"]).toContain('{"web"}');
+    expect(builder.files["apps/docs/app/page.tsx"]).toContain('{"docs"}');
+  });
+
   it("copies the astro template when an astro app is selected", async () => {
     const builder = new ProjectBuilder();
     const config = createTestConfig({
