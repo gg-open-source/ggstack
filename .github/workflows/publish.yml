@@ -1,24 +1,121 @@
-name: Publish
+name: CI
 
 on:
-  workflow_call:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      delivery:
+        description: What should run after CI passes?
+        type: choice
+        options:
+          - tests-only
+          - docs
+          - publish
+          - docs-and-publish
+        default: tests-only
 
-# id-token: write is required for npm trusted publishing (OIDC).
-# Do not set NODE_AUTH_TOKEN or registry-url: either overrides OIDC.
+# npm validates the entry workflow filename, including when workflows are reused.
+# Keep this pipeline in publish.yml to match the create-ggstack trusted publisher.
 permissions:
   contents: read
-  id-token: write
 
 jobs:
+  ci:
+    runs-on: ubuntu-latest
+    outputs:
+      docs_changed: ${{ steps.changes.outputs.docs }}
+      package_version_changed: ${{ steps.changes.outputs.package_version }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm run lint
+
+      - run: pnpm run format:check
+
+      - run: pnpm run check-types
+
+      - run: pnpm run build
+
+      - run: pnpm run test
+
+      - name: Check delivery paths
+        id: changes
+        if: github.event_name == 'push'
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+          AFTER_SHA: ${{ github.event.after }}
+        run: |
+          if [[ "$BEFORE_SHA" =~ ^0+$ ]] || ! git cat-file -e "$BEFORE_SHA^{commit}"; then
+            echo "docs=true" >> "$GITHUB_OUTPUT"
+            echo "package_version=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if git diff --quiet "$BEFORE_SHA" "$AFTER_SHA" -- \
+            apps/docs \
+            .github/workflows/deploy-docs.yml \
+            vercel.json; then
+            echo "docs=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "docs=true" >> "$GITHUB_OUTPUT"
+          fi
+
+          if git diff --quiet "$BEFORE_SHA" "$AFTER_SHA" -- \
+            apps/create-ggstack/package.json; then
+            echo "package_version=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "package_version=true" >> "$GITHUB_OUTPUT"
+          fi
+
+  deploy-docs:
+    needs: ci
+    if: >-
+      needs.ci.result == 'success' &&
+      (
+        (github.event_name == 'push' && needs.ci.outputs.docs_changed == 'true') ||
+        (github.event_name == 'workflow_dispatch' &&
+          (inputs.delivery == 'docs' || inputs.delivery == 'docs-and-publish'))
+      )
+    uses: ./.github/workflows/deploy-docs.yml
+    secrets: inherit
+
   publish:
+    needs: ci
+    if: >-
+      needs.ci.result == 'success' &&
+      (
+        github.event_name == 'release' ||
+        (github.event_name == 'push' && needs.ci.outputs.package_version_changed == 'true') ||
+        (github.event_name == 'workflow_dispatch' &&
+          (inputs.delivery == 'publish' || inputs.delivery == 'docs-and-publish'))
+      )
+    permissions:
+      contents: read
+      id-token: write
     runs-on: ubuntu-latest
     environment: Production
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: pnpm
@@ -27,11 +124,12 @@ jobs:
 
       - run: pnpm run build
 
+      # Omit NODE_AUTH_TOKEN and registry-url so pnpm can use OIDC.
       - name: Publish if version is new
         working-directory: apps/create-ggstack
         run: |
           VERSION=$(node -p "require('./package.json').version")
-          if npm view "create-ggstack@$VERSION" version >/dev/null 2>&1; then
+          if pnpm view "create-ggstack@$VERSION" version >/dev/null 2>&1; then
             echo "create-ggstack@$VERSION already on npm — skipping"
             exit 0
           fi

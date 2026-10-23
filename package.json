@@ -18,13 +18,6 @@
     "node": ">=22"
   },
   "packageManager": "pnpm@11.2.2",
-  "devEngines": {
-    "packageManager": {
-      "name": "pnpm",
-      "version": "^11.2.2",
-      "onFail": "download"
-    }
-  },
   "devDependencies": {
     "oxfmt": "^0.9.0",
     "oxlint": "^0.9.0",
