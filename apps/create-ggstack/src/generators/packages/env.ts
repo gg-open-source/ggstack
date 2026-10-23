@@ -511,7 +511,7 @@ function generateEnvExample(specs: EnvVarSpec[]): string {
     "# Copy this file to `.env` and fill in the values.",
     "# Never commit `.env`.",
     "",
-    "NODE_ENV=development",
+    "# Let frameworks set NODE_ENV for dev and production commands.",
   ];
 
   const groups: Array<{ group: EnvVarGroup; heading: string }> = [
@@ -549,6 +549,7 @@ function patchTurboJson(builder: ProjectBuilder, specs: EnvVarSpec[]): void {
   }
 
   const turbo = JSON.parse(raw) as Record<string, unknown>;
+  turbo.globalDependencies = [".env"];
   turbo.globalEnv = specs
     .map((spec) => spec.name)
     .filter((name) => name !== "NODE_ENV");
@@ -562,6 +563,10 @@ function generateReadme(): string {
 Typed environment variables via \`@t3-oss/env-core\`.
 
 Copy the repo-root \`.env.example\` to \`.env\` and fill in values. Add new variables to the Zod schema in this package and to \`.env.example\`.
+
+App scripts, database commands, and the email preview load the root \`.env\` with \`dotenv-cli\` before starting. This works through Turbo or when running a workspace script directly. Variables already set in the shell or deployment environment take precedence. A missing \`.env\` is allowed when those variables are supplied externally.
+
+Turbo includes the root \`.env\` in \`globalDependencies\` so changes invalidate cached tasks. Restart running dev commands after editing \`.env\`.
 
 \`\`\`ts
 import { serverEnv } from "@packages/env/server";

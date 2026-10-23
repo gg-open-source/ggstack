@@ -164,6 +164,33 @@ describe("adding to an existing project", () => {
     expect(builder.files["turbo.json"]).toBeUndefined();
   });
 
+  it("adds the root env file to existing Turbo cache inputs without removing custom inputs", async () => {
+    const { targetDir, existing } = await createFixture();
+    await writeFile(
+      path.join(targetDir, "turbo.json"),
+      JSON.stringify({
+        globalDependencies: ["tsconfig.json"],
+        globalEnv: ["CUSTOM_SETTING"],
+        tasks: { dev: { cache: false, persistent: true } },
+      }),
+    );
+    const additions = config(targetDir, { tooling: [{ type: "oxc" }] });
+    const builder = new ProjectBuilder();
+    builder.setRootPackageJson(existing.packageJson);
+
+    await buildProjectAdditions(
+      additions,
+      mergeStackConfig(existing.config, additions),
+      builder,
+    );
+
+    expect(JSON.parse(builder.files["turbo.json"]!)).toEqual({
+      globalDependencies: ["tsconfig.json", ".env"],
+      globalEnv: ["CUSTOM_SETTING"],
+      tasks: { dev: { cache: false, persistent: true } },
+    });
+  });
+
   it("preserves workspace settings and migrates legacy overrides when adding Expo to Tailwind", async () => {
     const { targetDir, existing } = await createFixture({
       tooling: [{ type: "tailwind" }],

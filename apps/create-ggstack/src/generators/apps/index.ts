@@ -1,4 +1,5 @@
 import type { AppConfig, ProjectBuilder, StackConfig } from "../../types.js";
+import { loadRootEnvForScripts } from "../../utils/env.js";
 import { generateAstroApp } from "./astro.js";
 import { generateElectronApp } from "./electron.js";
 import { generateExpoApp } from "./expo.js";
@@ -43,6 +44,8 @@ export async function generateApp(
       await generateReactRouterApp(config, builder, app);
       break;
   }
+
+  loadRootEnvForScripts(builder, `apps/${app.name}/package.json`);
 }
 
 export {

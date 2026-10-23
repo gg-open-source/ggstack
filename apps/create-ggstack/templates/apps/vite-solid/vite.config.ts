@@ -2,7 +2,7 @@ import { createViteEnv } from "@packages/env/client";
 import { defineConfig } from "vite";
 import solid from "vite-plugin-solid";
 
-createViteEnv(import.meta.env);
+createViteEnv(process.env);
 
 export default defineConfig({
   build: {

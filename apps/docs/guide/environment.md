@@ -12,6 +12,18 @@ cp .env.example .env
 
 The Zod schema is generated from the apps, auth provider, payment provider, email provider, and ORM you selected. Empty required strings fail validation.
 
+## Loading the root .env
+
+Generated app scripts, database commands, and the email preview use `dotenv-cli` to load `../../.env` before starting. This works with `pnpm dev`, `pnpm --filter @apps/next dev`, or scripts run from inside an app directory. Variables already set in your shell or deployment environment take precedence over the root `.env`. A missing `.env` is allowed when the required variables are supplied externally.
+
+Leave `NODE_ENV` unset in `.env` so frameworks can choose the correct mode for dev and production commands.
+
+This applies to Next.js, Astro, Expo, Electron, Express, Fastify, TanStack Start, React Router, and every Vite framework and React variant, including apps created with `--add`. All generated app scripts except lint and format load the root file. Each stage of a chained command loads it separately.
+
+Vite config files validate `process.env`, which is populated before Vite starts. In application code, pass `import.meta.env` to `createViteEnv`.
+
+Turbo does not load `.env` itself. The generated `globalDependencies: [".env"]` makes changes to the root file invalidate cached tasks; `globalEnv` forwards the listed variables that are already in the process environment. Restart running dev commands after editing `.env`.
+
 ## Server vs client
 
 - **Server** vars live on `serverEnv` (`@packages/env/server`) and are read from `process.env`.

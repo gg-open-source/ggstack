@@ -4,7 +4,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-createViteEnv(import.meta.env);
+createViteEnv(process.env);
 
 export default defineConfig({
   server: {

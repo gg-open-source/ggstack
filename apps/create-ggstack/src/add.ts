@@ -380,8 +380,15 @@ function mergeTurbo(current: string, specs: EnvVarSpec[]): string {
   const missing = specs
     .map((spec) => spec.name)
     .filter((name) => name !== "NODE_ENV" && !globalEnv.includes(name));
-  if (missing.length === 0) return current;
+  const globalDependencies = Array.isArray(turbo.globalDependencies)
+    ? turbo.globalDependencies
+    : [];
+  if (missing.length === 0 && globalDependencies.includes(".env"))
+    return current;
   turbo.globalEnv = Array.from(new Set([...globalEnv, ...missing]));
+  turbo.globalDependencies = Array.from(
+    new Set([...globalDependencies, ".env"]),
+  );
   return `${JSON.stringify(turbo, null, 2)}\n`;
 }
 

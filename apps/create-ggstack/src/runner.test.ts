@@ -40,7 +40,7 @@ describe("buildProject", () => {
     expect(builder.files[".gitignore"]).not.toContain(".next");
     expect(builder.files[".gitignore"]).not.toContain(".expo");
     expect(builder.rootPackageJson.name).toBe("test-project");
-    expect(builder.files[".env.example"]).toContain("NODE_ENV=development");
+    expect(builder.files[".env.example"]).not.toMatch(/^NODE_ENV=/m);
     expect(builder.files["packages/env/package.json"]).toContain(
       "@packages/env",
     );
@@ -1181,7 +1181,9 @@ describe("env package generation", () => {
     expect(builder.files["packages/env/src/server.ts"]).toContain("serverEnv");
     expect(builder.files["packages/env/src/client.ts"]).toBeDefined();
     expect(builder.files[".env.example"]).toContain("Copy this file to `.env`");
-    expect(builder.files[".env.example"]).toContain("NODE_ENV=development");
+    expect(builder.files[".env.example"]).toContain(
+      "Let frameworks set NODE_ENV",
+    );
   });
 
   it("adds DATABASE_URL when a database orm is selected", async () => {
@@ -1517,10 +1519,12 @@ describe("env package generation", () => {
     await buildProject(config, builder);
 
     const turbo = JSON.parse(builder.files["turbo.json"] ?? "{}") as {
+      globalDependencies?: string[];
       globalEnv?: string[];
       globalPassThroughEnv?: string[];
     };
 
+    expect(turbo.globalDependencies).toContain(".env");
     expect(turbo.globalEnv).toEqual(
       expect.arrayContaining([
         "DATABASE_URL",

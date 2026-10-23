@@ -1,5 +1,6 @@
 import { resolveDbDialect } from "../../config.js";
 import type { DbDialect, ProjectBuilder, StackConfig } from "../../types.js";
+import { loadRootEnvForScripts } from "../../utils/env.js";
 
 type SupportedDbOrm = "drizzle" | "prisma";
 
@@ -23,6 +24,12 @@ export function generateDbPackage(
     "packages/db/package.json",
     JSON.stringify(getPackageJson(orm, dialect), null, 2),
   );
+  loadRootEnvForScripts(builder, "packages/db/package.json", [
+    "db:generate",
+    "db:migrate",
+    "db:push",
+    "db:studio",
+  ]);
 
   builder.addFile(
     "packages/db/tsconfig.json",

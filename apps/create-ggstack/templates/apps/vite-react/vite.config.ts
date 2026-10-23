@@ -2,7 +2,7 @@ import { createViteEnv } from "@packages/env/client";
 import react from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
 
-createViteEnv(import.meta.env);
+createViteEnv(process.env);
 
 export default defineConfig({
   build: {

@@ -3,6 +3,7 @@ import type {
   ProjectBuilder,
   StackConfig,
 } from "../../types.js";
+import { loadRootEnvForScripts } from "../../utils/env.js";
 
 type SupportedEmailProvider = Exclude<EmailProvider, "none">;
 
@@ -26,6 +27,7 @@ export function generateEmailPackage(
     "packages/email/package.json",
     JSON.stringify(getPackageJson(), null, 2),
   );
+  loadRootEnvForScripts(builder, "packages/email/package.json", ["email:dev"]);
 
   builder.addFile(
     "packages/email/tsconfig.json",
