@@ -47,6 +47,13 @@ import {
   type StackPreset,
 } from "./stack.js";
 import { buildProject } from "./runner.js";
+import {
+  buildProjectAdditions,
+  describeAdditions,
+  findAdditionCollisions,
+  mergeStackConfig,
+} from "./add.js";
+import { ExistingProjectError, inspectExistingProject } from "./existing.js";
 import type {
   AppConfig,
   AuthConfig,
@@ -213,17 +220,36 @@ function applyShadcnPreset(
   return normalizeStackPreset({ ...preset, packages });
 }
 
-function stackToConfig(preset: StackPreset, projectName: string): StackConfig {
+function stackToConfig(
+  preset: StackPreset,
+  projectName: string,
+  targetDir = path.resolve(process.cwd(), resolveProjectName(projectName)),
+): StackConfig {
   const name = resolveProjectName(projectName);
   return {
     projectName: name,
-    targetDir: path.resolve(process.cwd(), name),
+    targetDir,
     ...preset,
   };
 }
 
 export async function collectConfig(args: string[]): Promise<StackConfig> {
   intro(pc.bgCyan(pc.black(" create-ggstack ")));
+
+  const addMode = args.includes("--add");
+  let existingProject: ReturnType<typeof inspectExistingProject> | undefined;
+  if (addMode) {
+    try {
+      existingProject = inspectExistingProject(process.cwd());
+    } catch (error) {
+      const message =
+        error instanceof ExistingProjectError
+          ? error.message
+          : "Could not inspect the current ggstack project.";
+      log(pc.red(message));
+      process.exit(1);
+    }
+  }
 
   const stackFlag = parseStackFlag(args);
   if (stackFlag.kind === "error") {
@@ -257,6 +283,16 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     const packageManager =
       parsePackageManagerFlag(args) ?? stack.packageManager;
     stack = normalizeStackPreset({ ...stack, packageManager });
+    if (
+      addMode &&
+      stack.packages.some((pkg) => pkg.type === "shadcn") &&
+      existingProject?.config.tooling.some((tool) => tool.type === "tailwind")
+    ) {
+      stack = {
+        ...stack,
+        tooling: stack.tooling.filter((tool) => tool.type !== "tailwind"),
+      };
+    }
 
     const packageManagerInstalled =
       await isPackageManagerInstalled(packageManager);
@@ -283,22 +319,26 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
 
     return stackToConfig(
       stack,
-      getProjectNameArg(args) ?? DEFAULT_PROJECT_NAME,
+      addMode
+        ? (existingProject?.config.projectName ?? DEFAULT_PROJECT_NAME)
+        : (getProjectNameArg(args) ?? DEFAULT_PROJECT_NAME),
+      addMode ? process.cwd() : undefined,
     );
   }
 
   const projectNameArg = getProjectNameArg(args);
-  const projectName =
-    projectNameArg ??
-    (await text({
-      message: "Project name?",
-      placeholder: DEFAULT_PROJECT_NAME,
-      defaultValue: DEFAULT_PROJECT_NAME,
-      validate: (value) => {
-        if (value.trim().length === 0) return "Project name is required";
-        return undefined;
-      },
-    }));
+  const projectName = addMode
+    ? (existingProject?.config.projectName ?? DEFAULT_PROJECT_NAME)
+    : (projectNameArg ??
+      (await text({
+        message: "Project name?",
+        placeholder: DEFAULT_PROJECT_NAME,
+        defaultValue: DEFAULT_PROJECT_NAME,
+        validate: (value) => {
+          if (value.trim().length === 0) return "Project name is required";
+          return undefined;
+        },
+      })));
 
   const packageManager =
     parsePackageManagerFlag(args) ?? DEFAULT_PACKAGE_MANAGER;
@@ -364,6 +404,9 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
   }
 
   const apps: AppConfig[] = [];
+  const existingAppNames = new Set(
+    existingProject?.config.apps.map((app) => app.name) ?? [],
+  );
   for (const appType of selectedApps) {
     const defaultName =
       DEFAULT_APP_NAMES[appType as keyof typeof DEFAULT_APP_NAMES] ?? appType;
@@ -383,7 +426,10 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
         defaultValue: suggestedName,
         validate: (value) => {
           if (value.trim().length === 0) return "App name is required";
-          if (apps.some((a) => a.name === sanitizeAppName(value)))
+          if (
+            existingAppNames.has(sanitizeAppName(value)) ||
+            apps.some((a) => a.name === sanitizeAppName(value))
+          )
             return "App name must be unique";
           return undefined;
         },
@@ -504,15 +550,19 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     );
   }
 
+  const hasExistingTailwind =
+    existingProject?.config.tooling.some((tool) => tool.type === "tailwind") ??
+    false;
+  const needsTailwind = shadcnSelected && !hasExistingTailwind;
   const availableTooling = TOOLING_CHOICES.map((choice) => ({
     ...choice,
     hint:
-      choice.value === "tailwind" && shadcnSelected
+      choice.value === "tailwind" && needsTailwind
         ? "auto-selected because shadcn/ui is enabled"
         : choice.hint,
   }));
 
-  const initialToolingValues = shadcnSelected ? ["tailwind"] : [];
+  const initialToolingValues = needsTailwind ? ["tailwind"] : [];
   const selectedTooling = await multiSelect({
     message: "Which tooling do you want to add?",
     options: availableTooling,
@@ -521,7 +571,7 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
   });
 
   const tooling: ToolingConfig[] = [
-    ...new Set([...(shadcnSelected ? ["tailwind"] : []), ...selectedTooling]),
+    ...new Set([...(needsTailwind ? ["tailwind"] : []), ...selectedTooling]),
   ].map((type) => ({
     type: type as "tailwind" | "oxc" | "prettier" | "eslint",
   }));
@@ -599,7 +649,9 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
 
   return {
     projectName: sanitizeAppName(projectName),
-    targetDir: path.resolve(process.cwd(), projectName),
+    targetDir: addMode
+      ? process.cwd()
+      : path.resolve(process.cwd(), projectName),
     packageManager,
     apps,
     packages,
@@ -609,6 +661,67 @@ export async function collectConfig(args: string[]): Promise<StackConfig> {
     email,
     tooling,
   };
+}
+
+export async function addToProject(config: StackConfig): Promise<void> {
+  let existingProject: ReturnType<typeof inspectExistingProject>;
+  try {
+    existingProject = inspectExistingProject(config.targetDir);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Could not inspect the current ggstack project.";
+    log(pc.red(message));
+    process.exit(1);
+  }
+
+  const additions = describeAdditions(config);
+  if (additions.length === 0) {
+    log(pc.yellow("Nothing selected. No files were changed."));
+    return;
+  }
+
+  const collisions = findAdditionCollisions(config);
+  if (collisions.length > 0) {
+    log(
+      pc.yellow(
+        `Cannot add components that already exist: ${collisions.join(", ")}. No files were changed.`,
+      ),
+    );
+    process.exit(1);
+  }
+
+  const s = spinner();
+  s.start("Adding to the existing ggstack project...");
+
+  const effective = mergeStackConfig(existingProject.config, config);
+  const builder = new ProjectBuilder();
+  builder.setRootPackageJson(structuredClone(existingProject.packageJson));
+
+  try {
+    await buildProjectAdditions(config, effective, builder);
+    await writeProjectFiles(config.targetDir, builder, {
+      writeRootPackageJson:
+        JSON.stringify(builder.rootPackageJson) !==
+        JSON.stringify(existingProject.packageJson),
+    });
+  } catch (error) {
+    s.stop("Could not add the selected components.");
+    const message = error instanceof Error ? error.message : String(error);
+    log(pc.red(message));
+    process.exit(1);
+  }
+
+  s.stop("Project files updated.");
+
+  if (builder.commands.length > 0) {
+    log(pc.blue("Running post-add commands..."));
+    await runCommands(builder.commands);
+  }
+
+  log(pc.green(`\nAdded ${additions.join(", ")}.`));
+  log(pc.gray(`  ${config.packageManager} install`));
 }
 
 export async function createProject(config: StackConfig): Promise<void> {
@@ -687,6 +800,10 @@ export async function cli(args: string[]): Promise<void> {
   }
 
   const config = await collectConfig(args);
-  await createProject(config);
+  if (args.includes("--add")) {
+    await addToProject(config);
+  } else {
+    await createProject(config);
+  }
   outro(pc.green("Done! Happy hacking."));
 }

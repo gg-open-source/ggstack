@@ -12,6 +12,7 @@ create-ggstack [project-name] [options]
 
 | Flag | Description |
 | --- | --- |
+| `--add` | Add selected components to the ggstack project in the current directory instead of creating a new directory. |
 | `--stack <code>` | Full stack from the [Create](/create) page. Skips every prompt. |
 | `--decode [code]` | Print the decoded `--stack` config and exit. Accepts `--decode <code>` or `--stack <code> --decode`. |
 | `--preset <code>` | shadcn/ui preset: a named style (`nova`, `luma`, …) or a code from [ui.shadcn.com/create](https://ui.shadcn.com/create). Enables shadcn/ui. Combined with `--stack`, this overrides the stack’s shadcn preset. |
@@ -24,6 +25,7 @@ create-ggstack [project-name] [options]
 
 ```bash
 pnpm create ggstack@latest my-app --stack g1e30
+pnpm create ggstack@latest --add
 pnpm create ggstack my-app --preset b2D0vQ7G4
 pnpm create ggstack --decode g1e30
 ```
@@ -31,6 +33,8 @@ pnpm create ggstack --decode g1e30
 Also accepted: `--stack=g1e30` and `--preset=b2D0vQ7G4`. Build `--stack` codes visually on [Create](/create). The code packs apps (including Vite framework/variant and folder names), packages, shadcn base/preset, tooling, auth, database, payments, email, and the package manager used to run official app CLIs. Project name stays a positional argument. `--preset` without `--stack` still skips only the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list. `--npm`, `--yarn`, and `--bun` override the package manager stored in a `--stack` code.
 
 `--npm`, `--yarn`, and `--bun` only affect package-manager invocations the CLI runs during scaffold. The generated repo is still a **pnpm workspace**. The CLI warns when the flag is not `--pnpm`. You still need pnpm installed to work in the project.
+
+`--add` must be run at the root of an existing ggstack workspace. It skips the project-name prompt and uses the current directory as its target. It can also be combined with `--stack <code>` to apply every component in that code as an addition. See [Add to an Existing Project](./adding.md).
 
 ## Interactive flow
 
@@ -63,3 +67,5 @@ The CLI exits without writing files when:
 - `--stack` is passed with no value, or with a value that is not a `g1…` stack code
 - `--preset` is passed with no value, or with a value that is not a named style or preset code
 - The target directory already exists
+
+In `--add` mode, the CLI instead exits without writing files when the current directory does not have the expected ggstack workspace files or any selected component directory already exists.

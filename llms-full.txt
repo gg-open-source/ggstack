@@ -16,7 +16,7 @@ pnpm install
 pnpm dev
 ```
 
-Build `--stack` codes at `/create`. Inspect one with `pnpm create ggstack --decode <code>`. Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`. Interactive mode: `pnpm create ggstack my-app`.
+Build `--stack` codes at `/create`. Inspect one with `pnpm create ggstack --decode <code>`. Add to an existing generated workspace with `pnpm create ggstack@latest --add`. Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`. Interactive mode: `pnpm create ggstack my-app`.
 
 ---
 
@@ -79,6 +79,24 @@ The scaffolded repo also gets a `README.md` that lists what you selected and the
 
 ---
 
+# Add to an Existing Project
+
+Run `pnpm create ggstack@latest --add` from the root of a project created by ggstack. The CLI inspects the workspace, skips the project-name prompt, and lets you select new apps, shared packages, providers, or tooling.
+
+It creates only the selected component directories. It also merges required keys into `packages/env`, `.env.example`, and `turbo.json`, and updates the root `package.json` when tooling requires it. Existing Tailwind is connected to newly added frontend apps. Adding shadcn/ui to standalone Tailwind merges its dependencies and imports while preserving a customized theme. Adding Tailwind by itself does not rewrite existing apps.
+
+Before writing, the CLI checks selected component directories such as `apps/web`, `packages/db`, and `tooling/oxc`. If any exists, it stops without writing. Run the command at the workspace root; it verifies the root package, pnpm workspace, Turbo config, env package, and shared TypeScript config. It refuses unrelated monorepos.
+
+Apply a stack code as additions without prompts:
+
+```bash
+pnpm create ggstack@latest --add --stack <code>
+```
+
+Every component in the code is treated as an addition and is subject to the same collision check.
+
+---
+
 # CLI
 
 ```text
@@ -89,6 +107,7 @@ create-ggstack [project-name] [options]
 
 | Flag | Description |
 | --- | --- |
+| `--add` | Add selected components to the ggstack project in the current directory instead of creating a new directory. |
 | `--stack <code>` | Full stack from the `/create` page. Skips every prompt. |
 | `--decode [code]` | Print the decoded `--stack` config and exit. Accepts `--decode <code>` or `--stack <code> --decode`. |
 | `--preset <code>` | shadcn/ui preset: a named style (`nova`, `luma`, …) or a code from [ui.shadcn.com/create](https://ui.shadcn.com/create). Enables shadcn/ui. Combined with `--stack`, this overrides the stack’s shadcn preset. |
@@ -101,6 +120,7 @@ create-ggstack [project-name] [options]
 
 ```bash
 pnpm create ggstack@latest my-app --stack g1e30
+pnpm create ggstack@latest --add
 pnpm create ggstack my-app --preset b2D0vQ7G4
 pnpm create ggstack --decode g1e30
 ```
@@ -108,6 +128,8 @@ pnpm create ggstack --decode g1e30
 Also accepted: `--stack=g1e30` and `--preset=b2D0vQ7G4`. Build `--stack` codes visually on `/create`. The code packs apps (including Vite framework/variant and folder names), packages, shadcn base/preset, tooling, auth, database, payments, email, and the package manager used to run official app CLIs. Project name stays a positional argument. `--preset` without `--stack` still skips only the preset-code prompt and keeps shadcn/ui on even if you deselect it in the packages list. `--npm`, `--yarn`, and `--bun` override the package manager stored in a `--stack` code.
 
 `--npm`, `--yarn`, and `--bun` only affect package-manager invocations the CLI runs during scaffold. The generated repo is still a **pnpm workspace**. The CLI warns when the flag is not `--pnpm`. You still need pnpm installed to work in the project.
+
+`--add` must be run at an existing ggstack workspace root. It can be combined with `--stack <code>`.
 
 ## Interactive flow
 
@@ -140,6 +162,8 @@ The CLI exits without writing files when:
 - `--stack` is passed with no value, or with a value that is not a `g1…` stack code
 - `--preset` is passed with no value, or with a value that is not a named style or preset code
 - The target directory already exists
+
+In `--add` mode, the CLI instead exits without writing when the workspace signature is missing or a selected component directory already exists.
 
 ---
 

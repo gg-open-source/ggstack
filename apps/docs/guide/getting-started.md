@@ -58,3 +58,13 @@ pnpm dev
 `pnpm dev` runs Turbo `dev` across apps that define that script (Vite, Next.js, Astro, Electron, Express, Fastify, TanStack Start, React Router). Expo uses `start` instead — run it from the app package. Fill in `.env` before anything that reads `packages/env`; validation fails on empty required values unless you skip it. Details are in [Environment](./environment.md).
 
 The scaffolded repo also gets a `README.md` that lists what you selected and the same next steps.
+
+## Add to an existing ggstack project
+
+From the root of a workspace previously created by ggstack, run:
+
+```bash
+pnpm create ggstack@latest --add
+```
+
+Select the new apps, packages, providers, or tooling you want. The command checks for collisions, adds the new component directories, and merges required environment configuration. See [Add to an Existing Project](./adding.md) for the complete behavior and limitations.

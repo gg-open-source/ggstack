@@ -25,7 +25,7 @@ pnpm install
 pnpm dev
 \`\`\`
 
-\`--stack\` codes from \`/create\` pack the full config and skip every prompt. Inspect a code with \`create-ggstack --decode <code>\`. Prefer the Markdown sources linked below over HTML docs pages. Each guide also has a \`.md\` URL next to its HTML page.`;
+\`--stack\` codes from \`/create\` pack the full config and skip every prompt. Inspect a code with \`create-ggstack --decode <code>\`. Run \`create-ggstack --add\` at the root of an existing generated workspace to add more components. Prefer the Markdown sources linked below over HTML docs pages. Each guide also has a \`.md\` URL next to its HTML page.`;
 
 export default defineConfig({
   title: "ggstack",
@@ -97,6 +97,7 @@ export default defineConfig({
         items: [
           { text: "Create", link: "/create" },
           { text: "Getting Started", link: "/guide/getting-started" },
+          { text: "Add to a Project", link: "/guide/adding" },
           { text: "CLI", link: "/guide/cli" },
           { text: "Project", link: "/guide/project" },
           { text: "Apps", link: "/guide/apps" },

@@ -34,6 +34,13 @@ pnpm dev
 
 Also: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`.
 
+To add another app, package, provider, or tool to an existing generated workspace:
+
+```bash
+cd my-app
+pnpm create ggstack@latest --add
+```
+
 ## Documentation
 
 User guide lives in [`apps/docs`](./apps/docs) (VitePress). From this repo:
@@ -43,6 +50,7 @@ pnpm --filter @apps/docs dev
 ```
 
 - [Getting started](./apps/docs/guide/getting-started.md)
+- [Add to an existing project](./apps/docs/guide/adding.md)
 - [CLI](./apps/docs/guide/cli.md)
 - [Generated project](./apps/docs/guide/project.md)
 

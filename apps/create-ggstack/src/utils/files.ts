@@ -9,6 +9,7 @@ export async function ensureDirectory(dir: string): Promise<void> {
 export async function writeProjectFiles(
   targetDir: string,
   builder: ProjectBuilder,
+  options: { writeRootPackageJson?: boolean } = {},
 ): Promise<void> {
   for (const [relativePath, content] of Object.entries(builder.files)) {
     const fullPath = join(targetDir, relativePath);
@@ -16,11 +17,13 @@ export async function writeProjectFiles(
     await writeFile(fullPath, content, "utf-8");
   }
 
-  const rootPackagePath = join(targetDir, "package.json");
-  await mkdir(dirname(rootPackagePath), { recursive: true });
-  await writeFile(
-    rootPackagePath,
-    JSON.stringify(builder.rootPackageJson, null, 2),
-    "utf-8",
-  );
+  if (options.writeRootPackageJson !== false) {
+    const rootPackagePath = join(targetDir, "package.json");
+    await mkdir(dirname(rootPackagePath), { recursive: true });
+    await writeFile(
+      rootPackagePath,
+      JSON.stringify(builder.rootPackageJson, null, 2),
+      "utf-8",
+    );
+  }
 }

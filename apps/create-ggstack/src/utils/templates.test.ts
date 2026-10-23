@@ -21,6 +21,39 @@ describe("replacePlaceholders", () => {
 });
 
 describe("copyTemplate", () => {
+  it.each([
+    ["vite", "src/style.css"],
+    ["vite-react", "src/style.css"],
+    ["vite-vue", "src/style.css"],
+    ["vite-preact", "src/style.css"],
+    ["vite-lit", "src/style.css"],
+    ["vite-svelte", "src/style.css"],
+    ["vite-solid", "src/style.css"],
+    ["vite-qwik", "src/style.css"],
+    ["electron", "src/style.css"],
+    ["next", "app/globals.css"],
+    ["astro", "src/styles/global.css"],
+    ["tanstack-start", "src/styles.css"],
+    ["react-router", "app/app.css"],
+  ])(
+    "includes a self-contained starter theme for %s",
+    async (template, css) => {
+      const builder = new ProjectBuilder();
+      await copyTemplate(
+        template,
+        "apps/web",
+        { projectName: "acme", appName: "web" },
+        builder,
+      );
+
+      const themePath = `apps/web/${css.slice(0, css.lastIndexOf("/"))}/starter.css`;
+      expect(builder.files[`apps/web/${css}`]).toContain(
+        '@import "./starter.css"',
+      );
+      expect(builder.files[themePath]).toContain("--gg-mint:");
+    },
+  );
+
   it("copies the vite template with placeholders replaced", async () => {
     const builder = new ProjectBuilder();
 

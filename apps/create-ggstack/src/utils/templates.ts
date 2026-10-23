@@ -57,6 +57,20 @@ export async function copyTemplate(
     const content = replacePlaceholders(rawContent, context);
     builder.addFile(targetPath, content);
   }
+
+  // Keep one theme source while making every generated app self-contained.
+  const stylesheet = templateFiles.find((file) => file.endsWith(".css"));
+  if (stylesheet) {
+    const theme = await readFile(
+      path.join(getTemplatesRoot(), "shared", "starter.css"),
+      "utf-8",
+    );
+    const cssDir = path.dirname(path.relative(templateRoot, stylesheet));
+    builder.addFile(
+      path.posix.join(targetPrefix, cssDir, "starter.css"),
+      theme,
+    );
+  }
 }
 
 export async function templateExists(templateName: string): Promise<boolean> {

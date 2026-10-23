@@ -4,5 +4,12 @@ import { Stack } from "expo-router";
 void expoEnv;
 
 export default function RootLayout() {
-  return <Stack />;
+  return (
+    <Stack
+      screenOptions={{
+        headerShown: false,
+        contentStyle: { backgroundColor: "#101b25" },
+      }}
+    />
+  );
 }

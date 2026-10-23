@@ -122,6 +122,10 @@ function pinLightningcss(builder: ProjectBuilder): void {
   builder.rootPackageJson.pnpm = {
     ...existingPnpm,
     overrides: {
+      ...(typeof existingPnpm.overrides === "object" &&
+      existingPnpm.overrides !== null
+        ? (existingPnpm.overrides as Record<string, unknown>)
+        : {}),
       lightningcss: LIGHTNINGCSS,
     },
   };
@@ -146,7 +150,7 @@ function applySharedTailwind(
   const preamble = cssPreamble(cssPath, hasShadcn);
 
   if (app.type === "astro") {
-    builder.addFile(cssPath, preamble);
+    builder.addFile(cssPath, `${preamble}${builder.files[cssPath] ?? ""}`);
     const pagePath = `${appDir}/src/pages/index.astro`;
     const page = builder.files[pagePath];
     if (page && !page.includes("global.css")) {
@@ -237,19 +241,17 @@ module.exports = withNativewind(config);
     );
   }
 
-  builder.addFile(
-    `${appDir}/app/index.tsx`,
-    `import { Text, View } from "react-native";
-
-export default function HomeScreen() {
-  return (
-    <View className="flex-1 items-center justify-center">
-      <Text className="text-2xl font-bold">{${JSON.stringify(app.name)}}</Text>
-    </View>
-  );
-}
-`,
-  );
+  const screenPath = `${appDir}/app/index.tsx`;
+  const screen = builder.files[screenPath];
+  if (screen) {
+    builder.addFile(
+      screenPath,
+      screen.replace(
+        "<View style={styles.container}>",
+        '<View className="flex-1" style={styles.container}>',
+      ),
+    );
+  }
 
   updateJsonFile<{ include?: string[] }>(
     builder,

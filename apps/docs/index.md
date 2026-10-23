@@ -23,4 +23,6 @@ features:
     details: Shared tRPC router in packages/api. Better Auth, Clerk, or WorkOS as a shared package. Stripe, Polar, or Autumn in packages/payments. Resend + React Email in packages/email. Drizzle or Prisma against PostgreSQL, MySQL, or SQLite. You wire them into apps yourself.
   - title: Shared tooling
     details: Shared TypeScript config always. Tailwind, Oxc, and optional Prettier/ESLint stubs when you ask for them.
+  - title: Grow an existing stack
+    details: Run create-ggstack with --add from an existing generated workspace to add more apps, packages, providers, or tooling with collision checks and focused env updates.
 ---

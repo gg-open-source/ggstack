@@ -18,12 +18,13 @@ pnpm install
 pnpm dev
 ```
 
-`--stack` codes come from the visual builder (`apps/docs/create.md`). They pack the full config (apps, packages, auth, database, payments, email, tooling, shadcn) and skip every prompt. Inspect a code with `pnpm create ggstack --decode <code>`. Interactive mode is still `pnpm create ggstack my-app`. Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`. Prefer the Markdown sources linked below over HTML docs pages.
+`--stack` codes come from the visual builder (`apps/docs/create.md`). They pack the full config (apps, packages, auth, database, payments, email, tooling, shadcn) and skip every prompt. Inspect a code with `pnpm create ggstack --decode <code>`. Interactive mode is still `pnpm create ggstack my-app`. Run `pnpm create ggstack@latest --add` at the root of an existing generated workspace to add components. Also accepted: `npx create-ggstack my-app --pnpm` or `pnpm dlx create-ggstack my-app`. Prefer the Markdown sources linked below over HTML docs pages.
 
 ## Docs
 
 - [Create](./apps/docs/create.md): Visual stack builder. Generates a `--stack` command you paste in a terminal.
 - [Getting started](./apps/docs/guide/getting-started.md): Requirements, how to run the CLI, and the post-scaffold steps.
+- [Add to an existing project](./apps/docs/guide/adding.md): Add apps, packages, providers, and tooling with collision checks and focused environment updates.
 - [CLI](./apps/docs/guide/cli.md): Flags (`--stack`, `--decode`, `--preset`, `--pnpm`/`--npm`/`--yarn`/`--bun`), the full interactive prompt order, name sanitizing, and abort conditions.
 - [Generated project](./apps/docs/guide/project.md): Workspace layout, root scripts, Turbo `globalEnv`, `.gitignore` rules, and the exclusive `@apps/` / `@packages/` / `@tooling/` package scopes.
 - [Apps](./apps/docs/guide/apps.md): Per-app templates, scripts, default ports, env wiring, Vite frameworks (TypeScript only), and Expo/NativeWind notes.

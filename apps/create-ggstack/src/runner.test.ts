@@ -654,6 +654,10 @@ describe("buildProject", () => {
       'import "../global.css"',
     );
     expect(builder.files["apps/mobile/app/index.tsx"]).toContain("className");
+    expect(builder.files["apps/mobile/app/index.tsx"]).toContain(
+      "Good foundations.",
+    );
+    expect(builder.files["apps/mobile/app/index.tsx"]).toContain("StyleSheet");
     expect(builder.files["apps/mobile/nativewind-env.d.ts"]).toContain(
       "react-native-css/types",
     );
