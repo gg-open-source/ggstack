@@ -1,7 +1,7 @@
 import type { ProjectBuilder, StackConfig } from "../../types.js";
 
 export function generateEslintTooling(
-  config: StackConfig,
+  _config: StackConfig,
   builder: ProjectBuilder,
 ): void {
   builder.addFile(
@@ -35,10 +35,8 @@ export default [
 `,
   );
 
-  builder.addCommand({
-    command: config.packageManager,
-    args: ["add", "-D", "eslint"],
-    cwd: config.targetDir,
-    description: "Install ESLint (manual wiring still required)",
-  });
+  builder.rootPackageJson.devDependencies = {
+    ...builder.rootPackageJson.devDependencies,
+    eslint: "^9.0.0",
+  };
 }

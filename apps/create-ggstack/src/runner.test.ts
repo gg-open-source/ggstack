@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { parse } from "yaml";
 import {
   buildProject,
   hasApp,
@@ -664,7 +665,8 @@ describe("buildProject", () => {
     expect(builder.files["apps/mobile/tsconfig.json"]).toContain(
       "nativewind-env.d.ts",
     );
-    expect(builder.rootPackageJson.pnpm).toEqual({
+    expect(builder.rootPackageJson.pnpm).toBeUndefined();
+    expect(parse(builder.files["pnpm-workspace.yaml"] ?? "")).toMatchObject({
       overrides: { lightningcss: "1.30.1" },
     });
     expect(builder.files["README.md"]).toContain("NativeWind");
@@ -683,6 +685,92 @@ describe("buildProject", () => {
       "tooling/oxc/oxlint.json",
     );
     expect(builder.rootPackageJson.devDependencies?.oxlint).toBe("^0.9.0");
+  });
+
+  it.each(["pnpm", "npm", "yarn", "bun"] as const)(
+    "declares Prettier and ESLint without running %s add at the workspace root",
+    async (packageManager) => {
+      const builder = new ProjectBuilder();
+      await buildProject(
+        createTestConfig({
+          packageManager,
+          tooling: [{ type: "prettier" }, { type: "eslint" }],
+        }),
+        builder,
+      );
+
+      expect(builder.rootPackageJson.devDependencies).toMatchObject({
+        turbo: "^2.6.0",
+        typescript: "^5.8.0",
+        prettier: "^3.3.0",
+        eslint: "^9.0.0",
+      });
+      expect(builder.commands).toEqual([]);
+    },
+  );
+
+  it("scaffolds duplicate Vite apps and the reported stack without install commands", async () => {
+    const builder = new ProjectBuilder();
+    await buildProject(
+      createTestConfig({
+        apps: [
+          {
+            type: "vite",
+            name: "vite",
+            vite: { framework: "react", variant: "react-compiler" },
+          },
+          {
+            type: "vite",
+            name: "preact",
+            vite: { framework: "preact", variant: "ts" },
+          },
+          {
+            type: "vite",
+            name: "vite-3",
+            vite: { framework: "vanilla", variant: "ts" },
+          },
+          { type: "next", name: "next" },
+          { type: "astro", name: "astro" },
+          { type: "expo", name: "expo" },
+          { type: "fastify", name: "fastify" },
+        ],
+        packages: [{ type: "shadcn" }, { type: "db" }],
+        tooling: [
+          { type: "tailwind" },
+          { type: "prettier" },
+          { type: "eslint" },
+        ],
+        auth: { provider: "better-auth" },
+        db: { orm: "drizzle", dialect: "postgresql" },
+        payments: { provider: "polar" },
+        email: { provider: "resend" },
+      }),
+      builder,
+    );
+
+    expect(builder.commands).toEqual([]);
+    expect(builder.rootPackageJson.devDependencies).toMatchObject({
+      prettier: "^3.3.0",
+      eslint: "^9.0.0",
+    });
+    expect(builder.rootPackageJson.pnpm).toBeUndefined();
+    expect(parse(builder.files["pnpm-workspace.yaml"] ?? "")).toEqual({
+      packages: ["apps/*", "packages/*", "tooling/*"],
+      overrides: { lightningcss: "1.30.1" },
+    });
+    for (const name of [
+      "vite",
+      "preact",
+      "vite-3",
+      "next",
+      "astro",
+      "expo",
+      "fastify",
+    ]) {
+      expect(builder.files[`apps/${name}/package.json`]).toContain(
+        `@apps/${name}`,
+      );
+    }
   });
 });
 

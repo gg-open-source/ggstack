@@ -2,6 +2,7 @@ import { mkdtemp, rm, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
+import { parse } from "yaml";
 import {
   buildProjectAdditions,
   findAdditionCollisions,
@@ -163,7 +164,7 @@ describe("adding to an existing project", () => {
     expect(builder.files["turbo.json"]).toBeUndefined();
   });
 
-  it("preserves root pnpm overrides when wiring existing Tailwind to a new Expo app", async () => {
+  it("preserves workspace settings and migrates legacy overrides when adding Expo to Tailwind", async () => {
     const { targetDir, existing } = await createFixture({
       tooling: [{ type: "tailwind" }],
     });
@@ -173,8 +174,25 @@ describe("adding to an existing project", () => {
     const builder = new ProjectBuilder();
     builder.setRootPackageJson({
       ...existing.packageJson,
-      pnpm: { overrides: { "some-package": "1.2.3" } },
+      pnpm: {
+        overrides: { "some-package": "1.2.3", "workspace-wins": "1.0.0" },
+      },
     });
+    await writeFile(
+      path.join(targetDir, "pnpm-workspace.yaml"),
+      `# Keep workspace settings
+packages:
+  - "apps/*"
+  - "packages/*"
+  - "tooling/*"
+  - "custom/*"
+catalog:
+  typescript: ^5.8.0
+overrides:
+  workspace-wins: 2.0.0
+  lightningcss: 1.29.0
+`,
+    );
 
     await buildProjectAdditions(
       additions,
@@ -182,9 +200,15 @@ describe("adding to an existing project", () => {
       builder,
     );
 
-    expect(builder.rootPackageJson.pnpm).toEqual({
+    expect(builder.rootPackageJson.pnpm).toBeUndefined();
+    const workspace = builder.files["pnpm-workspace.yaml"] ?? "";
+    expect(workspace).toContain("# Keep workspace settings");
+    expect(parse(workspace)).toEqual({
+      packages: ["apps/*", "packages/*", "tooling/*", "custom/*"],
+      catalog: { typescript: "^5.8.0" },
       overrides: {
         "some-package": "1.2.3",
+        "workspace-wins": "2.0.0",
         lightningcss: "1.30.1",
       },
     });
@@ -193,6 +217,76 @@ describe("adding to an existing project", () => {
     );
     expect(builder.files["tooling/tailwind/package.json"]).toBeUndefined();
   });
+
+  it("declares added Prettier and ESLint dependencies without installation commands", async () => {
+    const { targetDir, existing } = await createFixture({
+      tooling: [{ type: "oxc" }],
+    });
+    const additions = config(targetDir, {
+      tooling: [{ type: "prettier" }, { type: "eslint" }],
+    });
+    const builder = new ProjectBuilder();
+    builder.setRootPackageJson(structuredClone(existing.packageJson));
+
+    await buildProjectAdditions(
+      additions,
+      mergeStackConfig(existing.config, additions),
+      builder,
+    );
+
+    expect(builder.rootPackageJson.devDependencies).toMatchObject({
+      oxlint: "^0.9.0",
+      oxfmt: "^0.9.0",
+      prettier: "^3.3.0",
+      eslint: "^9.0.0",
+    });
+    expect(builder.commands).toEqual([]);
+  });
+
+  it("pins Lightning CSS when Expo and Tailwind are added together", async () => {
+    const { targetDir, existing } = await createFixture();
+    const additions = config(targetDir, {
+      apps: [{ type: "expo", name: "mobile" }],
+      tooling: [{ type: "tailwind" }],
+    });
+    const builder = new ProjectBuilder();
+    builder.setRootPackageJson(structuredClone(existing.packageJson));
+
+    await buildProjectAdditions(
+      additions,
+      mergeStackConfig(existing.config, additions),
+      builder,
+    );
+
+    expect(parse(builder.files["pnpm-workspace.yaml"] ?? "")).toMatchObject({
+      overrides: { lightningcss: "1.30.1" },
+    });
+    expect(builder.rootPackageJson.pnpm).toBeUndefined();
+  });
+
+  it.each(["packages: [", "packages: []\noverrides: invalid\n"])(
+    "rejects invalid workspace settings before replacing them (%s)",
+    async (workspace) => {
+      const { targetDir, existing } = await createFixture({
+        tooling: [{ type: "tailwind" }],
+      });
+      await writeFile(path.join(targetDir, "pnpm-workspace.yaml"), workspace);
+      const additions = config(targetDir, {
+        apps: [{ type: "expo", name: "mobile" }],
+      });
+      const builder = new ProjectBuilder();
+      builder.setRootPackageJson(structuredClone(existing.packageJson));
+
+      await expect(
+        buildProjectAdditions(
+          additions,
+          mergeStackConfig(existing.config, additions),
+          builder,
+        ),
+      ).rejects.toThrow("Cannot update pnpm-workspace.yaml");
+      expect(builder.files["pnpm-workspace.yaml"]).toBeUndefined();
+    },
+  );
 
   it("upgrades existing standalone Tailwind when shadcn is added", async () => {
     const { targetDir, existing } = await createFixture({

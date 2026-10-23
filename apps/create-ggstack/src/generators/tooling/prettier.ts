@@ -1,7 +1,7 @@
 import type { ProjectBuilder, StackConfig } from "../../types.js";
 
 export function generatePrettierTooling(
-  config: StackConfig,
+  _config: StackConfig,
   builder: ProjectBuilder,
 ): void {
   builder.addFile(
@@ -38,10 +38,8 @@ export function generatePrettierTooling(
     ),
   );
 
-  builder.addCommand({
-    command: config.packageManager,
-    args: ["add", "-D", "prettier"],
-    cwd: config.targetDir,
-    description: "Install Prettier (manual wiring still required)",
-  });
+  builder.rootPackageJson.devDependencies = {
+    ...builder.rootPackageJson.devDependencies,
+    prettier: "^3.3.0",
+  };
 }

@@ -1,6 +1,6 @@
 {
   "name": "create-ggstack",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "type": "module",
   "author": "Gaurav Ghosh",
   "license": "MIT",
@@ -50,7 +50,8 @@
   "dependencies": {
     "@clack/prompts": "^0.10.0",
     "execa": "^9.5.0",
-    "picocolors": "^1.1.0"
+    "picocolors": "^1.1.0",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
     "@tooling/tsconfig": "workspace:*",

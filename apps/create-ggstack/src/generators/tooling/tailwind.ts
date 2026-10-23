@@ -1,4 +1,6 @@
+import { readFileSync } from "node:fs";
 import path from "node:path";
+import { isMap, parseDocument } from "yaml";
 import type {
   AppConfig,
   PackageJson,
@@ -102,7 +104,7 @@ ${
   );
 
   if (hasExpo) {
-    pinLightningcss(builder);
+    pinLightningcss(config, builder);
   }
 
   for (const app of config.apps) {
@@ -112,23 +114,45 @@ ${
   }
 }
 
-function pinLightningcss(builder: ProjectBuilder): void {
+function pinLightningcss(config: StackConfig, builder: ProjectBuilder): void {
+  const workspacePath = "pnpm-workspace.yaml";
+  const workspace = parseDocument(
+    builder.files[workspacePath] ??
+      readFileSync(path.join(config.targetDir, workspacePath), "utf-8"),
+  );
+  if (
+    workspace.errors.length > 0 ||
+    !isMap(workspace.contents) ||
+    (workspace.has("overrides") && !isMap(workspace.get("overrides", true)))
+  ) {
+    throw new Error(
+      "Cannot update pnpm-workspace.yaml; expected valid YAML with an overrides mapping.",
+    );
+  }
+
   const existingPnpm =
     typeof builder.rootPackageJson.pnpm === "object" &&
     builder.rootPackageJson.pnpm !== null
       ? (builder.rootPackageJson.pnpm as Record<string, unknown>)
       : {};
 
-  builder.rootPackageJson.pnpm = {
-    ...existingPnpm,
-    overrides: {
-      ...(typeof existingPnpm.overrides === "object" &&
-      existingPnpm.overrides !== null
-        ? (existingPnpm.overrides as Record<string, unknown>)
-        : {}),
-      lightningcss: LIGHTNINGCSS,
-    },
-  };
+  if (
+    typeof existingPnpm.overrides === "object" &&
+    existingPnpm.overrides !== null
+  ) {
+    for (const [name, version] of Object.entries(existingPnpm.overrides)) {
+      if (!workspace.hasIn(["overrides", name])) {
+        workspace.setIn(["overrides", name], version);
+      }
+    }
+    delete existingPnpm.overrides;
+    if (Object.keys(existingPnpm).length === 0) {
+      delete builder.rootPackageJson.pnpm;
+    }
+  }
+
+  workspace.setIn(["overrides", "lightningcss"], LIGHTNINGCSS);
+  builder.addFile(workspacePath, workspace.toString());
 }
 
 function applySharedTailwind(
